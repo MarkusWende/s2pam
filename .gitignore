@@ -1,0 +1,8 @@
+# Folders
+build/
+
+# Files
+*.png
+*.pgm
+*.wav
+*.TextGrid
