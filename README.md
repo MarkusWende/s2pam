@@ -1,4 +1,3 @@
-Acoustic model for speech to phonemes conversion
-================================================
+# Acoustic model for speech to phoneme conversion
 
 Description will be added in the futere...
