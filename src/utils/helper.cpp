@@ -39,7 +39,7 @@ void matrix_to_normalized_vector(vector<vector<float>> mSpectrum, unsigned int& 
 
 	// get spectrogram dimensions
 	unsigned int timeLength = mSpectrum.size();
-	unsigned int freqLength = mSpectrum[0].size()-1;
+	unsigned int freqLength = mSpectrum[0].size();
 
 	height = freqLength-1;
 	width = timeLength;
@@ -67,16 +67,22 @@ void matrix_enlarge(std::vector<std::vector<float>> mInput, std::vector<std::vec
 	printf("Output: \n\tHoehe: %d\n\tBreite: %d\n", mOutput[0].size(), mOutput.size());
 
 	int counter = 1;
-	for (int i = 0; i < mOutput[0].size(); i++) {
+	float maxVal = 0.0;
+	int blockSize = (int) floor(mOutput[0].size()/mInput[0].size());
+	for (int i = 1; i < mOutput[0].size(); i++) {
 		for (int j = 0; j < mOutput.size(); j++) {
 			mOutput[j][i] = mInput[j][counter];
+			//printf("FirstVal: %f\n", mOutput[j][0]);
+			if (mOutput[j][i] > maxVal) {maxVal = mOutput[j][i];}
 		}
-		printf("counter: %d\t", counter);
-		if (i > 1 && i % ((int) floor(mOutput[0].size()/mInput[0].size())) == 0) {
+		if (i > 1 && counter < (mInput[0].size()-1) && i % blockSize == 0) {
 			counter++;
 		}
+		//printf("Counter: %d\ti: %d\n", counter, i);
 	}
 
+	printf("MaxVal: %f\n", maxVal);
 	printf("\n=============================================================================\n");
+
 }
 }

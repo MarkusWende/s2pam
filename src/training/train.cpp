@@ -39,20 +39,46 @@ int hopSize = 20;
 AlgorithmFactory& factory = standard::AlgorithmFactory::instance();
 
 Algorithm* audio = factory.create("MonoLoader",
-                                  "filename", audioFilename,
-                                  "sampleRate", sampleRate);
+																	//"audioStream", 0,										// default: 0
+																	//"downmix", "mix",										// default: "mix"
+                                  "filename", audioFilename,						//
+                                  "sampleRate", sampleRate							// default: 44100
+																	);
 
 Algorithm* fc    = factory.create("FrameCutter",
-                                  "frameSize", frameSize,
-                                  "hopSize", hopSize);
+                                  "frameSize", frameSize,								// default: 1024
+                                  "hopSize", hopSize,										// default: 512
+																	//"lastFrameToEndOfFile", false,			// default: false
+																	//"startFromZero", false,							// default: false
+																	"validFrameThresholdRatio", 0					// default: 0
+																	);
 
 Algorithm* w     = factory.create("Windowing",
-																	"size", 64,
-																	"zeroPadding", 512+frameSize,
-                                  "type", "blackmanharris62");
+																	//"normalized", true,									// default: true
+																	"size", 64,														// default: 1024
+																	"zeroPadding", 512+frameSize,					// default: 0
+                                  "type", "blackmanharris62",						// default: "hann"
+																	"zeroPhase", true											// default: true
+																	);
 
-Algorithm* spec  = factory.create("Spectrum");
-Algorithm* mfcc  = factory.create("MFCC");
+Algorithm* spec  = factory.create("Spectrum",
+																	"size", 2048													// default: 2048
+																	);
+Algorithm* mfcc  = factory.create("MFCC",
+																	//"dctType", 2,												// default: 2
+																	//"highFrequencyBound", 11000,				// default: 11000
+																	//"inputSize", 1025,									// default: 1025
+																	//"liftering", 0,											// default: 0
+																	//"logType", "dbamp",									// default: "dbamp"
+																	//"lowFrequencyBound", 0,							// default: 0
+																	//"normalize", "unit_max",						// default: "unit_max"
+																	"numberBands", 90,										// default: 40
+																	"numberCoefficients", 45,							// default: 13
+																	//"sampleRate", 44100,								// default: 44100
+																	//"type", "magnitude",								// default: "magnitude"
+																	//"warpingFormula", "slaneyMel",			// default: "slaneyMel"
+																	"weighting", "warping"								// default: "warping"
+																	);
 
 /////////// CONNECTING THE ALGORITHMS ////////////////
 cout << "-------- connecting algos ---------" << endl;
@@ -159,6 +185,7 @@ render::vector_to_PNG(audioFilename, "_spec", imageHeight, imageWidth, vSpectrum
 helper::matrix_enlarge(mMfccBands, mMfccBandsEnlarged);
 helper::matrix_to_normalized_vector(mMfccBandsEnlarged, imageHeight, imageWidth, vMfccBandsNormalized);
 render::vector_to_PNG(audioFilename, "_bands", imageHeight, imageWidth, vMfccBandsNormalized);
+render::matrix_to_PGM(mMfccBandsEnlarged);
 
 helper::matrix_enlarge(mMfccCoeffs, mMfccCoeffsEnlarged);
 helper::matrix_to_normalized_vector(mMfccCoeffsEnlarged, imageHeight, imageWidth, vMfccCoeffsNormalized);
