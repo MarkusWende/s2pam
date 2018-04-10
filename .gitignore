@@ -1,8 +1,14 @@
 # Folders
 build/
 
-# Files
+# Data Input- Outputfiles
 *.png
 *.pgm
 *.wav
 *.TextGrid
+
+# Tempfiles
+*.swp
+
+# Executables
+s2pam_train
