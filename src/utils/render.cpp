@@ -13,9 +13,9 @@ void matrix_to_PGM(std::vector<std::vector<float>> m) {
 	unsigned int height = m.size();
 	unsigned int width = m[0].size();
 
-	outputFile << "P2" << endl << width-1 << ' ' << height-1 << endl << "255" << endl;
+	//outputFile << "P2" << endl << width-1 << ' ' << height-1 << endl << "255" << endl;
 
-	printf("=============================== Spectrum Matrix ======================================\n");
+	//printf("=============================== Spectrum Matrix ======================================\n");
 	for (int i = 1; i < height; i++) {
 		for (int j = 1; j < width; j++) {
 			//cout << round(m[i][j]*255) << ' ';
@@ -24,10 +24,10 @@ void matrix_to_PGM(std::vector<std::vector<float>> m) {
 		//printf("\n");
 		outputFile << endl;
 	}
-	printf("======================================================================================\n");
+	//printf("======================================================================================\n");
 
-	cout << "Matrix Height: " << height << endl;
-	cout << "Matrix Width: " << width << endl;
+	//cout << "Matrix Height: " << height << endl;
+	//cout << "Matrix Width: " << width << endl;
 
 	outputFile.close();
 }
@@ -69,11 +69,11 @@ void vector_to_PNG(string path, string addStr, int unsigned height, int unsigned
 	filename.append(".png");
 	filename.insert(0,"./data/SPECS/");
 
-	printf("Filename: %s\n", filename.c_str());
-	printf("Image height in px: %d\n", height);
-	printf("Image width in px: %d\n", width);
+	//printf("Filename: %s\n", filename.c_str());
+	//printf("Image height in px: %d\n", height);
+	//printf("Image width in px: %d\n", width);
 
-	printf("Vector Length: %d\n", v.size());
+	//printf("Vector Length: %d\n", v.size());
 
 	FILE *fp = NULL;
 	png_structp png_ptr = NULL;
@@ -134,8 +134,6 @@ void vector_to_PNG(string path, string addStr, int unsigned height, int unsigned
 		}
 		png_write_row(png_ptr, row);
 	}
-
-	printf("Max Value: %f\n", max_value);
 
 	// End write
 	png_write_end(png_ptr, NULL);
