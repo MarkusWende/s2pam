@@ -1,6 +1,6 @@
 CC = g++
 
-CFLAGS = -std=c++1y -pipe -O2 -fPIC \
+CFLAGS = -std=c++17 -pipe -O2 -fPIC \
 		 -I/usr/local/lib \
 		 -I/usr/local/include/essentia/ \
 		 -I/usr/local/include/essentia/scheduler/ \
@@ -12,7 +12,7 @@ CFLAGS = -std=c++1y -pipe -O2 -fPIC \
 		 #-I/usr/include/qt4 \
 		 #-I/usr/include/qt4/QtCore
 LFLAGS = -lessentia -lfftw3 -lyaml -lavcodec -lavformat -lavutil -lsamplerate -lpng \
-		 -ltag -lfftw3f -lavresample #-lQtCore
+		 -ltag -lfftw3f -lavresample -lstdc++fs #-lQtCore
 
 
 OBJDIR = build

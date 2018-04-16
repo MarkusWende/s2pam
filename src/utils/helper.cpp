@@ -1,6 +1,7 @@
 #include "helper.h"
 
 using namespace std;
+using namespace essentia;
 
 namespace helper {
 void matrix_to_normalized_matrix(string path, vector<vector<float>> mSpectrum, vector<vector<float>>& m) {
@@ -15,8 +16,8 @@ void matrix_to_normalized_matrix(string path, vector<vector<float>> mSpectrum, v
 	unsigned int freqLength = mSpectrum[0].size()-1;
 
 	printf("Filename: %s\n", filename.c_str());
-	printf("Spectrum time length in #samples: %d\n", timeLength);
-	printf("Spectrum frequence length in #bands: %d\n", freqLength);
+	//printf("Spectrum time length in #samples: %d\n", timeLength);
+	//printf("Spectrum frequence length in #bands: %d\n", freqLength);
 
 	float maxValue = 0;
 
@@ -39,7 +40,7 @@ void matrix_to_normalized_vector(vector<vector<float>> mSpectrum, unsigned int& 
 
 	// get spectrogram dimensions
 	unsigned int timeLength = mSpectrum.size();
-	unsigned int freqLength = mSpectrum[0].size()-1;
+	unsigned int freqLength = mSpectrum[0].size();
 
 	height = freqLength-1;
 	width = timeLength;
@@ -61,22 +62,23 @@ void matrix_to_normalized_vector(vector<vector<float>> mSpectrum, unsigned int& 
 }
 
 void matrix_enlarge(std::vector<std::vector<float>> mInput, std::vector<std::vector<float>>& mOutput) {
-	printf("================ Matrix Enlarge =============================================\n");
-	printf("Input: \n\tHoehe: %d\n\tBreite: %d\n", mInput[0].size(), mInput.size());
-	printf("-----------------------------------\n");
-	printf("Output: \n\tHoehe: %d\n\tBreite: %d\n", mOutput[0].size(), mOutput.size());
+
+	E_INFO("Enlarge Matrix:" << "\tInput <- Hoehe: " << mInput[0].size() <<
+			", Breite: " << mInput.size() << "\tOutput: -> Hoehe: " << mOutput[0].size() << 
+			", Breite: " << mOutput.size());
 
 	int counter = 1;
-	for (int i = 0; i < mOutput[0].size(); i++) {
+	float maxVal = 0.0;
+	int blockSize = (int) floor(mOutput[0].size()/mInput[0].size());
+	for (int i = 1; i < mOutput[0].size(); i++) {
 		for (int j = 0; j < mOutput.size(); j++) {
 			mOutput[j][i] = mInput[j][counter];
+			if (mOutput[j][i] > maxVal) {maxVal = mOutput[j][i];}
 		}
-		printf("counter: %d\t", counter);
-		if (i > 1 && i % ((int) floor(mOutput[0].size()/mInput[0].size())) == 0) {
+		if (i > 1 && counter < (mInput[0].size()-1) && i % blockSize == 0) {
 			counter++;
 		}
 	}
-
-	printf("\n=============================================================================\n");
+	//printf("\n=============================================================================\n");
 }
 }

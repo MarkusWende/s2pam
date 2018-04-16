@@ -7,6 +7,7 @@
 #include <fstream>
 #include <malloc.h>
 #include <png.h>
+#include <essentia/algorithmfactory.h>
 
 namespace helper {
 	void matrix_to_normalized_matrix(std::string path, std::vector<std::vector<float>> mSpectrum, std::vector<std::vector<float>>& m);
