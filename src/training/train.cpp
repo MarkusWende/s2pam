@@ -19,17 +19,24 @@ using namespace essentia::standard;
 
 int main(int argc, char* argv[]) {
 
-  if (argc < 2) {
-    cout << "ERROR: incorrect number of arguments." << endl;
-    cout << "Usage: " << argv[0] << " <options>" << " training_data_input_path" << endl;
+	// register the algorithms in the factory(ies)
+	essentia::init();
+  
+	if (argc < 2) {
+    E_ERROR("\tIncorrect number of arguments.\n" <<
+			"\t\tUsage: " << argv[0] << " <options>" << " training_data_input_path");
     exit(1);
   }
 
-  string trainingDataPath = argv[1];
-  //string outputFilename = argv[2];
+	// check if audio files for training do exist
+	if (!fs::is_directory("./data/TIMIT/Audio") || !fs::exists("./data/TIMIT/Audio")) {
+		E_ERROR("\tNo training data folder found.\n" <<
+			"\t\tCreate ./data/TIMIT/Audio with training audio files inside.");
+		exit(1);
+	}
 
-	// register the algorithms in the factory(ies)
-	essentia::init();
+  string trainingDataPath = argv[1];
+
 
 	// set the logging level
 	if (argc > 2) {
@@ -44,6 +51,17 @@ int main(int argc, char* argv[]) {
 		infoLevelActive = false;
 	}
 
+	// create folder if it doesnt exist
+	if (!fs::is_directory("./data/SPECS") || !fs::exists("./data/SPECS")) {
+		E_INFO("\tCreating directory ./data/SPECS");
+		fs::create_directory("./data/SPECS");
+	}
+	if (!fs::is_directory("./data/FEATURES") || !fs::exists("./data/FEATURES")) {
+		E_INFO("\tCreating directory ./data/FEATURES");
+		fs::create_directory("./data/FEATURES");
+	}
+
+	// Start For-Loop Audifile-List
 	for (auto& p : fs::directory_iterator(trainingDataPath)) {
 
 		string audioFilename = p.path().string();
@@ -51,7 +69,7 @@ int main(int argc, char* argv[]) {
 		/////// PARAMS //////////////
 		int sampleRate = 12000;
 		int frameSize = 1024;
-		int hopSize = 20;
+		int hopSize = 64;
 
 		AlgorithmFactory& factory = standard::AlgorithmFactory::instance();
 
@@ -73,7 +91,7 @@ int main(int argc, char* argv[]) {
 		Algorithm* w     = factory.create("Windowing",
 																			//"normalized", true,									// default: true
 																			"size", 64,														// default: 1024
-																			"zeroPadding", 512+frameSize,					// default: 0
+																			"zeroPadding", frameSize+hopSize,			// default: 0
 																			"type", "hann",												// default: "hann"
 																			"zeroPhase", true											// default: true
 																			);
@@ -88,7 +106,7 @@ int main(int argc, char* argv[]) {
 																			//"liftering", 0,											// default: 0
 																			//"logType", "dbamp",									// default: "dbamp"
 																			//"lowFrequencyBound", 0,							// default: 0
-																			//"normalize", "unit_max",						// default: "unit_max"
+																			//"normalize", "unit_sum",						// default: "unit_max"
 																			"numberBands", 40,										// default: 40
 																			"numberCoefficients", 13,							// default: 13
 																			//"sampleRate", 44100,								// default: 44100
@@ -98,7 +116,7 @@ int main(int argc, char* argv[]) {
 																			);
 
 		/////////// CONNECTING THE ALGORITHMS ////////////////
-		E_INFO("-------- connecting algos ---------\n");
+		E_INFO("-------- connecting algos ---------");
 
 		// Audio -> FrameCutter
 		std::vector<Real> audioBuffer;
@@ -125,7 +143,7 @@ int main(int argc, char* argv[]) {
 		mfcc->output("mfcc").set(mfccCoeffs);
 
 		/////////// STARTING THE ALGORITHMS //////////////////
-		E_INFO("-------- start processing " << audioFilename << " --------\n");
+		E_INFO("-------- start processing " << audioFilename << " --------");
 
 		audio->compute();
 
@@ -193,25 +211,27 @@ int main(int argc, char* argv[]) {
 		unsigned int imageWidth;
 
 
+		// generate png's from matrixes
 		helper::matrix_to_normalized_vector(mSpectrum, imageHeight, imageWidth, vSpectrumNormalized);
 		render::vector_to_PNG(audioFilename, "_spec", imageHeight, imageWidth, vSpectrumNormalized);
 
 		helper::matrix_enlarge(mMfccBands, mMfccBandsEnlarged);
 		helper::matrix_to_normalized_vector(mMfccBandsEnlarged, imageHeight, imageWidth, vMfccBandsNormalized);
 		render::vector_to_PNG(audioFilename, "_bands", imageHeight, imageWidth, vMfccBandsNormalized);
-		render::matrix_to_PGM(mMfccBandsEnlarged);
 
 		helper::matrix_enlarge(mMfccCoeffs, mMfccCoeffsEnlarged);
 		helper::matrix_to_normalized_vector(mMfccCoeffsEnlarged, imageHeight, imageWidth, vMfccCoeffsNormalized);
 		render::vector_to_PNG(audioFilename, "_mfcc", imageHeight, imageWidth, vMfccCoeffsNormalized);
 
+		// generate mfcc file from matrix
+		render::matrix_to_MFCC_file(mMfccCoeffs, audioFilename);
 
+		// clear memory
 		delete audio;
 		delete fc;
 		delete w;
 		delete spec;
 		delete mfcc;
-		//delete output;
 	} // End for-Loop: file list 
 
 	essentia::shutdown();
