@@ -6,6 +6,7 @@ build/
 *.pgm
 *.wav
 *.TextGrid
+*.mfcc
 
 # Tempfiles
 *.swp
