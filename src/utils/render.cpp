@@ -13,22 +13,38 @@ void matrix_to_PGM(std::vector<std::vector<float>> m) {
 	unsigned int height = m.size();
 	unsigned int width = m[0].size();
 
-	//outputFile << "P2" << endl << width-1 << ' ' << height-1 << endl << "255" << endl;
-
-	//printf("=============================== Spectrum Matrix ======================================\n");
 	for (int i = 1; i < height; i++) {
 		for (int j = 1; j < width; j++) {
-			//cout << round(m[i][j]*255) << ' ';
 			outputFile << round(m[i][j]*255) << ' ';
 		}
-		//printf("\n");
 		outputFile << endl;
 	}
-	//printf("======================================================================================\n");
+	outputFile.close();
+}
 
-	//cout << "Matrix Height: " << height << endl;
-	//cout << "Matrix Width: " << width << endl;
+void matrix_to_MFCC_file(std::vector<std::vector<float>> m, string audioFilename) {
 
+	// write MFCC to file
+	size_t found = audioFilename.find_last_of("/\\");
+	string filename = audioFilename.substr(found+1);
+	found = filename.find_last_of(".");
+	filename = filename.substr(0,found);
+	filename.append(".mfcc");
+	filename.insert(0,"./data/FEATURES/");
+
+	ofstream outputFile;
+	outputFile.open(filename);
+
+	// get matrix dimensions
+	unsigned int height = m.size();
+	unsigned int width = m[0].size();
+
+	for (int i = 0; i < height; i++) {
+		for (int j = 1; j < width; j++) {
+			outputFile << m[i][j] << ' ';
+		}
+		outputFile << endl;
+	}
 	outputFile.close();
 }
 
