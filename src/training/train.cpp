@@ -6,7 +6,9 @@
 #include <algorithm>
 #include <math.h>
 #include <experimental/filesystem>
-#include <pthread.h>
+#include <thread>
+#include <chrono>
+#include <future>
 
 #include "render.h"
 #include "helper.h"
@@ -18,12 +20,10 @@ namespace fs = std::experimental::filesystem;
 using namespace essentia;
 using namespace essentia::standard;
 
-void *processTrainingAudioFile( void *ptr ) {
-	char *audioFilename;
-  audioFilename = (char *) ptr;
-  
-	if(strcmp (audioFilename,"Empty") != 0) {
-
+int processTrainingAudioFile( string audioFilename ) {
+	
+	if(audioFilename.compare("Empty") != 0) {
+		
 		/////// PARAMS //////////////
 		int sampleRate = 12000;
 		int frameSize = 1024;
@@ -171,16 +171,16 @@ void *processTrainingAudioFile( void *ptr ) {
 
 
 		// generate png's from matrixes
-		//helper::matrix_to_normalized_vector(mSpectrum, imageHeight, imageWidth, vSpectrumNormalized);
-		//render::vector_to_PNG(audioFilename, "_spec", imageHeight, imageWidth, vSpectrumNormalized);
+		helper::matrix_to_normalized_vector(mSpectrum, imageHeight, imageWidth, vSpectrumNormalized);
+		render::vector_to_PNG(audioFilename, "_spec", imageHeight, imageWidth, vSpectrumNormalized);
 
-		//helper::matrix_enlarge(mMfccBands, mMfccBandsEnlarged);
-		//helper::matrix_to_normalized_vector(mMfccBandsEnlarged, imageHeight, imageWidth, vMfccBandsNormalized);
-		//render::vector_to_PNG(audioFilename, "_bands", imageHeight, imageWidth, vMfccBandsNormalized);
+		helper::matrix_enlarge(mMfccBands, mMfccBandsEnlarged);
+		helper::matrix_to_normalized_vector(mMfccBandsEnlarged, imageHeight, imageWidth, vMfccBandsNormalized);
+		render::vector_to_PNG(audioFilename, "_bands", imageHeight, imageWidth, vMfccBandsNormalized);
 
-		//helper::matrix_enlarge(mMfccCoeffs, mMfccCoeffsEnlarged);
-		//helper::matrix_to_normalized_vector(mMfccCoeffsEnlarged, imageHeight, imageWidth, vMfccCoeffsNormalized);
-		//render::vector_to_PNG(audioFilename, "_mfcc", imageHeight, imageWidth, vMfccCoeffsNormalized);
+		helper::matrix_enlarge(mMfccCoeffs, mMfccCoeffsEnlarged);
+		helper::matrix_to_normalized_vector(mMfccCoeffsEnlarged, imageHeight, imageWidth, vMfccCoeffsNormalized);
+		render::vector_to_PNG(audioFilename, "_mfcc", imageHeight, imageWidth, vMfccCoeffsNormalized);
 
 		// generate mfcc file from matrix
 		render::matrix_to_MFCC_file(mMfccCoeffs, audioFilename);
@@ -191,15 +191,14 @@ void *processTrainingAudioFile( void *ptr ) {
 		delete w;
 		delete spec;
 		delete mfcc;
-
 	}
+	return 1;
 }
 
 int main(int argc, char* argv[]) {
 
-	// register the algorithms in the factory(ies)
-	essentia::init();
-  
+	auto start = std::chrono::system_clock::now();
+
 	if (argc < 2) {
     E_ERROR("\tIncorrect number of arguments.\n" <<
 			"\t\tUsage: " << argv[0] << " <options>" << " training_data_input_path");
@@ -214,7 +213,6 @@ int main(int argc, char* argv[]) {
 	}
 
   string trainingDataPath = argv[1];
-
 
 	// set the logging level
 	if (argc > 2) {
@@ -243,64 +241,67 @@ int main(int argc, char* argv[]) {
 	fs::directory_iterator trainingDataPathIter(trainingDataPath), e;
 	std::vector<fs::path> trainingFileList(trainingDataPathIter, e);
 
-	const char *fileName1;
-	const char *fileName2;
-	const char *fileName3;
+	string fileName1;
+	string fileName2;
+	string fileName3;
+
+	// register the algorithms in the factory(ies)
+	essentia::init();
 	
 	while(!trainingFileList.empty()) {
 	
-		pthread_t thread1, thread2, thread3;
-		int  iret1, iret2, iret3;
-
 		if(trainingFileList.size() >= 1)
-			fileName1 = trainingFileList[trainingFileList.size()-1].c_str();
+			fileName1 = trainingFileList[trainingFileList.size()-1];
 		else
 			fileName1 = "Empty";
 		
 		if(trainingFileList.size() >= 2)
-			fileName2 = trainingFileList[trainingFileList.size()-2].c_str();
+			fileName2 = trainingFileList[trainingFileList.size()-2];
 		else
 			fileName2 = "Empty";
 		
 		if(trainingFileList.size() >= 3)
-			fileName3 = trainingFileList[trainingFileList.size()-3].c_str();
+			fileName3 = trainingFileList[trainingFileList.size()-3];
 		else
 			fileName3 = "Empty";
 		
-		/* Create independent threads each of which will execute function */
-		iret1 = pthread_create( &thread1, NULL, processTrainingAudioFile, (void*) fileName1);
-		if(iret1)
-		{
-			 fprintf(stderr,"Error - pthread_create() return code: %d\n",iret1);
-			 exit(EXIT_FAILURE);
-		}
+		// Create promises
+		packaged_task<int(string)> task1(processTrainingAudioFile);
+		packaged_task<int(string)> task2(processTrainingAudioFile);
+		packaged_task<int(string)> task3(processTrainingAudioFile);
 
-		iret2 = pthread_create( &thread2, NULL, processTrainingAudioFile, (void*) fileName2);
-		if(iret2)
-		{
-			 fprintf(stderr,"Error - pthread_create() return code: %d\n",iret2);
-			 exit(EXIT_FAILURE);
-		}
+		// Get futures
+		future<int> val1 = task1.get_future();
+		future<int> val2 = task2.get_future();
+		future<int> val3 = task3.get_future();
 
-		iret3 = pthread_create( &thread3, NULL, processTrainingAudioFile, (void*) fileName3);
-		if(iret3)
-		{
-			 fprintf(stderr,"Error - pthread_create() return code: %d\n",iret3);
-			 exit(EXIT_FAILURE);
-		}
+		// Schedule promises
+		thread t1(move(task1), fileName1);
+		thread t2(move(task2), fileName2);
+		thread t3(move(task3), fileName3);
 
-		printf("pthread_create() for thread 1 returns: %d\n",iret1);
-		printf("pthread_create() for thread 2 returns: %d\n",iret2);
-		printf("pthread_create() for thread 3 returns: %d\n",iret3);
+		// Print status while we wait
+		bool s1 = false, s2 = false, s3 = false;
+		do {
+			s1 = val1.wait_for(chrono::milliseconds(50)) == future_status::ready;
+			s2 = val2.wait_for(chrono::milliseconds(50)) == future_status::ready;
+			s3 = val3.wait_for(chrono::milliseconds(50)) == future_status::ready;
+			//cout<< "Value 1 is " << (s1 ? "" : "not ") << "ready" << endl;
+			//cout<< "Value 2 is " << (s2 ? "" : "not ") << "ready" << endl;
+			//cout<< "Value 3 is " << (s3 ? "" : "not ") << "ready" << endl;
+			this_thread::sleep_for(chrono::milliseconds(300));
+		} while (!s1 || !s2 || !s3);
 
-		/* Wait till threads are complete before main continues. Unless we  */
-		/* wait we run the risk of executing an exit which will terminate   */
-		/* the process and all threads before the threads have completed.   */
+		// Cleanup threads-- we could obviously block and wait for our threads to finish if we don't want to print status.
+		t1.join();
+		t2.join();
+		t3.join();
 
-		pthread_join( thread1, NULL);
-		pthread_join( thread2, NULL); 
-		pthread_join( thread3, NULL); 
-
+/*		// Final result
+		cout<< "Value 1: " << val1.get() << endl;
+		cout<< "Value 2: " << val2.get() << endl;
+		cout<< "Value 3: " << val3.get() << endl;
+	*/	
 		if(trainingFileList.size() >= 1)
 			trainingFileList.pop_back();
 		if(trainingFileList.size() >= 1)
@@ -311,5 +312,9 @@ int main(int argc, char* argv[]) {
 
 	essentia::shutdown();
 
+	auto end = std::chrono::system_clock::now();
+	auto elapsed = end - start;
+	std::cout << elapsed.count() << '\n';
+	
 	return 0;
 	}
