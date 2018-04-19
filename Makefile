@@ -12,7 +12,7 @@ CFLAGS = -std=c++17 -pipe -O2 -fPIC \
 		 #-I/usr/include/qt4 \
 		 #-I/usr/include/qt4/QtCore
 LFLAGS = -lessentia -lfftw3 -lyaml -lavcodec -lavformat -lavutil -lsamplerate -lpng \
-		 -ltag -lfftw3f -lavresample -lstdc++fs #-lQtCore
+		 -ltag -lfftw3f -lavresample -lstdc++fs -lpthread#-lQtCore
 
 
 OBJDIR = build
