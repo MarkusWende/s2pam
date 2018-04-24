@@ -1,6 +1,6 @@
 CC = g++
 
-CFLAGS = -std=c++17 -pipe -O2 -fPIC \
+CFLAGS = -std=c++17 -pipe -O2 -g -fPIC \
 		 -I/usr/local/lib \
 		 -I/usr/local/include/essentia/ \
 		 -I/usr/local/include/essentia/scheduler/ \
@@ -12,7 +12,7 @@ CFLAGS = -std=c++17 -pipe -O2 -fPIC \
 		 #-I/usr/include/qt4 \
 		 #-I/usr/include/qt4/QtCore
 LFLAGS = -lessentia -lfftw3 -lyaml -lavcodec -lavformat -lavutil -lsamplerate -lpng \
-		 -ltag -lfftw3f -lavresample -lstdc++fs #-lQtCore
+		 -ltag -lfftw3f -lavresample -lstdc++fs -lpthread#-lQtCore
 
 
 OBJDIR = build
@@ -37,6 +37,9 @@ build/render.o: src/utils/render.cpp
 	$(CC) $< -c $(CFLAGS) -o $@
 
 build/helper.o: src/utils/helper.cpp
+	$(CC) $< -c $(CFLAGS) -o $@
+
+build/wave_read.o: src/utils/wave_read.cpp
 	$(CC) $< -c $(CFLAGS) -o $@
 
 clean:
