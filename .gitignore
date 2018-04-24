@@ -7,6 +7,7 @@ data/
 *.pgm
 *.wav
 *.TextGrid
+*.mfcc
 
 # Tempfiles
 *.swp

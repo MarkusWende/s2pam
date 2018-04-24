@@ -63,9 +63,9 @@ void matrix_to_normalized_vector(vector<vector<float>> mSpectrum, unsigned int& 
 
 void matrix_enlarge(std::vector<std::vector<float>> mInput, std::vector<std::vector<float>>& mOutput) {
 
-	E_INFO("Enlarge Matrix:" << "\tInput <- Hoehe: " << mInput[0].size() <<
-			", Breite: " << mInput.size() << "\tOutput: -> Hoehe: " << mOutput[0].size() << 
-			", Breite: " << mOutput.size());
+	E_INFO("---Enlarge Matrix:\n" <<
+			"\t\tInput <- Hoehe: " << mInput[0].size() << ", Breite: " << mInput.size() <<
+			"\n\t\tOutput: -> Hoehe: " << mOutput[0].size() << ", Breite: " << mOutput.size());
 
 	int counter = 1;
 	float maxVal = 0.0;
