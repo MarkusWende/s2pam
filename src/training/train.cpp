@@ -34,15 +34,13 @@ int processTrainingAudioFile(string audioFilename) {
 	cout << "--Computing: " << audioFilename << endl;
 
 	/////// PARAMS //////////////
-	int sampleRate = 44100;
+	int sampleRate = 16000;
 	int frameSize = 1024;
 	int hopSize = 64;
 
 	AlgorithmFactory& factory = standard::AlgorithmFactory::instance();
 	
 	Wave wave(audioFilename.c_str());
-
-	wave.showHeader();
 
 	int qSteps = pow(2,wave.bitsPerSample());
 	vector<Real> audioBuffer(wave.numberOfSamples());
@@ -52,18 +50,6 @@ int processTrainingAudioFile(string audioFilename) {
 		sample = static_cast<float>(wave.samples[i]) / qSteps;
 		audioBuffer[i] = sample;
 	}
-
-	/*for (int i = 0; i < audioBuffer.size(); i++) {
-		std::cout << audioBuffer[i] << '\n';
-	}*/
-	
-	
-	/*Algorithm* audio = factory.create("MonoLoader",
-																		//"audioStream", 0,								// default: 0
-																		//"downmix", "mix",								// default: "mix"
-																		"filename", audioFilename,				//
-																		"sampleRate", sampleRate					// default: 44100
-																		);*/
 
 	Algorithm* fc    = factory.create("FrameCutter",
 																		"frameSize", frameSize,						// default: 1024
@@ -104,8 +90,6 @@ int processTrainingAudioFile(string audioFilename) {
 	/////////// CONNECTING THE ALGORITHMS ////////////////
 	E_INFO("-------- connecting algos ---------");
 
-
-	//audio->output("audio").set(audioBuffer);
 	fc->input("signal").set(audioBuffer);
 
 	// FrameCutter -> Windowing -> Spectrum
@@ -129,22 +113,11 @@ int processTrainingAudioFile(string audioFilename) {
 	/////////// STARTING THE ALGORITHMS //////////////////
 	E_INFO("-------- start processing " << audioFilename << " --------");
 
-	//audio->compute();
-
 	// declare matrix
 	vector<vector<float>> mSpectrum;
 	vector<vector<float>> mMfccCoeffs;
 	vector<vector<float>> mMfccBands;
 
-	/*float maxVal = 0.0;
-	for (int i = 0; i < 60000; i++) {
-		cout << std::setprecision(5) << std::fixed << audioBuffer[i] << endl;
-		if(audioBuffer[i] > maxVal)
-			maxVal = i;
-	}
-	cout << "MaxVal: " << maxVal << endl;
-
-*/
 	int counter = 0;
 	while (true) {
 
@@ -162,8 +135,6 @@ int processTrainingAudioFile(string audioFilename) {
 		w->compute();
 		spec->compute();
 		mfcc->compute();
-
-		//pool.add("blub", spectrum);
 		
 		// make new row (arbitrary example)
 		vector<Real> spectrogramRow(1,spectrum.size());
@@ -219,7 +190,6 @@ int processTrainingAudioFile(string audioFilename) {
 	render::matrix_to_MFCC_file(mMfccCoeffs, audioFilename);
 
 	// clear memory
-	//delete audioBuffer;
 	delete fc;
 	delete w;
 	delete spec;

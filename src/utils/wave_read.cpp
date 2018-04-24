@@ -29,11 +29,11 @@ Wave::Wave(const char* filePath)
 		//fread(buffer, sizeof buffer[0], BUFFER_SIZE / (sizeof buffer[0]), wavFile);
 		{
 				/** DO SOMETHING WITH THE WAVE DATA HERE **/
-				//cout << "Read " << bytesRead << " bytes." << endl;
+			//cout << "Read " << bytesRead << " bytes." << endl;
 			/*for (int i = 0; i < bytesRead*8; i++) {
 				samples.push_back(buffer[i]);
 			}*/
-			samples.insert(samples.end(), buffer, buffer + BUFFER_SIZE - 10);
+			samples.insert(samples.end(), buffer, buffer + bytesRead);
 		}
 		delete [] buffer;
 		buffer = nullptr;
