@@ -1,6 +1,6 @@
 CC = g++
 
-CFLAGS = -std=c++17 -pipe -O2 -fPIC \
+CFLAGS = -std=c++17 -pipe -O2 -g -fPIC \
 		 -I/usr/local/lib \
 		 -I/usr/local/include/essentia/ \
 		 -I/usr/local/include/essentia/scheduler/ \
@@ -37,6 +37,9 @@ build/render.o: src/utils/render.cpp
 	$(CC) $< -c $(CFLAGS) -o $@
 
 build/helper.o: src/utils/helper.cpp
+	$(CC) $< -c $(CFLAGS) -o $@
+
+build/wave_read.o: src/utils/wave_read.cpp
 	$(CC) $< -c $(CFLAGS) -o $@
 
 clean:
