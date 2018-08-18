@@ -31,8 +31,8 @@ trainNN: $(EXEC_TRAIN)
 $(EXEC_FEATURE): build/featureExtraction.o build/render.o build/helper.o build/wave_read.o
 	$(CC) build/featureExtraction.o build/render.o build/helper.o build/wave_read.o $(LFLAGS) -o $@
 
-$(EXEC_TRAIN): build/trainNN.o
-	$(CC) build/trainNN.o $(LFLAGS) -o $@
+$(EXEC_TRAIN): build/trainNN.o build/textgrid.o
+	$(CC) build/trainNN.o build/textgrid.o $(LFLAGS) -o $@
 
 $(OBJDIR):
 	mkdir $(OBJDIR)
@@ -50,6 +50,9 @@ build/helper.o: src/utils/helper.cpp
 	$(CC) $< -c $(CFLAGS) -o $@
 
 build/wave_read.o: src/utils/wave_read.cpp
+	$(CC) $< -c $(CFLAGS) -o $@
+
+build/textgrid.o: src/utils/textgrid.cpp
 	$(CC) $< -c $(CFLAGS) -o $@
 
 clean:
