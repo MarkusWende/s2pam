@@ -13,4 +13,5 @@ data/
 *.swp
 
 # Executables
-s2pam_train
+s2pam_trainNN
+s2pam_featureExtraction

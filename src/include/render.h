@@ -5,8 +5,6 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
-#include <malloc.h>
-#include <png.h>
 
 namespace render {
 	void matrix_to_PGM(std::vector<std::vector<float>> m);

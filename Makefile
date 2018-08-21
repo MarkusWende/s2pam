@@ -14,23 +14,33 @@ CFLAGS = -std=c++17 -pipe -O2 -g -fPIC \
 LFLAGS = -lessentia -lfftw3 -lyaml -lavcodec -lavformat -lavutil -lsamplerate -lpng \
 		 -ltag -lfftw3f -lavresample -lstdc++fs -lpthread#-lQtCore
 
-
 OBJDIR = build
 
 SRC = $(shell find . -name "*.cpp")
 OBJ = $(addprefix $(OBJDIR)/,$(notdir $(SRC:.cpp=.o)))
 
-EXEC = s2pam_train
+EXEC_FEATURE = s2pam_featureExtraction
+EXEC_TRAIN = s2pam_trainNN
 
-all: $(OBJDIR) $(EXEC)
+all: $(OBJDIR) featureExtraction trainNN
 
-$(EXEC): $(OBJ)
-	$(CC) $(OBJ) $(LFLAGS) -o $@
+featureExtraction: $(EXEC_FEATURE)
+
+trainNN: $(EXEC_TRAIN)
+
+$(EXEC_FEATURE): build/featureExtraction.o build/render.o build/helper.o build/wave_read.o
+	$(CC) build/featureExtraction.o build/render.o build/helper.o build/wave_read.o $(LFLAGS) -o $@
+
+$(EXEC_TRAIN): build/trainNN.o build/textgrid.o
+	$(CC) build/trainNN.o build/textgrid.o $(LFLAGS) -o $@
 
 $(OBJDIR):
 	mkdir $(OBJDIR)
 
-build/train.o: src/training/train.cpp
+build/featureExtraction.o: src/main/featureExtraction.cpp
+	$(CC) $< -c $(CFLAGS) -o $@
+
+build/trainNN.o: src/main/trainNN.cpp
 	$(CC) $< -c $(CFLAGS) -o $@
 
 build/render.o: src/utils/render.cpp
@@ -42,7 +52,11 @@ build/helper.o: src/utils/helper.cpp
 build/wave_read.o: src/utils/wave_read.cpp
 	$(CC) $< -c $(CFLAGS) -o $@
 
+build/textgrid.o: src/utils/textgrid.cpp
+	$(CC) $< -c $(CFLAGS) -o $@
+
 clean:
 	rm $(OBJ)
 	rmdir $(OBJDIR)
-	rm $(EXEC)
+	rm $(EXEC_FEATURE)
+	rm $(EXEC_TRAIN)
