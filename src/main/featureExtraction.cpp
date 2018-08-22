@@ -204,7 +204,8 @@ int main(int argc, char* argv[]) {
 	
 	if (argc < 2) {
     E_ERROR("\tIncorrect number of arguments.\n" <<
-			"\t\tUsage: " << argv[0] << " <options>" << " training_data_input_path");
+			"\t\tUsage: " << argv[0] << " [OPTION]... PATH_TO_TRAINING_SET"
+			<< "\n\n\t\tOptions:\n" << "\t\t\t\t-v\t\tVerbose mode.\n");
     exit(1);
   }
 
