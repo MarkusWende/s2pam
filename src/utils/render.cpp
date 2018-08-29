@@ -1,15 +1,15 @@
 /**
- * @file		render.cpp
+ * @file	render.cpp
  *
- * @brief		Collection of render functions mostly for generating files from matrices
+ * @brief	Collection of render functions mostly for generating files from matrices
  *
- *					This namespace contains functions mostly for file generation, e.g.
- *					png's from matrices or Mel Frequency Cepstral Coefficients storage files.
+ *			This namespace contains functions mostly for file generation, e.g.
+ *			png's from matrices or Mel Frequency Cepstral Coefficients storage files.
  *
  * @author	Markus Wende
  * @version 1.0
- * @date		2017-2018
- * @bug			No known bugs.
+ * @date	2017-2018
+ * @bug		No known bugs.
  */
 
 #include "render.h"

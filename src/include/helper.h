@@ -1,14 +1,14 @@
 /**
- * @file		helper.h
+ * @file	helper.h
  *
- * @brief		Collection of helper functions
+ * @brief	Collection of helper functions
  *
- *					This namespace contains functions for matrix manipulation
+ *			This namespace contains functions for matrix manipulation
  *
  * @author	Markus Wende
  * @version 1.0
- * @date		2017-2018
- * @bug			No known bugs.
+ * @date	2017-2018
+ * @bug		No known bugs.
  */
 
 #ifndef HELPER_H
@@ -30,7 +30,7 @@ namespace helper {
 	/**
 	 * normalize the matrix by divide every matrix entry by the maximum value
 	 * in the matrix
-	 * @param	path contains the path and name of the file that is executed
+	 * @param path contains the path and name of the file that is executed
 	 * @param mSpectrum input matrix
 	 * @param m is a reference to the normalized matrix
 	 * @return void
@@ -56,7 +56,7 @@ namespace helper {
 	/**
 	 * convert the input matrix to a normalized vector by attaching every row
 	 * of the input matrix
-	 * @param	mSpectrum input matrix
+	 * @param mSpectrum input matrix
 	 * @param height return the input matrix height = number of frequency bins
 	 * @param width return the input matrix width = number of time frames
 	 * @param v reference to the normalized output vector
@@ -72,7 +72,7 @@ namespace helper {
 	/**
 	 * enlarge one matrix height to the other matrix hight
 	 * by duplicating the rows x times, in which x = floor( inputMatrixHeight / outputMatrixHeight)
-	 * @param	mInput input matrix
+	 * @param mInput input matrix
 	 * @param mOutput output matrix
 	 * @return void
 	 */
