@@ -1,14 +1,14 @@
 /**
- * @file		helper.cpp
+ * @file	helper.cpp
  *
- * @brief		Collection of helper functions
+ * @brief	Collection of helper functions
  *
- *					This namespace contains functions for matrix manipulation
+ *			This namespace contains functions for matrix manipulation
  *
  * @author	Markus Wende
  * @version 1.0
- * @date		2017-2018
- * @bug			No known bugs.
+ * @date	2017-2018
+ * @bug		No known bugs.
  */
 
 #include "helper.h"
