@@ -53,28 +53,38 @@ void matrix_to_normalized_matrix(string path, vector<vector<float>> mSpectrum, v
 	}
 }
 
-void matrix_to_normalized_matrix(vector<vector<float>> mSpectrum, vector<vector<float>>& m)
+void matrix_to_normalized_matrix(vector<vector<float>> &mIn, vector<vector<float>> &mOut)
 {
 	/// get spectrogram dimensions
-	unsigned int timeLength = mSpectrum.size();
-	unsigned int freqLength = mSpectrum[0].size()-1;
+	unsigned int rowSize = mIn.size();
+	unsigned int columnLength = mIn[0].size();
 
 	/// maximum value initilization
-	float maxValue = 0;
-
+	float maxVal = 0.0;
+	float minVal = 0.0;
+	
 	/// search for the maximal value in input matrix
-	for (int i = 1; i < freqLength; i++) {
-		for (int j = 0; j < timeLength; j++) {
-			if (mSpectrum[j][i] > maxValue)
-				maxValue = mSpectrum[j][i];
+	for (int i = 0; i < rowSize; i++)
+	{
+		for (int j = 0; j < columnLength; j++)
+		{
+			if (mIn.at(i).at(j) > maxVal)
+				maxVal = mIn.at(i).at(j);
+			if (mIn.at(i).at(j) < minVal)
+				minVal = mIn.at(i).at(j);
 		}
 	}
 
+	float absMin = abs(minVal);
+	float absMax = absMin + maxVal;
+
 	/// normalize every matrix value by dividing the value by the maximal value
-	for (int i = 1; i < freqLength; i++) {
-		for (int j = 0; j < timeLength; j++) {
-			mSpectrum[j][i] = mSpectrum[j][i] / maxValue;
-			m[freqLength-i][j] = mSpectrum[j][i];
+	for (int i = 0; i < rowSize; i++)
+	{
+		for (int j = 0; j < columnLength; j++)
+		{
+			mOut.at(i).at(j) = mIn.at(i).at(j) + absMin;
+			mOut.at(i).at(j) = mOut.at(i).at(j) / absMax;
 		}
 	}
 }
@@ -134,5 +144,34 @@ void matrix_enlarge(std::vector<std::vector<float>> mInput, std::vector<std::vec
 		}
 	}
 	//printf("\n=============================================================================\n");
+}
+
+void print_matrix(vector<vector<float>> &mIn)
+{
+	/// get spectrogram dimensions
+	unsigned int rowSize = mIn.size();
+	unsigned int columnLength = mIn[0].size();
+
+
+	/// maximum value initilization
+	float maxVal = 0.0;
+	float minVal = 0.0;
+	
+	/// search for the maximal value in input matrix
+	for (int i = 0; i < rowSize; i++)
+	{
+		for (int j = 0; j < columnLength; j++)
+		{
+			cout << mIn.at(i).at(j) << ",";
+			if (mIn.at(i).at(j) > maxVal)
+				maxVal = mIn.at(i).at(j);
+			if (mIn.at(i).at(j) < minVal)
+				minVal = mIn.at(i).at(j);
+		}
+		cout << endl;
+	}
+	cout << "MaxVal: " << maxVal << "\tMinVal: " << minVal << endl;
+	cout << rowSize << endl;
+	cout << columnLength << endl;
 }
 }

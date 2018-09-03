@@ -82,6 +82,8 @@ inline void set_RGB(png_byte *ptr, float val)
 	if (v < 0) v = 0;
 	if (v > range) v = range;
 
+	//cout << "Val: " << val << "\tv: "<< v << endl;
+
 	///	in dependency of the calculated color value the input value is represented by one color of
 	///	6 different color areas
 	if (v<=40) {

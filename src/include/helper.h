@@ -42,15 +42,17 @@ namespace helper {
 			);
 	
 	/**
-	 * normalize the matrix by divide every matrix entry by the maximum value
+	 * normalize the matrix elements to a range betwen [0,1] by adding the absolute value of the minimum
+	 * value in the matrix to every element and dividing every matrix entry by the maximum value + absolute of
+	 * the minimum value
 	 * in the matrix
-	 * @param mSpectrum input matrix
-	 * @param m is a reference to the normalized matrix
+	 * @param mIn reference to the input matrix
+	 * @param mOut is a reference to the normalized output matrix
 	 * @return void
 	 */
 	void matrix_to_normalized_matrix(
-			std::vector<std::vector<float>> mSpectrum,
-			std::vector<std::vector<float>>& m
+			std::vector<std::vector<float>> &mIn,
+			std::vector<std::vector<float>> &mOut
 			);
 	
 	/**
@@ -79,6 +81,15 @@ namespace helper {
 	void matrix_enlarge(
 			std::vector<std::vector<float>> mInput,
 			std::vector<std::vector<float>>& mOutput
+			);
+	
+	/**
+	 * print the content of the matrix
+	 * @param mInput input matrix
+	 * @return void
+	 */
+	void print_matrix(
+			std::vector<std::vector<float>> &mIn
 			);
 }
 #endif		// HELPER_H
