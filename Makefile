@@ -31,8 +31,8 @@ trainNN: $(EXEC_TRAIN)
 $(EXEC_FEATURE): build/featureExtraction.o build/render.o build/helper.o build/wave_read.o
 	$(CC) build/featureExtraction.o build/render.o build/helper.o build/wave_read.o $(LFLAGS) -o $@
 
-$(EXEC_TRAIN): build/trainNN.o build/textgrid.o
-	$(CC) build/trainNN.o build/textgrid.o $(LFLAGS) -o $@
+$(EXEC_TRAIN): build/trainNN.o build/textgrid.o build/helper.o build/render.o
+	$(CC) build/trainNN.o build/textgrid.o build/helper.o build/render.o $(LFLAGS) -o $@
 
 $(OBJDIR):
 	mkdir $(OBJDIR)

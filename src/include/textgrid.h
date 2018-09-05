@@ -87,5 +87,13 @@ public:
 	 * @return	void
 	 */
 	void print_textgrid_struct();
+	
+	/**	
+	 * GETTER
+	 * get the specified item from the textGrid container 
+	 * @param	num contains the item number
+	 * @return	item_c structure
+	 */
+	item_c get_item(int num) {return tg.item[num];};
 };																											// end of class TextGrid
 #endif		// TEXTGRID_H

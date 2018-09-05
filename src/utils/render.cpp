@@ -61,7 +61,7 @@ void matrix_to_MFCC_file(std::vector<std::vector<float>> m, string audioFilename
 
 	///	write matrix values to file
 	for (int i = 0; i < height; i++) {
-		for (int j = 1; j < width; j++) {
+		for (int j = 0; j < width; j++) {
 			outputFile << m[i][j] << ' ';
 		}
 		outputFile << endl;
@@ -71,40 +71,81 @@ void matrix_to_MFCC_file(std::vector<std::vector<float>> m, string audioFilename
 	outputFile.close();
 }
 
-inline void set_RGB(png_byte *ptr, float val)
+inline void set_RGB(png_byte *ptr, string type, float val)
 {
 	/// set rgb range to 255 = 8 bit
 	int range = 255;
 	//if (val < 0.001) val = 0.0;
 	
 	///	weight the input value and calculate the color in the rage 0 to 255
-	int v = (int)(tanh(20*val) * range);
+	string argLin = "lin";
+	string argCustom = "custom";
+	string argLog = "log";
+	string argExp = "exp";
+	string argPow = "pow";
+	int v;
+
+	if (argLin.compare(type) == 0) v = (int)(val * range);
+	if (argCustom.compare(type) == 0)
+	{
+		if (val <= 0.6)
+			v = (int)((exp(val) / exp(1)) * range);
+		else
+			v = (int)((3 * val - 2) * range);
+	}
+	//if (argLog.compare(type) == 0) v = (int)(tanh(20*val * range));
+	if (argLog.compare(type) == 0) v = (int)((log((val + 0.05)*20)) * range);
+	if (argExp.compare(type) == 0) v = (int)((exp((val - 0.5)*2) / exp(1)) * range);
+	if (argPow.compare(type) == 0) v = (int)((log(val*20) - 0.5) * range);
 	if (v < 0) v = 0;
 	if (v > range) v = range;
 
+	//cout << "[Val: " << val << "\tv: "<< v << "],";
+
 	///	in dependency of the calculated color value the input value is represented by one color of
 	///	6 different color areas
-	if (v<=40) {
+	if (v<=60) {
 		ptr[0] = 0; ptr[1] = 0; ptr[2] = v;
 	}
-	else if (v>40 && v<=80) {
+	else if (v>60 && v<=80) {
 		ptr[0] = 0; ptr[1] = round(v/2); ptr[2] = v;
 	}
-	else if (v>80 && v<=140) {
-		ptr[0] = 0; ptr[1] = v; ptr[2] = v;
+	else if (v>80 && v<=100) {
+		ptr[0] = 0; ptr[1] = v; ptr[2] = round(2*v/3);
 	}
-	else if (v>140 && v<=220) {
+	else if (v>100 && v<=110) {
+		ptr[0] = 0; ptr[1] = v; ptr[2] = round(2*v/4);
+	}
+	else if (v>110 && v<=120) {
+		ptr[0] = 0; ptr[1] = v; ptr[2] = round(2*v/5);
+	}
+	else if (v>120 && v<=130) {
+		ptr[0] = 0; ptr[1] = v; ptr[2] = round(2*v/6);
+	}
+	else if (v>130 && v<=140) {
+		ptr[0] = 0; ptr[1] = v; ptr[2] = round(2*v/7);
+	}
+	else if (v>140 && v<=160) {
+		ptr[0] = 0; ptr[1] = v; ptr[2] = round(2*v/8);
+	}
+	else if (v>160 && v<=180) {
+		ptr[0] = 0; ptr[1] = v; ptr[2] = round(v/6);
+	}
+	else if (v>180 && v<=200) {
+		ptr[0] = 0; ptr[1] = v; ptr[2] = round(v/7);
+	}
+	else if (v>200 && v<=220) {
+		ptr[0] = round(v/4); ptr[1] = v; ptr[2] = 0;
+	}
+	else if (v>220 && v<=245) {
 		ptr[0] = round(v/2); ptr[1] = v; ptr[2] = 0;
 	}
-	else if (v>220 && v<=240) {
-		ptr[0] = 255-v; ptr[1] = v; ptr[2] = 0;
-	}
-	else if (v>240) {
+	else if (v>245) {
 		ptr[0] = v; ptr[1] = v; ptr[2] = 0;
 	}
 }
 
-void vector_to_PNG(string path, string addStr, int unsigned height, int unsigned width, vector<float> v)
+void vector_to_PNG(string path, string addStr, string type, int unsigned height, int unsigned width, vector<float> v)
 {
 	/// get filename from input path, removing all slashes and parent foldernames
 	size_t found = path.find_last_of("/\\");
@@ -183,7 +224,7 @@ void vector_to_PNG(string path, string addStr, int unsigned height, int unsigned
 	for (y=height-1 ; y>=0 ; y--) {
 		for (x=0 ; x<width ; x++) {
 			if(v.at(y*width + x) > max_value) {max_value = v.at(y*width + x); }
-			set_RGB(&(row[x*3]), v.at(y*width + x));
+			set_RGB(&(row[x*3]), type, v.at(y*width + x));
 		}
 		png_write_row(png_ptr, row);
 	}

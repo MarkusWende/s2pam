@@ -51,11 +51,13 @@ namespace render {
 	/**
 	 * Calculates the rgb color byte on basis of the input value
 	 * @param ptr a reference to the rgb byte, for storing the calculatet color
+	 * @param type contains a string which describes the type <linear,log>
 	 * @param val the input value which is used for the calculation of the rgb color byte
 	 * @return void
 	 */
 	inline void set_RGB(
 			png_byte *ptr,
+			std::string type,
 			float val
 			);
 	
@@ -63,6 +65,7 @@ namespace render {
 	 * Save a vector of floats to a png image file
 	 * @param path contains the path and name of the file the png is saved under
 	 * @param addStr contains an additional string like: bands, mfcc, spec
+	 * @param type contains a string which describes the type <linear,log>
 	 * to represent what kind of image the file contains
 	 * @param height height of the image
 	 * @param width width of the image
@@ -72,6 +75,7 @@ namespace render {
 	void vector_to_PNG(
 			std::string path,
 			std::string addStr,
+			std::string type,
 			int unsigned height,
 			int unsigned width,
 			std::vector<float> v

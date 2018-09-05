@@ -42,15 +42,17 @@ namespace helper {
 			);
 	
 	/**
-	 * normalize the matrix by divide every matrix entry by the maximum value
+	 * normalize the matrix elements to a range betwen [0,1] by adding the absolute value of the minimum
+	 * value in the matrix to every element and dividing every matrix entry by the maximum value + absolute of
+	 * the minimum value
 	 * in the matrix
-	 * @param mSpectrum input matrix
-	 * @param m is a reference to the normalized matrix
+	 * @param mIn reference to the input matrix
+	 * @param mOut is a reference to the normalized output matrix
 	 * @return void
 	 */
 	void matrix_to_normalized_matrix(
-			std::vector<std::vector<float>> mSpectrum,
-			std::vector<std::vector<float>>& m
+			std::vector<std::vector<float>> &mIn,
+			std::vector<std::vector<float>> &mOut
 			);
 	
 	/**
@@ -70,6 +72,22 @@ namespace helper {
 			);
 	
 	/**
+	 * convert the input matrix to a normalized vector by attaching every row
+	 * of the input matrix
+	 * @param mIn input matrix
+	 * @param height return the input matrix height = number of frequency bins
+	 * @param width return the input matrix width = number of time frames
+	 * @param vOut reference to the normalized output vector
+	 * @return void
+	 */
+	void matrix_to_vector(
+			std::vector<std::vector<float>> mIn,
+			unsigned int& height,
+			unsigned int& width,
+			std::vector<float>& vOut
+			);
+	
+	/**
 	 * enlarge one matrix height to the other matrix hight
 	 * by duplicating the rows x times, in which x = floor( inputMatrixHeight / outputMatrixHeight)
 	 * @param mInput input matrix
@@ -79,6 +97,15 @@ namespace helper {
 	void matrix_enlarge(
 			std::vector<std::vector<float>> mInput,
 			std::vector<std::vector<float>>& mOutput
+			);
+	
+	/**
+	 * print the content of the matrix
+	 * @param mInput input matrix
+	 * @return void
+	 */
+	void print_matrix(
+			std::vector<std::vector<float>> &mIn
 			);
 }
 #endif		// HELPER_H
