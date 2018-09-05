@@ -72,6 +72,22 @@ namespace helper {
 			);
 	
 	/**
+	 * convert the input matrix to a normalized vector by attaching every row
+	 * of the input matrix
+	 * @param mIn input matrix
+	 * @param height return the input matrix height = number of frequency bins
+	 * @param width return the input matrix width = number of time frames
+	 * @param vOut reference to the normalized output vector
+	 * @return void
+	 */
+	void matrix_to_vector(
+			std::vector<std::vector<float>> mIn,
+			unsigned int& height,
+			unsigned int& width,
+			std::vector<float>& vOut
+			);
+	
+	/**
 	 * enlarge one matrix height to the other matrix hight
 	 * by duplicating the rows x times, in which x = floor( inputMatrixHeight / outputMatrixHeight)
 	 * @param mInput input matrix

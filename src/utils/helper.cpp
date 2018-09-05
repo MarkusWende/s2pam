@@ -118,6 +118,24 @@ void matrix_to_normalized_vector(vector<vector<float>> mSpectrum, unsigned int& 
 	}
 }
 
+void matrix_to_vector(vector<vector<float>> mIn, unsigned int& height, unsigned int& width, vector<float>& vOut)
+{
+	/// get spectrogram dimensions
+	unsigned int timeLength = mIn.size();
+	unsigned int freqLength = mIn[0].size();
+
+	/// save number of frequency bins in height and number of time samples in width
+	height = freqLength-1;
+	width = timeLength;
+	
+	/// normalize each value of the input matrix and push him to the end of the output vector
+	for (int i = 1; i < freqLength; i++) {
+		for (int j = 0; j < timeLength; j++) {
+			vOut.push_back(mIn[j][i]);
+		}
+	}
+}
+
 void matrix_enlarge(std::vector<std::vector<float>> mInput, std::vector<std::vector<float>>& mOutput)
 {
 	/// print matrix information, verbose mode has to be on
@@ -128,7 +146,7 @@ void matrix_enlarge(std::vector<std::vector<float>> mInput, std::vector<std::vec
 	/// initialize an extern counter to adress the different rows of the input matrix
 	/// initialize maximal value inside the input matrix
 	/// initialize blocksize, which represents the row multiplicator
-	int counter = 1;
+	int counter = 0;
 	float maxVal = 0.0;
 	int blockSize = (int) floor(mOutput[0].size()/mInput[0].size());
 

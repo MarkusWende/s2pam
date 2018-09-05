@@ -64,19 +64,43 @@ int process(string mfccFilename, string textGridFilename)
 	///	close file
 	mfccFile.close();
 
-	vector<vector<float>> mMfccCoeffsNorm(mMfccCoeffs.size(), vector<float> (mMfccCoeffs[0].size(), 0));
-	helper::matrix_to_normalized_matrix(mMfccCoeffs, mMfccCoeffsNorm);
+	//vector<vector<float>> mMfccCoeffsNorm(mMfccCoeffs.size(), vector<float> (mMfccCoeffs[0].size(), 0));
+	//helper::matrix_to_normalized_matrix(mMfccCoeffs, mMfccCoeffsNorm);
 	
-	helper::print_matrix(mMfccCoeffs);
+	//helper::print_matrix(mMfccCoeffs);
 	unsigned int imageHeight;
 	unsigned int imageWidth;
-	vector<vector<float>> mEnl(mMfccCoeffs.size(),vector<float>(1000,0));
+	
+	/// color test
+	vector<vector<float>> mColorTest(1200,vector<float>(420,0));
+	for (int i = 0; i < mColorTest.size(); i++) {
+		for (int j = 0; j < mColorTest[0].size(); j++) {
+			mColorTest.at(i).at(j) = (float) i / (mColorTest.size() - 1);
+		}	
+	}
+	vector<float> vColorTest;
+	helper::matrix_to_vector(mColorTest, imageHeight, imageWidth, vColorTest);
+/*
+	render::vector_to_PNG("colorTest", "_lin", "lin", imageHeight, imageWidth, vColorTest);
+	render::vector_to_PNG("colorTest", "_log", "log", imageHeight, imageWidth, vColorTest);
+	render::vector_to_PNG("colorTest", "_exp", "exp", imageHeight, imageWidth, vColorTest);
+//	render::vector_to_PNG("colorTest", "_custom", "custom", imageHeight, imageWidth, vColorTest);
+	render::vector_to_PNG("colorTest", "_pow", "pow", imageHeight, imageWidth, vColorTest);
+*/	
+	vector<vector<float>> mEnl(mMfccCoeffs.size(),vector<float>(420,0));
 	vector<float> v;
 	helper::matrix_enlarge(mMfccCoeffs, mEnl);
 	cout << mEnl.size() << "\t" << mEnl[0].size() << endl;
-	helper::matrix_to_normalized_vector(mEnl, imageHeight, imageWidth, v);
-	render::vector_to_PNG("blub", "_mfcc", imageHeight, imageWidth, v);
+	//helper::print_matrix(mEnl);
 
+	helper::matrix_to_vector(mEnl, imageHeight, imageWidth, v);
+/*
+	render::vector_to_PNG("MFCC", "_lin", "lin", imageHeight, imageWidth, v);
+	render::vector_to_PNG("MFCC", "_log", "log", imageHeight, imageWidth, v);
+	render::vector_to_PNG("MFCC", "_exp", "exp", imageHeight, imageWidth, v);
+	render::vector_to_PNG("MFCC", "_custom", "custom", imageHeight, imageWidth, v);
+	render::vector_to_PNG("MFCC", "_pow", "pow", imageHeight, imageWidth, v);
+*/
 	Textgrid tg(textGridFilename.c_str());
 	item_c tgItem = tg.get_item(1);
 	//cout << "Name: " << tgItem.name << " || Size: " << tgItem.size << endl;

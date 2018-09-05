@@ -75,10 +75,10 @@ int processTrainingAudioFile(string audioFilename) {
 			//"dctType", 2,								// default: 2
 			//"highFrequencyBound", 11000,				// default: 11000
 			//"inputSize", 1025,						// default: 1025
-			//"liftering", 0,							// default: 0
+			"liftering", 10000,							// default: 0
 			//"logType", "dbamp",						// default: "dbamp"
 			//"lowFrequencyBound", 0,					// default: 0
-			//"normalize", "unit_sum",					// default: "unit_max"
+			"normalize", "unit_max",					// default: "unit_max"
 			"numberBands", 40,							// default: 40
 			"numberCoefficients", 13,					// default: 13
 			//"sampleRate", 44100,						// default: 44100
@@ -137,7 +137,7 @@ int processTrainingAudioFile(string audioFilename) {
 		mfcc->compute();
 		
 		// make new row (arbitrary example)
-		vector<Real> spectrogramRow(1,spectrum.size());
+		vector<Real> spectrogramRow(0,spectrum.size());
 		mSpectrum.push_back(spectrogramRow);
 		
 		for (std::vector<Real>::iterator it = spectrum.begin(); it != spectrum.end(); ++it) {
@@ -145,14 +145,14 @@ int processTrainingAudioFile(string audioFilename) {
 			mSpectrum[counter].push_back(*it);
 		}
 
-		vector<Real> mfccCoeffsRow(1,mfccCoeffs.size());
+		vector<Real> mfccCoeffsRow(0,mfccCoeffs.size());
 		mMfccCoeffs.push_back(mfccCoeffsRow);
 		for (std::vector<Real>::iterator it = mfccCoeffs.begin(); it != mfccCoeffs.end(); ++it) {
 			// add element to row
 			mMfccCoeffs[counter].push_back(*it);
 		}
 
-		vector<Real> mfccBandsRow(1,mfccBands.size());
+		vector<Real> mfccBandsRow(0,mfccBands.size());
 		mMfccBands.push_back(mfccBandsRow);
 		for (std::vector<Real>::iterator it = mfccBands.begin(); it != mfccBands.end(); ++it) {
 			// add element to row
@@ -164,30 +164,39 @@ int processTrainingAudioFile(string audioFilename) {
 
 	vector<float> vSpectrumNormalized;
 
-	vector<vector<float>> mMfccCoeffsEnlarged(mSpectrum.size(),vector<float>(mSpectrum[0].size(),0));
+	vector<vector<float>> mMfccCoeffsEnlarged(mSpectrum.size(),vector<float>(420,0));
 	vector<float> vMfccCoeffsNormalized;
 
-	vector<vector<float>> mMfccBandsEnlarged(mSpectrum.size(),vector<float>(mSpectrum[0].size(),0));
+	vector<vector<float>> mMfccBandsEnlarged(mSpectrum.size(),vector<float>(420,0));
 	vector<float> vMfccBandsNormalized;
 
 	unsigned int imageHeight;
 	unsigned int imageWidth;
 
+	vector<vector<float>> mSpectrumNorm(mSpectrum.size(), vector<float> (mSpectrum[0].size(), 0));
+	vector<vector<float>> mMfccCoeffsNorm(mMfccCoeffs.size(), vector<float> (mMfccCoeffs[0].size(), 0));
+	vector<vector<float>> mMfccBandsNorm(mMfccBands.size(), vector<float> (mMfccBands[0].size(), 0));
 
 	// generate png's from matrixes
-	helper::matrix_to_normalized_vector(mSpectrum, imageHeight, imageWidth, vSpectrumNormalized);
-	render::vector_to_PNG(audioFilename, "_spec", imageHeight, imageWidth, vSpectrumNormalized);
+	helper::matrix_to_normalized_matrix(mSpectrum, mSpectrumNorm);
+	//helper::print_matrix(mSpectrumNorm);
+	helper::matrix_to_vector(mSpectrumNorm, imageHeight, imageWidth, vSpectrumNormalized);
+	render::vector_to_PNG(audioFilename, "_spec", "log", imageHeight, imageWidth, vSpectrumNormalized);
 
-	helper::matrix_enlarge(mMfccBands, mMfccBandsEnlarged);
-	helper::matrix_to_normalized_vector(mMfccBandsEnlarged, imageHeight, imageWidth, vMfccBandsNormalized);
-	render::vector_to_PNG(audioFilename, "_bands", imageHeight, imageWidth, vMfccBandsNormalized);
+	helper::matrix_to_normalized_matrix(mMfccBands, mMfccBandsNorm);
+	//helper::print_matrix(mMfccBandsNorm);
+	helper::matrix_enlarge(mMfccBandsNorm, mMfccBandsEnlarged);
+	helper::matrix_to_vector(mMfccBandsEnlarged, imageHeight, imageWidth, vMfccBandsNormalized);
+	render::vector_to_PNG(audioFilename, "_bands", "log", imageHeight, imageWidth, vMfccBandsNormalized);
 
-	helper::matrix_enlarge(mMfccCoeffs, mMfccCoeffsEnlarged);
-	helper::matrix_to_normalized_vector(mMfccCoeffsEnlarged, imageHeight, imageWidth, vMfccCoeffsNormalized);
-	render::vector_to_PNG(audioFilename, "_mfcc", imageHeight, imageWidth, vMfccCoeffsNormalized);
+	helper::matrix_to_normalized_matrix(mMfccCoeffs, mMfccCoeffsNorm);
+	//helper::print_matrix(mMfccCoeffs);
+	helper::matrix_enlarge(mMfccCoeffsNorm, mMfccCoeffsEnlarged);
+	helper::matrix_to_vector(mMfccCoeffsEnlarged, imageHeight, imageWidth, vMfccCoeffsNormalized);
+	render::vector_to_PNG(audioFilename, "_mfcc", "exp", imageHeight, imageWidth, vMfccCoeffsNormalized);
 
 	// generate mfcc file from matrix
-	render::matrix_to_MFCC_file(mMfccCoeffs, audioFilename);
+	render::matrix_to_MFCC_file(mMfccCoeffsNorm, audioFilename);
 
 	// clear memory
 	delete fc;
