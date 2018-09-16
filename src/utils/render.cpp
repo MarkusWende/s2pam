@@ -13,8 +13,11 @@
  */
 
 #include "render.h"
+#include "helper.h"
 
 using namespace std;
+//using namespace essentia;
+//using namespace essentia::standard;
 
 namespace render {
 void matrix_to_PGM(std::vector<std::vector<float>> m)
@@ -238,5 +241,69 @@ void vector_to_PNG(string path, string addStr, string type, int unsigned height,
 	png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
 	free(row);
 
+}
+
+void get_mfcc_from_file(vector<vector<float>>& mMfccCoeffs, string mfccFilename)
+{
+		///	initialze mfcc file
+		ifstream mfccFile;
+		mfccFile.exceptions ( ifstream::badbit );
+		mfccFile.open(mfccFilename);
+			
+/*		///	throw error if file doesnt exit
+		if(mfccFile.fail())
+		{
+			E_ERROR("file '" << mfccFilename << "' doesnt exist.");
+			exit(1);
+		}
+*/		///	safe input line from file as a string and initialize line counter
+		string line;
+		int counter = 0;
+
+		///	loop over the lines in a file
+		while (getline(mfccFile, line))
+		{
+			///	split string around spaces
+			istringstream ss(line);
+
+			///	initialize new matrix row
+			mMfccCoeffs.push_back(vector<float> (0,0));
+
+			///	traverse through all words
+			float val;
+			while (ss >> val)
+			{
+				///	read value
+				/// add element to the end of the current matrix row
+				mMfccCoeffs[counter].push_back(val);
+			}
+			
+			counter++;
+		}
+
+		///	close file
+		mfccFile.close();
+}
+	
+void write_color_test_pngs()
+{
+		unsigned int imageHeight;
+		unsigned int imageWidth;
+		
+		/// color test
+		vector<vector<float>> mColorTest(1200,vector<float>(420,0));
+		for (int i = 0; i < mColorTest.size(); i++) {
+			for (int j = 0; j < mColorTest[0].size(); j++) {
+				mColorTest.at(i).at(j) = (float) i / (mColorTest.size() - 1);
+			}	
+		}
+		vector<float> vColorTest;
+		helper::matrix_to_vector(mColorTest, imageHeight, imageWidth, vColorTest);
+
+		render::vector_to_PNG("colorTest", "_lin", "lin", imageHeight, imageWidth, vColorTest);
+		render::vector_to_PNG("colorTest", "_log", "log", imageHeight, imageWidth, vColorTest);
+		render::vector_to_PNG("colorTest", "_exp", "exp", imageHeight, imageWidth, vColorTest);
+		render::vector_to_PNG("colorTest", "_custom", "custom", imageHeight, imageWidth, vColorTest);
+		render::vector_to_PNG("colorTest", "_pow", "pow", imageHeight, imageWidth, vColorTest);	
 }
 }

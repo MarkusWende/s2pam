@@ -22,6 +22,11 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <experimental/filesystem>
+//#include <essentia/algorithmfactory.h>
+//#include <essentia/essentiamath.h>
+//#include <essentia/pool.h>
+
 
 /// group functions in namespace render
 namespace render {
@@ -80,5 +85,11 @@ namespace render {
 			int unsigned width,
 			std::vector<float> v
 			);
+	
+	void get_mfcc_from_file(std::vector<
+			std::vector<float>>& mMfccCoeffs,
+			std::string mfccFilename);
+	
+	void write_color_test_pngs();
 }
 #endif		// RENDER_H
