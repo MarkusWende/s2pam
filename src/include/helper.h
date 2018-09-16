@@ -25,6 +25,10 @@
 #include <png.h>
 #include <essentia/algorithmfactory.h>
 
+#include "blstm.h"
+#include "cell.h"
+#include "textgrid.h"
+
 /// group functions in namespace helper
 namespace helper {
 	/**
@@ -101,11 +105,43 @@ namespace helper {
 	
 	/**
 	 * print the content of the matrix
-	 * @param mInput input matrix
+	 * @param mIn input matrix
 	 * @return void
 	 */
 	void print_matrix(
 			std::vector<std::vector<float>> &mIn
 			);
+
+	/**
+	 * print the content of the vector
+	 * @param label a string containing something descriptive for the vector
+	 * @param vIn input vector
+	 * @return void
+	 */
+	void print_vector(
+			std::string label,
+			std::vector<double> &vIn
+			);
+	
+	/**
+	 * print the neural network graph to the console
+	 * @param nn the neural netwrok
+	 * @return void
+	 */
+	void print_neural_network_graph(
+			Blstm &nn
+			);
+
+	void get_textGrid_targetVals_vc(
+			item_c& tgItem,
+			int frame,
+			std::vector<double>& targetVals);
+			
+	void get_textGrid_frame(
+			item_c& tgItem,
+			int mIndex,
+			int& frame,
+			float& frameEnd,
+			int nSamples);
 }
 #endif		// HELPER_H

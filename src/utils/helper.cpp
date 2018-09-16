@@ -192,4 +192,73 @@ void print_matrix(vector<vector<float>> &mIn)
 	cout << rowSize << endl;
 	cout << columnLength << endl;
 }
+void print_vector(string label, vector<double> &vIn)
+{
+	cout << label << " ";
+	for (unsigned i = 0; i < vIn.size(); ++i) {
+		cout << fixed << vIn[i] << " ";
+	}
+
+	cout << endl;
 }
+
+void print_neural_network_graph(Blstm &nn)
+{
+	for (unsigned l = 0; l < nn.get_layers().size(); ++l) {
+		Layer currentLayer = nn.get_layers().at(l);
+		for (unsigned n = 0; n < currentLayer.size() - 1; ++n ) {
+			Cell currentNeuron = currentLayer.at(n);
+			vector<Connection> weights;
+			currentNeuron.get_weights(weights);
+			cout.precision(2);
+			cout << "Layer: " << l << endl;
+			cout << "\tNeuron Index: " << currentNeuron.get_cell_index() << " || OutputVal: "
+				<< currentNeuron.get_output_val() << endl;
+			for (unsigned w = 0; w < weights.size(); ++w) {
+				cout << "\t\tWeight: " << fixed << weights[w].weight
+					<< " || DeltaWeight: " << fixed << weights[w].deltaWeight << endl;
+			}
+		}
+	}
+}
+
+void get_textGrid_targetVals_vc(item_c& tgItem, int frame, vector<double>& targetVals)
+{
+	/// Train the net what the outputs should have been
+	targetVals.clear();
+	if (tgItem.interval[frame].text.compare("sil") == 0)
+	{
+		//targetVals.push_back(1.0);
+		//targetVals.push_back(0.0);
+		targetVals.push_back(0.0);
+	} else if (tgItem.interval[frame].text.compare("c") == 0)
+	{	
+		//targetVals.push_back(0.0);
+		//targetVals.push_back(1.0);
+		targetVals.push_back(0.0);
+	} else if (tgItem.interval[frame].text.compare("v") == 0)
+	{	
+		//targetVals.push_back(0.0);
+		//targetVals.push_back(0.0);
+		targetVals.push_back(1.0);
+	}
+}
+
+void get_textGrid_frame(item_c& tgItem, int mIndex, int& frame, float& frameEnd, int nSamples)
+{
+	float time = 0;
+	float multiplicator = 0;
+	
+	multiplicator = ((float) (mIndex+1) / (float) nSamples);
+	time = tgItem.xmax * multiplicator;
+	
+	if (time >= frameEnd)
+	{
+		frameEnd = tgItem.interval[frame+1].xmax;
+		frame++;
+	}
+		
+}
+
+}
+
