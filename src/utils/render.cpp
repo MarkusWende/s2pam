@@ -74,6 +74,28 @@ void matrix_to_MFCC_file(std::vector<std::vector<float>> m, string audioFilename
 	outputFile.close();
 }
 
+void vector_to_file(std::vector<float> v, string filename)
+{
+
+	///	append the parent folder the file is stored in
+	filename.insert(0,"./data/tmp/");
+
+	///	construct ofstream object and initialze filename
+	ofstream outputFile;
+	outputFile.open(filename);
+
+	/// get vector length
+	unsigned int length = v.size();
+
+	///	write vector values to file
+	for (int i = 0; i < length; i++) {
+		outputFile << i << "," << v.at(i) << endl;
+	}
+
+	///	close file
+	outputFile.close();
+}
+
 inline void set_RGB(png_byte *ptr, string type, float val)
 {
 	/// set rgb range to 255 = 8 bit
