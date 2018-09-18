@@ -230,17 +230,20 @@ void get_textGrid_targetVals_vc(item_c& tgItem, int frame, vector<double>& targe
 	{
 		//targetVals.push_back(1.0);
 		//targetVals.push_back(0.0);
-		targetVals.push_back(0.0);
+		targetVals.push_back(-1.0);
+		//cout << "out: 0.0" << endl;
 	} else if (tgItem.interval[frame].text.compare("c") == 0)
 	{	
 		//targetVals.push_back(0.0);
 		//targetVals.push_back(1.0);
-		targetVals.push_back(0.0);
+		targetVals.push_back(-1.0);
+		//cout << "out: 0.0" << endl;
 	} else if (tgItem.interval[frame].text.compare("v") == 0)
 	{	
 		//targetVals.push_back(0.0);
 		//targetVals.push_back(0.0);
 		targetVals.push_back(1.0);
+		//cout << "out: 1.0" << endl;
 	}
 }
 

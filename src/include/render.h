@@ -91,5 +91,10 @@ namespace render {
 			std::string mfccFilename);
 	
 	void write_color_test_pngs();
+
+	void vector_to_file(
+			std::vector<float> v,
+			std::string filename
+			);
 }
 #endif		// RENDER_H

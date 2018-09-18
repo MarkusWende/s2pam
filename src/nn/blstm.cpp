@@ -56,7 +56,7 @@ void Blstm::back_prop(const vector<double> &targetVals)
 		(recentAverageError_ * recentAverageSmoothingFactor_ + error_)
 		/ (recentAverageSmoothingFactor_ + 1.0);
 
-	//cout << recentAverageSmoothingFactor_ << endl;
+	//cout << recentAverageError_ << endl;
 	// Calculate output layer gradients
 	
 	for (unsigned n = 0; n < outputLayer.size() - 1; ++n) {
@@ -89,6 +89,7 @@ void Blstm::back_prop(const vector<double> &targetVals)
 
 void Blstm::feed_forward(const vector<double> &inputVals)
 {
+	//cout << "InputVals.size: " << inputVals.size() << "layers_[0].size(): " << layers_[0].size() << endl;
 	assert(inputVals.size() == layers_[0].size() - 1);
 
 	// Assign (latch) the input values into the input neurons

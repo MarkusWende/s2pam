@@ -5,6 +5,8 @@
 #include <essentia/pool.h>
 #include <iomanip>
 
+#include <iterator>
+
 #include "textgrid.h"
 #include "helper.h"
 #include "render.h"
@@ -124,7 +126,8 @@ unsigned TrainingData::getTargetOutputs(vector<double> &targetOutputVals)
 
 int process_test()
 {
-	TrainingData trainData("data/AND/T241L2000.txt");
+	TrainingData trainData("data/AND/test2.txt");
+	//TrainingData trainData("data/AND/T241L20000.txt");
 	// e.g., { 3, 2, 1 }
 	vector<unsigned> topology;
 	trainData.getTopology(topology);
@@ -138,6 +141,7 @@ int process_test()
 	bool done = false;	
 
 	 do {
+		cout << trainingPass << ",";
 		++trainingPass;
 
 		// Get new input data feed it forward:
@@ -154,36 +158,70 @@ int process_test()
 		assert(targetVals.size() == topology.back());
 
 		myNet.back_prop(targetVals);
+		cout << myNet.get_recent_average_error() << endl;
 
 		// Report how well the training is working, averaged over recent 
 		if (trainingPass == fileLength + 1) {
-			cout << endl << "Pass " << trainingPass;
-			helper::print_vector(": Inputs:", inputVals);
+		/*	cout << endl << "Pass " << trainingPass;
+			helper::print_vector("Inputs:", inputVals);
 			helper::print_vector("Outputs:", resultVals);
 			helper::print_vector("Targets:", targetVals);
 			cout << "Net recent average error: "
 				<< fixed << myNet.get_recent_average_error() << endl;
 
 			helper::print_neural_network_graph(myNet);
-
+*/
 			done = true;
 		}
 
 	} while (!done);
 
 	vector<double> input;
-	input.push_back(0);
-	input.push_back(1);
+	vector<float> results;
+	vector<float> targets;
+	int testPass = 0;
 
-	myNet.feed_forward(input);
+	done = false;	
 
-	// Collect the net's actual results:
-	myNet.get_results(resultVals);
+	 do {
+		++testPass;
 
-	cout << "=======================================" << endl << endl;
-	cout << "Input: 0 1" << endl;
-	cout << "Target: 1" << endl;
-	helper::print_vector("Outputs:", resultVals);
+		// Get new input data feed it forward:
+		if (trainData.getNextInputs(inputVals) != topology[0]) {
+			break;
+		}
+		myNet.feed_forward(inputVals);
+
+		// Collect the net's actual results:
+		myNet.get_results(resultVals);
+
+		// Train the net what the outputs should have been:
+		trainData.getTargetOutputs(targetVals);
+		assert(targetVals.size() == topology.back());
+
+		//helper::print_vector("Result:", resultVals);
+		//helper::print_vector("Target:", targetVals);
+		results.push_back(resultVals.at(0));
+		targets.push_back(targetVals.at(0));
+
+		// Report how well the training is working, averaged over recent 
+		if (testPass == 200) {
+	/*		cout << endl << "Pass " << testPass;
+			helper::print_vector("Inputs:", inputVals);
+			helper::print_vector("Outputs:", resultVals);
+			helper::print_vector("Targets:", targetVals);
+			cout << "Net recent average error: "
+				<< fixed << myNet.get_recent_average_error() << endl;
+
+			helper::print_neural_network_graph(myNet);
+*/
+			done = true;
+		}
+
+	} while (!done);
+	
+	render::vector_to_file(results, "results");
+	render::vector_to_file(targets, "targets");
 }
 
 int process()
@@ -242,7 +280,7 @@ int process()
 			inputVals.clear();
 			inputVals.insert(inputVals.end(), mMfccCoeffs[i].begin(), mMfccCoeffs[i].end());
 			//cout << "Text: " << tgItem.interval[frame].text << endl;
-			//helper::print_vector("Input: ", inputVals);
+			helper::print_vector("in:", inputVals);
 			nn.feed_forward(inputVals);
 
 			/// Collect the net's actual results
@@ -280,7 +318,7 @@ int process()
 	}
 
 
-
+/*
 	vector<double> input;
 	// Text: sil
 	// 0.743879 0.741406 0.747394 0.744390 0.745107 0.749080 0.741619 0.741712 0.750194 0.745640 0.742575
@@ -299,7 +337,7 @@ int process()
 	input.push_back(0.742575);
 	input.push_back(0.746821);
 	input.push_back(0.742977);
-
+*/
 /*	// Text: v
 	// 0.809542 0.167277 0.701892 0.718764 0.544742 0.716118 0.682328 0.716513 0.850773 0.788509 0.758259
 	// 0.845399 0.828162
@@ -318,7 +356,7 @@ int process()
 	input.push_back(0.845399);
 	input.push_back(0.828162);
 */
-	nn.feed_forward(input);
+/*	nn.feed_forward(input);
 
 	// Collect the net's actual results:
 	vector<double> resultVals;
@@ -331,14 +369,14 @@ int process()
 	targetVals.push_back(1);
 
 	nn.back_prop(targetVals);
-	
-	helper::print_neural_network_graph(nn);
-	
+*/	
+//	helper::print_neural_network_graph(nn);
+/*
 	cout << "=======================================" << endl << endl;
 	helper::print_vector("Input: ", input);
 	helper::print_vector("Target: ", targetVals);
 	helper::print_vector("Outputs:", resultVals);
-
+*/
 	
 	return 0;
 }
@@ -372,12 +410,12 @@ int main(int argc, char* argv[])
 
 
 
-	process();
-	//process_test();
+	//process();
+	process_test();
 	
 	
 	essentia::shutdown();
-	std::cout << "Elapsed: " << duration_ms(hires_clock::now() - t1).count() << " ms\n";
+	//std::cout << "Elapsed: " << duration_ms(hires_clock::now() - t1).count() << " ms\n";
 	
 	return 0;
 }
