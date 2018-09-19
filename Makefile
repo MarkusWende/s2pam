@@ -31,8 +31,10 @@ trainNN: $(EXEC_TRAIN)
 $(EXEC_FEATURE): build/featureExtraction.o build/render.o build/helper.o build/wave_read.o
 	$(CC) build/featureExtraction.o build/render.o build/helper.o build/wave_read.o $(LFLAGS) -o $@
 
-$(EXEC_TRAIN): build/trainNN.o build/textgrid.o build/helper.o build/render.o build/blstm.o build/cell.o
-	$(CC) build/trainNN.o build/textgrid.o build/helper.o build/render.o build/blstm.o build/cell.o $(LFLAGS) -o $@
+$(EXEC_TRAIN): build/trainNN.o build/textgrid.o build/helper.o build/render.o build/blstm.o build/cell.o \
+	build/new_cell.o build/new_layer.o build/new_blstm.o
+	$(CC) build/trainNN.o build/textgrid.o build/helper.o build/render.o build/blstm.o build/cell.o \
+		build/new_cell.o build/new_layer.o build/new_blstm.o $(LFLAGS) -o $@
 
 $(OBJDIR):
 	mkdir $(OBJDIR)
@@ -59,6 +61,15 @@ build/blstm.o: src/nn/blstm.cpp
 	$(CC) $< -c $(CFLAGS) -o $@
 
 build/cell.o: src/nn/cell.cpp
+	$(CC) $< -c $(CFLAGS) -o $@
+
+build/new_cell.o: src/nn/new_cell.cpp
+	$(CC) $< -c $(CFLAGS) -o $@
+
+build/new_layer.o: src/nn/new_layer.cpp
+	$(CC) $< -c $(CFLAGS) -o $@
+
+build/new_blstm.o: src/nn/new_blstm.cpp
 	$(CC) $< -c $(CFLAGS) -o $@
 
 clean:

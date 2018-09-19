@@ -11,6 +11,7 @@
 #include "helper.h"
 #include "render.h"
 #include "blstm.h"
+#include "new_blstm.h"
 
 using namespace std;
 using namespace essentia;
@@ -381,6 +382,18 @@ int process()
 	return 0;
 }
 
+void process_new()
+{
+	//TrainingData trainData("data/AND/test2.txt");
+	TrainingData trainData("data/AND/T241L20000.txt");
+	// e.g., { 3, 2, 1 }
+	vector<unsigned> topology;
+	trainData.getTopology(topology);
+	New_Blstm nn(topology);
+	nn.random_weights();
+	nn.print_structure();
+}
+
 int main(int argc, char* argv[])
 {
 	auto t1 = hires_clock::now();
@@ -411,7 +424,8 @@ int main(int argc, char* argv[])
 
 
 	//process();
-	process_test();
+	//process_test();
+	process_new();
 	
 	
 	essentia::shutdown();
