@@ -26,6 +26,7 @@ class New_Blstm
 {
 	private:
 		std::vector<New_Layer> layers_;
+		std::vector<std::vector<float>> weights_;
 
 	public:
 

@@ -392,6 +392,11 @@ void process_new()
 	New_Blstm nn(topology);
 	nn.random_weights();
 	nn.print_structure();
+
+	vector<float> inputVals = {1,1};
+
+	nn.feed_forward(inputVals);
+	nn.print_structure();
 }
 
 int main(int argc, char* argv[])
