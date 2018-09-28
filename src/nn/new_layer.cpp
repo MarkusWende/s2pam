@@ -64,6 +64,10 @@ void New_Layer::random_weights(New_Layer& nextLayer)
 			cells_.at(i).set_weights(id_, nextLayer.get_id(), cells_.at(i).get_id(),
 					nextLayerCells.at(n).get_id(), randWeight);
 		}
+		///	set random weight to the recursive connection
+		float randWeight = rand() / float(RAND_MAX);
+		cells_.at(i).set_weights(id_, id_, cells_.at(i).get_id(),
+				cells_.at(i).get_id(), randWeight);
 	}
 }
 
@@ -71,7 +75,7 @@ void New_Layer::print_cells()
 {
 	///	iterate every cell in the layer
 	for (int i = 0; i < cells_.size(); i++) {
-		cout << "\tCell: " << cells_.at(i).get_id() << endl;
+		cout << "\tCell: " << cells_.at(i).get_id() << "\tC_t: " << cells_.at(i).get_Ct()  << endl;
 		cells_.at(i).print_connections();
 	}
 }

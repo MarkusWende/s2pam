@@ -391,11 +391,18 @@ void process_new()
 	trainData.getTopology(topology);
 	New_Blstm nn(topology);
 	nn.random_weights();
-	nn.print_structure();
 
-	vector<float> inputVals = {1,1};
+	vector<float> inputVals = {0,1};
 
 	nn.feed_forward(inputVals);
+	//nn.print_structure();
+
+	nn.feed_forward({0,0});
+	//nn.print_structure();
+	
+	vector<float> targetVals = {0};
+	nn.back_prop(targetVals);
+	
 	nn.print_structure();
 }
 

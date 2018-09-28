@@ -51,8 +51,23 @@ class New_Cell
 				int index,
 				int numInputs,
 				int numOutputs,
-				int layerId
+				int layerId,
+				bool hiddenLayer
 				);
+		
+		/**
+		 * create a new connection
+		 * @param layerFrom the layer the connection comes from
+		 * @param layerTo the layer the connection goes to
+		 * @param cellFrom the cell the connection comes from
+		 * @param cellTo the cell the connection goes to
+		 * @return void
+		 */
+		void create_connection(
+				int layerFrom,
+				int layerTo,
+				int cellFrom,
+				int cellTo);
 		
 		/**
 		 * get the state of the cell

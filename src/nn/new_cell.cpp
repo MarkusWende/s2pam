@@ -18,10 +18,11 @@
 
 using namespace std;
 
-New_Cell::New_Cell(int index, int numInputs, int numOutputs, int layerId)
+New_Cell::New_Cell(int index, int numInputs, int numOutputs, int layerId, bool hiddenLayer)
 {
 	///	assign the index to the id variable of the cell
 	id_ = index;
+	cT_ = 0.0;
 
 /*	for (int i = 0; i < numInputs; i++) {
 		connectionsIn_.push_back(New_Connection());
@@ -40,11 +41,33 @@ New_Cell::New_Cell(int index, int numInputs, int numOutputs, int layerId)
 		connectionsOut_.back().fromLayer = layerId;
 		connectionsOut_.back().toLayer = layerId + 1;
 	}
+		
+	///	add recursive connection to cell
+	if (hiddenLayer)
+	{
+		connectionsOut_.push_back(New_Connection());
+		connectionsOut_.back().weight = -999;
+		connectionsOut_.back().fromCell = index;
+		connectionsOut_.back().toCell = index;
+		connectionsOut_.back().fromLayer = layerId;
+		connectionsOut_.back().toLayer = layerId;
+	}
+}
+
+void New_Cell::create_connection(int layerFrom, int layerTo, int cellFrom, int cellTo)
+{
+	New_Connection newConnection;
+	newConnection.weight = -9999;
+	newConnection.fromLayer = layerFrom;
+	newConnection.toLayer = layerTo;
+	newConnection.fromCell = cellFrom;
+	newConnection.toCell = cellTo;
+
+	connectionsOut_.push_back(newConnection);
 }
 
 float New_Cell::get_weight(int layerFrom, int layerTo, int cellFrom, int cellTo)
 {
-	float weight = -99;
 	///	iterate the number of connections and return the new weight if the dependencies match
 	//cout << "-- Connection Size: " << connectionsOut_.size() << endl;
 	for (int i = 0; i < connectionsOut_.size(); i++) {
@@ -59,10 +82,10 @@ float New_Cell::get_weight(int layerFrom, int layerTo, int cellFrom, int cellTo)
 				&& cellFrom == connectionsOut_.at(i).fromCell 
 				&& cellTo == connectionsOut_.at(i).toCell)
 		{
-			weight = connectionsOut_.at(i).weight;
+			return connectionsOut_.at(i).weight;
 		}
 	}
-	return weight;
+	return -22;
 }
 		
 void New_Cell::set_weights(int layerFrom, int layerTo, int cellFrom, int cellTo, float newWeight)
