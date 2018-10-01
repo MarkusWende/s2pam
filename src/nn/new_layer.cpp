@@ -61,12 +61,12 @@ void New_Layer::random_weights(New_Layer& nextLayer)
 			//cout << "New Weight: " << randWeight << endl;
 			
 			///	assign the random value to the specified connection
-			cells_.at(i).set_weights(id_, nextLayer.get_id(), cells_.at(i).get_id(),
+			cells_.at(i).set_weight(id_, nextLayer.get_id(), cells_.at(i).get_id(),
 					nextLayerCells.at(n).get_id(), randWeight);
 		}
 		///	set random weight to the recursive connection
 		float randWeight = rand() / float(RAND_MAX);
-		cells_.at(i).set_weights(id_, id_, cells_.at(i).get_id(),
+		cells_.at(i).set_weight(id_, id_, cells_.at(i).get_id(),
 				cells_.at(i).get_id(), randWeight);
 	}
 }

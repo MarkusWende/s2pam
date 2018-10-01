@@ -107,8 +107,11 @@ void New_Blstm::feed_forward(vector<float> inVals)
 						layers_.at(i).get_id(), layers_.at(i).get_id(),
 						thisLayerCells.at(c).get_id(), thisLayerCells.at(c).get_id());
 
-				///	save sum to inVals vector
-				input.push_back(sum);
+				///	input sum to the activation function
+				float activatedSum = sigmoid(sum);
+
+				///	save the activated sum to inVals vector
+				input.push_back(activatedSum);
 			}
 		} else
 		{
@@ -138,12 +141,42 @@ void New_Blstm::back_prop(vector<float> targetVals)
 			///	initialze previous layer cell vector
 			vector<New_Cell> prevLayerCells;
 			vector<New_Cell> thisLayerCells;
-			layers_.at(i-1).get_cells(prevLayerCells);
+			prevLayer.get_cells(prevLayerCells);
 			layers_.at(i).get_cells(thisLayerCells);
 
 			for (int c = 0; c < thisLayerCells.size(); c++)
 			{
-				cout << "Error: " << targetVals.at(0) - thisLayerCells.at(c).get_Ct()  << endl;
+				float ct = thisLayerCells.at(c).get_Ct();
+				float error = targetVals.at(0) - ct;
+				float delta = error * sigmoid_derivative(ct);
+
+				for (int pC = 0; pC < prevLayerCells.size(); pC++) {
+					float oldWeight = prevLayerCells.at(pC).get_weight(prevLayer.get_id(), layers_.at(i).get_id(),
+							prevLayerCells.at(pC).get_id(), thisLayerCells.at(c).get_id());
+					
+					float gradient;
+					if (prevLayerCells.at(pC).get_Ct() == 0)
+						gradient = 0.0;
+					else
+						gradient = delta / prevLayerCells.at(pC).get_Ct();
+					
+					float newWeight = oldWeight + gradient;
+					cout << "Ct: " << ct << "\tError: " << error << "\tDelta: " << delta << endl;
+					cout << "Ct prev Layer Cell: " << prevLayerCells.at(pC).get_Ct() << "\tGradient: " << gradient << endl;
+					cout << "old Weight: " << oldWeight << "\tnewWeight: " << newWeight << endl;
+				}
+				
+				if (i < layers_.size() - 1)
+				{
+					float oldRecurrentWeight = thisLayerCells.at(c).get_weight(layers_.at(i).get_id(),
+							layers_.at(i).get_id(), thisLayerCells.at(c).get_id(), thisLayerCells.at(c).get_id());
+					float newRecurrentWeight = oldRecurrentWeight + (delta / ct);
+					
+					cout << "old recurrent Weight: " << oldRecurrentWeight << "\tnew recurrent Weight: " << newRecurrentWeight << endl;
+				} 
+				
+				cout << "=====================\n";
+
 			}
 		}
 	}
@@ -160,6 +193,22 @@ void New_Blstm::random_weights()
 		New_Layer nextLayer = layers_.at(i+1);
 		layers_.at(i).random_weights(nextLayer);
 	}
+}
+
+float New_Blstm::sigmoid(float val)
+{
+	float sig = 0.0;
+	sig = 1 / (1 + exp(-val));
+
+	return sig;
+}
+
+float New_Blstm::sigmoid_derivative(float val)
+{
+	float div = 0.0;
+	div = (exp(-val)) / ( (1 + exp(-val)) * (1 + exp(-val)) );
+
+	return div;
 }
 
 void New_Blstm::print_structure()

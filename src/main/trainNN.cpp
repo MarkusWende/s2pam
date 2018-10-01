@@ -395,9 +395,9 @@ void process_new()
 	vector<float> inputVals = {0,1};
 
 	nn.feed_forward(inputVals);
-	//nn.print_structure();
+	nn.print_structure();
 
-	nn.feed_forward({0,0});
+	nn.feed_forward({1,0});
 	//nn.print_structure();
 	
 	vector<float> targetVals = {0};

@@ -88,7 +88,7 @@ float New_Cell::get_weight(int layerFrom, int layerTo, int cellFrom, int cellTo)
 	return -22;
 }
 		
-void New_Cell::set_weights(int layerFrom, int layerTo, int cellFrom, int cellTo, float newWeight)
+void New_Cell::set_weight(int layerFrom, int layerTo, int cellFrom, int cellTo, float newWeight)
 {
 	/*for (int i = 0; i < connectionsIn_.size(); i++) {
 		if (layerFrom == connectionsIn_.at(i).fromLayer 

@@ -111,7 +111,7 @@ class New_Cell
 		 * @param cellTo the cell the connection goes to
 		 * @return void
 		 */
-		void set_weights(
+		void set_weight(
 				int layerFrom,
 				int layerTo,
 				int cellFrom,
