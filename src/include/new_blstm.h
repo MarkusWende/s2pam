@@ -19,6 +19,7 @@
 
 #include <vector>
 #include <iostream>
+#include <math.h>
 
 #include "new_layer.h"
 
@@ -26,6 +27,7 @@ class New_Blstm
 {
 	private:
 		std::vector<New_Layer> layers_;
+		std::vector<std::vector<float>> weights_;
 
 	public:
 
@@ -59,6 +61,9 @@ class New_Blstm
 				);
 
 		void random_weights();
+		
+		float sigmoid(float val);
+		float sigmoid_derivative(float val);
 		
 		/**
 		 * print network structure

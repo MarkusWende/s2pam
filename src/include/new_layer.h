@@ -18,6 +18,8 @@
 #define NEW_LAYER_H
 
 #include <iostream>
+#include <stdlib.h>		/// rand
+#include <ctime>
 
 #include "new_cell.h"
 
@@ -36,6 +38,15 @@ class New_Layer
 		New_Layer(int index);
 
 		/**
+		 * feed forward function to feed the layer with the new input values
+		 * @param inVals contain the network input Values
+		 * @return void
+		 */
+		void feed_forward(
+				std::vector<float> inVals
+				);
+
+		/**
 		 * get layer index
 		 * @return int the id of the layer
 		 */
@@ -47,10 +58,24 @@ class New_Layer
 		 */
 		void get_cells(std::vector<New_Cell>& cells) { cells = cells_; };
 
+		/**
+		 * add a new cell to the layer
+		 * @param newCell the cell that will be added
+		 * @return void
+		 */
 		void add_cell(New_Cell& newCell);
 
-		void set_weights();
+		/**
+		 * assign to every connection in this layer random values
+		 * @param nextLayer parse the next Layer to the function to get the next Layer Cells
+		 * @return void
+		 */
+		void random_weights(New_Layer& nextLayer);
 
+		/**
+		 * print the cells in this layer
+		 * @return void
+		 */
 		void print_cells();
 
 };			// end of class NEW_LAYER

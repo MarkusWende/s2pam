@@ -20,7 +20,6 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include <stdlib.h>		/// rand
 
 class New_Cell;
 
@@ -52,9 +51,24 @@ class New_Cell
 				int index,
 				int numInputs,
 				int numOutputs,
-				int layerId
+				int layerId,
+				bool hiddenLayer
 				);
-
+		
+		/**
+		 * create a new connection
+		 * @param layerFrom the layer the connection comes from
+		 * @param layerTo the layer the connection goes to
+		 * @param cellFrom the cell the connection comes from
+		 * @param cellTo the cell the connection goes to
+		 * @return void
+		 */
+		void create_connection(
+				int layerFrom,
+				int layerTo,
+				int cellFrom,
+				int cellTo);
+		
 		/**
 		 * get the state of the cell
 		 * @return the cell state as an float
@@ -68,14 +82,47 @@ class New_Cell
 		int get_id() { return id_; };
 		
 		/**
+		 * get the weight of the specified connection
+		 * @param layerFrom the layer the connection comes from
+		 * @param layerTo the layer the connection goes to
+		 * @param cellFrom the cell the connection comes from
+		 * @param cellTo the cell the connection goes to
+		 * @return void
+		 */
+		float get_weight(
+				int layerFrom,
+				int layerTo,
+				int cellFrom,
+				int cellTo
+				);
+
+		/**
 		 * set the cell state
 		 * @param val
 		 * @return void
 		 */
 		void set_Ct(float val) { cT_ = val; };
 
-		void set_weights();
+		/**
+		 * set the new weight to the specified connection
+		 * @param layerFrom the layer the connection comes from
+		 * @param layerTo the layer the connection goes to
+		 * @param cellFrom the cell the connection comes from
+		 * @param cellTo the cell the connection goes to
+		 * @return void
+		 */
+		void set_weight(
+				int layerFrom,
+				int layerTo,
+				int cellFrom,
+				int cellTo,
+				float newWeight
+				);
 
+		/**
+		 * print the connections of this cell
+		 * @return void
+		 */
 		void print_connections();
 
 };			// end of class NEW_CELL
