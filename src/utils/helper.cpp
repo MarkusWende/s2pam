@@ -192,7 +192,18 @@ void print_matrix(vector<vector<float>> &mIn)
 	cout << rowSize << endl;
 	cout << columnLength << endl;
 }
+
 void print_vector(string label, vector<double> &vIn)
+{
+	cout << label << " ";
+	for (unsigned i = 0; i < vIn.size(); ++i) {
+		cout << fixed << vIn[i] << " ";
+	}
+
+	cout << endl;
+}
+
+void print_vector(string label, vector<float> &vIn)
 {
 	cout << label << " ";
 	for (unsigned i = 0; i < vIn.size(); ++i) {
@@ -230,13 +241,13 @@ void get_textGrid_targetVals_vc(item_c& tgItem, int frame, vector<double>& targe
 	{
 		//targetVals.push_back(1.0);
 		//targetVals.push_back(0.0);
-		targetVals.push_back(-1.0);
+		targetVals.push_back(0.0);
 		//cout << "out: 0.0" << endl;
 	} else if (tgItem.interval[frame].text.compare("c") == 0)
 	{	
 		//targetVals.push_back(0.0);
 		//targetVals.push_back(1.0);
-		targetVals.push_back(-1.0);
+		targetVals.push_back(0.0);
 		//cout << "out: 0.0" << endl;
 	} else if (tgItem.interval[frame].text.compare("v") == 0)
 	{	

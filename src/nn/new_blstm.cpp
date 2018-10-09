@@ -21,6 +21,8 @@ using namespace std;
 
 New_Blstm::New_Blstm(vector<unsigned> topo)
 {
+	_error = 0.0;
+
 	///	iterate the number of different layers (number of columns) in topo
 	for (int i = 0; i < topo.size(); i++)
 	{
@@ -37,16 +39,19 @@ New_Blstm::New_Blstm(vector<unsigned> topo)
 			 */
 			if (i == 0)
 			{	///	input layer
-				New_Cell newCell(j, 0, topo.at(i+1), i, false);
+				New_Cell newCell(j, 0, topo.at(i+1), i, false, 1);
 				newLayer.add_cell(newCell);
+				newLayer.set_type(1);
 			} else if (i == (topo.size() - 1))
 			{	///	output layer
-				New_Cell newCell(j, topo.at(i-1), 0, i, false);
+				New_Cell newCell(j, topo.at(i-1), 0, i, false, 3);
 				newLayer.add_cell(newCell);
+				newLayer.set_type(3);
 			} else 
 			{	///	hidden layer
-				New_Cell newCell(j, topo.at(i-1), topo.at(i+1), i, true);
+				New_Cell newCell(j, topo.at(i-1), topo.at(i+1), i, true, 2);
 				newLayer.add_cell(newCell);
+				newLayer.set_type(2);
 			}
 
 			//cout << "Layer: " << newLayer.get_id() << " -> Cell: " << newCell.get_id() << endl;
@@ -55,6 +60,28 @@ New_Blstm::New_Blstm(vector<unsigned> topo)
 		 * push the new filled layer to the layers_ vector
 		 */
 		layers_.push_back(newLayer);
+	}
+}
+
+void New_Blstm::add_bias()
+{
+	for (int i = 0; i < layers_.size() - 1; i++) {
+		vector<New_Cell> thisLayerCells;
+		vector<New_Cell> nextLayerCells;
+		layers_.at(i).get_cells(thisLayerCells);
+		layers_.at(i+1).get_cells(nextLayerCells);
+		New_Cell newCell(2, 0, nextLayerCells.size(), i, false, 4);
+
+		for (int c = 0; c < nextLayerCells.size(); c++) {
+			//newCell.create_connection(i, i+1, -1, nextLayerCells.at(c).get_id());
+			if (i == 0)
+				newCell.set_weight(i, i+1, 2, nextLayerCells.at(c).get_id(), 0.35);
+			else
+				newCell.set_weight(i, i+1, 2, nextLayerCells.at(c).get_id(), 0.6);
+		}
+
+		layers_.at(i).add_cell(newCell);
+		layers_.at(i).set_bias(true);
 	}
 }
 
@@ -80,8 +107,13 @@ void New_Blstm::feed_forward(vector<float> inVals)
 			layers_.at(i-1).get_cells(prevLayerCells);
 			layers_.at(i).get_cells(thisLayerCells);
 
+			int bias = 0;
+			if (layers_.at(i).get_bias())
+				bias = -1;
+
+
 			///	iterate over all cells in this layer
-			for (int c = 0; c < thisLayerCells.size(); c++) {
+			for (int c = 0; c < thisLayerCells.size() + bias; c++) {
 				
 				float sum = 0.0;
 				//cout << "Layer: " << i << " || Cell: " << c << endl;
@@ -91,94 +123,54 @@ void New_Blstm::feed_forward(vector<float> inVals)
 								layers_.at(i).get_id(),
 								prevLayerCells.at(pC).get_id(),
 								thisLayerCells.at(c).get_id());
-					if (weight != -1)
-					{
-						sum += weight * prevLayerCells.at(pC).get_Ct();
-						//cout << "Weight Sum: " << sum << endl;
-						//cout << "\tprev Layer id: " << prevLayer.get_id() << endl;
-						//cout << "\tthis Layer id: " << layers_.at(i).get_id() << endl;
-						//cout << "\tprev Layer Cell id: " << prevLayerCells.at(pC).get_id() << endl;
-						//cout << "\tthis Layer Cell id: " << thisLayerCells.at(c).get_id() << endl;
-					}
+					sum += weight * prevLayerCells.at(pC).get_output();
+					//cout << "Weight: " << weight << "\tOutput: " << prevLayerCells.at(pC).get_output() << endl;
+					//cout << "\tprev Layer id: " << prevLayer.get_id() << endl;
+					//cout << "\tthis Layer id: " << layers_.at(i).get_id() << endl;
+					//cout << "\tprev Layer Cell id: " << prevLayerCells.at(pC).get_id() << endl;
+					//cout << "\tthis Layer Cell id: " << thisLayerCells.at(c).get_id() << endl;
 				}
-				if (i != (layers_.size() - 1) )
+				/*if (i != (layers_.size() - 1) )
+				{
 				///	get weight of the recursive connection
-				sum += thisLayerCells.at(c).get_Ct() * thisLayerCells.at(c).get_weight(
+				sum += thisLayerCells.at(c).get_output() * thisLayerCells.at(c).get_weight(
 						layers_.at(i).get_id(), layers_.at(i).get_id(),
 						thisLayerCells.at(c).get_id(), thisLayerCells.at(c).get_id());
+				}*/
 
-				///	input sum to the activation function
-				float activatedSum = sigmoid(sum);
-
-				///	save the activated sum to inVals vector
-				input.push_back(activatedSum);
+				///	save the sum to the input vector
+				input.push_back(sum);
+				//cout << "Sum: " << sum << endl;
 			}
 		} else
 		{
 			input = inVals;
 		}
+		/// add bias of 1
+		input.push_back(1);
+		
 		/// pass input vector to layer feed_forward function
 		layers_.at(i).feed_forward(input);
 	} /// end for
-
 }
 
 void New_Blstm::back_prop(vector<float> targetVals)
 {
-	///	target values vector
-	vector<float> target;
+	layers_.back().set_targets(targetVals);
+	//layers_.back().set_error(-1);
+	_error = layers_.back().get_error();
+
 	/// iterate the different layers backwards
-	for (int i = layers_.size() - 1; i >= 0; i--)
+	for (int i = layers_.size() - 2; i >= 0; i--)
 	{
-		///	clear target vector
-		target.clear();
-
-		if (i > 0)
-		{
-			///	get the prev layer
-			New_Layer& prevLayer = layers_.at(i-1);
-			
-			///	initialze previous layer cell vector
-			vector<New_Cell> prevLayerCells;
-			vector<New_Cell> thisLayerCells;
-			prevLayer.get_cells(prevLayerCells);
-			layers_.at(i).get_cells(thisLayerCells);
-
-			for (int c = 0; c < thisLayerCells.size(); c++)
-			{
-				float ct = thisLayerCells.at(c).get_Ct();
-				float error = targetVals.at(0) - ct;
-				float delta = error * sigmoid_derivative(ct);
-
-				for (int pC = 0; pC < prevLayerCells.size(); pC++) {
-					float oldWeight = prevLayerCells.at(pC).get_weight(prevLayer.get_id(), layers_.at(i).get_id(),
-							prevLayerCells.at(pC).get_id(), thisLayerCells.at(c).get_id());
-					
-					float gradient;
-					if (prevLayerCells.at(pC).get_Ct() == 0)
-						gradient = 0.0;
-					else
-						gradient = delta / prevLayerCells.at(pC).get_Ct();
-					
-					float newWeight = oldWeight + gradient;
-					cout << "Ct: " << ct << "\tError: " << error << "\tDelta: " << delta << endl;
-					cout << "Ct prev Layer Cell: " << prevLayerCells.at(pC).get_Ct() << "\tGradient: " << gradient << endl;
-					cout << "old Weight: " << oldWeight << "\tnewWeight: " << newWeight << endl;
-				}
-				
-				if (i < layers_.size() - 1)
-				{
-					float oldRecurrentWeight = thisLayerCells.at(c).get_weight(layers_.at(i).get_id(),
-							layers_.at(i).get_id(), thisLayerCells.at(c).get_id(), thisLayerCells.at(c).get_id());
-					float newRecurrentWeight = oldRecurrentWeight + (delta / ct);
-					
-					cout << "old recurrent Weight: " << oldRecurrentWeight << "\tnew recurrent Weight: " << newRecurrentWeight << endl;
-				} 
-				
-				cout << "=====================\n";
-
-			}
-		}
+		///	get the next layer
+		New_Layer nextLayer = layers_.at(i+1);
+		New_Layer nextButOneLayer;
+		if (i < (layers_.size() - 2))
+			layers_.at(i).back_prop(layers_.at(i+1), layers_.at(i+2));
+		else
+			layers_.at(i).back_prop(layers_.at(i+1), layers_.at(i+1));
+		
 	}
 
 }
@@ -192,23 +184,8 @@ void New_Blstm::random_weights()
 		/// and pass it to the random_weights() function of this layer
 		New_Layer nextLayer = layers_.at(i+1);
 		layers_.at(i).random_weights(nextLayer);
+		//layers_.at(i).weights(nextLayer);
 	}
-}
-
-float New_Blstm::sigmoid(float val)
-{
-	float sig = 0.0;
-	sig = 1 / (1 + exp(-val));
-
-	return sig;
-}
-
-float New_Blstm::sigmoid_derivative(float val)
-{
-	float div = 0.0;
-	div = (exp(-val)) / ( (1 + exp(-val)) * (1 + exp(-val)) );
-
-	return div;
 }
 
 void New_Blstm::print_structure()
@@ -218,4 +195,17 @@ void New_Blstm::print_structure()
 		cout << "Layer: " << layers_.at(i).get_id() << endl;
 		layers_.at(i).print_cells();
 	}
+}
+
+float New_Blstm::get_error()
+{
+	float error = layers_.back().get_error();
+	return error;
+}
+
+float New_Blstm::get_results()
+{
+	float result;
+	int index = layers_.size() - 1;
+	result = layers_.at(index).get_results();
 }

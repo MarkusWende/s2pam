@@ -32,8 +32,8 @@ class TrainingData
 		unsigned getFileLength(void);
 
 		// Returns the number of input values read from the file:
-		unsigned getNextInputs(vector<double> &inputVals);
-		unsigned getTargetOutputs(vector<double> &targetOutputVals);
+		unsigned getNextInputs(vector<float> &inputVals);
+		unsigned getTargetOutputs(vector<float> &targetOutputVals);
 
 	private:
 		ifstream m_trainingDataFile;
@@ -85,7 +85,7 @@ TrainingData::TrainingData(const string filename)
 	m_trainingDataFile.open(filename.c_str());
 }
 
-unsigned TrainingData::getNextInputs(vector<double> &inputVals)
+unsigned TrainingData::getNextInputs(vector<float> &inputVals)
 {
 	inputVals.clear();
 
@@ -96,7 +96,7 @@ unsigned TrainingData::getNextInputs(vector<double> &inputVals)
 	string label;
 	ss >> label;
 	if (label.compare("in:") == 0) {
-		double oneValue;
+		float oneValue;
 		while (ss >> oneValue) {
 			inputVals.push_back(oneValue);
 		}
@@ -105,7 +105,7 @@ unsigned TrainingData::getNextInputs(vector<double> &inputVals)
 	return inputVals.size();
 }
 
-unsigned TrainingData::getTargetOutputs(vector<double> &targetOutputVals)
+unsigned TrainingData::getTargetOutputs(vector<float> &targetOutputVals)
 {
 	targetOutputVals.clear();
 
@@ -116,7 +116,7 @@ unsigned TrainingData::getTargetOutputs(vector<double> &targetOutputVals)
 	string label;
 	ss >> label;
 	if (label.compare("out:") == 0) {
-		double oneValue;
+		float oneValue;
 		while (ss >> oneValue) {
 			targetOutputVals.push_back(oneValue);
 		}
@@ -124,7 +124,7 @@ unsigned TrainingData::getTargetOutputs(vector<double> &targetOutputVals)
 
 	return targetOutputVals.size();
 }
-
+/*
 int process_test()
 {
 	TrainingData trainData("data/AND/test2.txt");
@@ -163,7 +163,7 @@ int process_test()
 
 		// Report how well the training is working, averaged over recent 
 		if (trainingPass == fileLength + 1) {
-		/*	cout << endl << "Pass " << trainingPass;
+			cout << endl << "Pass " << trainingPass;
 			helper::print_vector("Inputs:", inputVals);
 			helper::print_vector("Outputs:", resultVals);
 			helper::print_vector("Targets:", targetVals);
@@ -171,7 +171,7 @@ int process_test()
 				<< fixed << myNet.get_recent_average_error() << endl;
 
 			helper::print_neural_network_graph(myNet);
-*/
+
 			done = true;
 		}
 
@@ -207,7 +207,7 @@ int process_test()
 
 		// Report how well the training is working, averaged over recent 
 		if (testPass == 200) {
-	/*		cout << endl << "Pass " << testPass;
+			cout << endl << "Pass " << testPass;
 			helper::print_vector("Inputs:", inputVals);
 			helper::print_vector("Outputs:", resultVals);
 			helper::print_vector("Targets:", targetVals);
@@ -215,7 +215,7 @@ int process_test()
 				<< fixed << myNet.get_recent_average_error() << endl;
 
 			helper::print_neural_network_graph(myNet);
-*/
+
 			done = true;
 		}
 
@@ -224,7 +224,7 @@ int process_test()
 	render::vector_to_file(results, "results");
 	render::vector_to_file(targets, "targets");
 }
-
+*/
 int process()
 {
 	string mfccDir = "./data/FEATURES";
@@ -282,20 +282,20 @@ int process()
 			inputVals.insert(inputVals.end(), mMfccCoeffs[i].begin(), mMfccCoeffs[i].end());
 			//cout << "Text: " << tgItem.interval[frame].text << endl;
 			helper::print_vector("in:", inputVals);
-			nn.feed_forward(inputVals);
+			//nn.feed_forward(inputVals);
 
 			/// Collect the net's actual results
-			nn.get_results(resultVals);
+			//nn.get_results(resultVals);
 
 			/// get textGrid target Values of dimension 3 => e.g {1,0,0} = "sil"; {0,1,0} = "c"; 
 			/// {0,0,1} ="v"
 			helper::get_textGrid_targetVals_vc(tgItem, frame, targetVals);
 
 			//cout << "Text: " << tgItem.interval[frame].text << endl;
-			//helper::print_vector("Val: ", targetVals);
+			helper::print_vector("out: ", targetVals);
 			assert(targetVals.size() == topology.back());
 
-			nn.back_prop(targetVals);
+			//nn.back_prop(targetVals);
 
 			// Report how well the training is working, averaged over recent 
 
@@ -338,8 +338,8 @@ int process()
 	input.push_back(0.742575);
 	input.push_back(0.746821);
 	input.push_back(0.742977);
-*/
-/*	// Text: v
+
+	// Text: v
 	// 0.809542 0.167277 0.701892 0.718764 0.544742 0.716118 0.682328 0.716513 0.850773 0.788509 0.758259
 	// 0.845399 0.828162
 	input.clear();
@@ -356,8 +356,8 @@ int process()
 	input.push_back(0.758259);
 	input.push_back(0.845399);
 	input.push_back(0.828162);
-*/
-/*	nn.feed_forward(input);
+
+	nn.feed_forward(input);
 
 	// Collect the net's actual results:
 	vector<double> resultVals;
@@ -370,9 +370,9 @@ int process()
 	targetVals.push_back(1);
 
 	nn.back_prop(targetVals);
-*/	
+	
 //	helper::print_neural_network_graph(nn);
-/*
+
 	cout << "=======================================" << endl << endl;
 	helper::print_vector("Input: ", input);
 	helper::print_vector("Target: ", targetVals);
@@ -384,26 +384,108 @@ int process()
 
 void process_new()
 {
-	//TrainingData trainData("data/AND/test2.txt");
-	TrainingData trainData("data/AND/T241L20000.txt");
+	TrainingData trainData("data/AND/testBIG.txt");
+	//TrainingData trainData("data/test/test01.txt");
+	//TrainingData trainData("data/AND/T241L20000.txt");
 	// e.g., { 3, 2, 1 }
 	vector<unsigned> topology;
 	trainData.getTopology(topology);
 	New_Blstm nn(topology);
 	nn.random_weights();
 
-	vector<float> inputVals = {0,1};
-
-	nn.feed_forward(inputVals);
-	nn.print_structure();
-
-	nn.feed_forward({1,0});
+	//nn.add_bias();
+	
 	//nn.print_structure();
+
+	unsigned fileLength = trainData.getFileLength();
 	
-	vector<float> targetVals = {0};
-	nn.back_prop(targetVals);
-	
-	nn.print_structure();
+	vector<float> inputVals, targetVals, error;
+	int trainingPass = 0;
+
+	bool done = false;	
+
+	do {
+		++trainingPass;
+		error.push_back(nn.get_error());
+		cout << trainingPass << "\t\tError: " << nn.get_error() << endl;
+
+		// Get new input data feed it forward:
+		if (trainData.getNextInputs(inputVals) != topology[0]) {
+			break;
+		}
+
+		//cout << "===================== FEED FORWARD ============================================" << endl;
+		helper::print_vector("Input: ", inputVals);
+		nn.feed_forward(inputVals);
+		
+
+		// Train the net what the outputs should have been:
+		trainData.getTargetOutputs(targetVals);
+		helper::print_vector("Target: ", targetVals);
+
+		//cout << "\n\n===================== BACK PROPAGATION ========================================" << endl;
+		if (trainingPass < 800)
+			nn.back_prop(targetVals);
+
+		// Report how well the training is working, averaged over recent 
+		if (trainingPass == fileLength + 1) {
+			done = true;
+		}
+
+	} while (!done);
+/*
+	//nn.print_structure();
+
+	int testPass = 0;
+	float results;
+	vector<float> resultsToFile, targetsToFile;
+
+	done = false;	
+
+	do {
+		++testPass;
+
+		// Get new input data feed it forward:
+		if (trainData.getNextInputs(inputVals) != topology[0]) {
+			break;
+		}
+		helper::print_vector("Input: ", inputVals);
+		nn.feed_forward(inputVals);
+		results = nn.get_results();
+
+		cout << "Result: " << results << endl;
+
+		resultsToFile.push_back(results);
+
+		// Train the net what the outputs should have been:
+		trainData.getTargetOutputs(targetVals);
+
+		targetsToFile.push_back(targetVals.at(0));
+
+		//helper::print_vector("Target: ", targetVals);
+		//helper::print_vector("Outputs:", results);
+
+
+		// Report how well the training is working, averaged over recent 
+		if (testPass == 2000) {
+			done = true;
+		}
+
+	} while (!done);
+
+	float sum = 0.0;
+	for (int i = 1; i < error.size(); i++) {
+		sum += error.at(i);
+	}
+	sum = sum / (error.size() - 1);
+
+	cout << "Avg. Error: " << sum << endl;
+	 
+	render::vector_to_file(resultsToFile, "results");
+	render::vector_to_file(error, "error");
+	render::vector_to_file(targetsToFile, "targets");
+	//nn.print_structure();
+*/
 }
 
 int main(int argc, char* argv[])

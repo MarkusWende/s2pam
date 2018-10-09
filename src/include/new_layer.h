@@ -20,6 +20,7 @@
 #include <iostream>
 #include <stdlib.h>		/// rand
 #include <ctime>
+#include <math.h>		///	exp()
 
 #include "new_cell.h"
 
@@ -28,8 +29,17 @@ class New_Layer
 	private:
 		std::vector<New_Cell> cells_;
 		int id_;
+		unsigned _type;
+		float _error;
+		bool _bias;
 
 	public:
+		/**
+		 * Empty Constructor
+		 * create an empty new layer
+		 */
+		New_Layer() {};
+
 		/**
 		 * Constructor
 		 * create a new layer
@@ -46,6 +56,15 @@ class New_Layer
 				std::vector<float> inVals
 				);
 
+		void back_prop(
+				New_Layer& nextLayer,
+				New_Layer& nextButOneLayer
+				);
+		
+		float sigmoid(float val);
+		float sigmoid_derivative(float val);
+		void get_target_vals(std::vector<float>& targets);
+		
 		/**
 		 * get layer index
 		 * @return int the id of the layer
@@ -58,6 +77,38 @@ class New_Layer
 		 */
 		void get_cells(std::vector<New_Cell>& cells) { cells = cells_; };
 
+		std::vector<New_Cell>& get_cell_vector() { return cells_; };
+
+		/**
+		 * get layer type
+		 * @return the layer type
+		 */
+		unsigned get_type() { return _type; };
+
+		float get_error();
+
+		float get_results();
+
+		bool get_bias() { return _bias; };
+
+		/**
+		 * set layer type
+		 * @param val contain the layer type
+		 * @return void
+		 */
+		void set_type(unsigned val) { _type = val; };
+
+		/**
+		 * set target vals
+		 * @param tarVals contain the network target vals
+		 * @return void
+		 */
+		void set_targets(std::vector<float> tarVals);
+
+		void set_error(float error);
+
+		void set_bias(bool val) { _bias = val; };
+		
 		/**
 		 * add a new cell to the layer
 		 * @param newCell the cell that will be added
@@ -71,6 +122,8 @@ class New_Layer
 		 * @return void
 		 */
 		void random_weights(New_Layer& nextLayer);
+
+		void weights(New_Layer& nextLayer);
 
 		/**
 		 * print the cells in this layer

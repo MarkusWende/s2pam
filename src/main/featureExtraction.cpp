@@ -179,22 +179,22 @@ int processTrainingAudioFile(string audioFilename) {
 	vector<vector<float>> mMfccBandsNorm(mMfccBands.size(), vector<float> (mMfccBands[0].size(), 0));
 
 	// generate png's from matrixes
-	helper::matrix_to_normalized_matrix(mSpectrum, mSpectrumNorm);
+	//helper::matrix_to_normalized_matrix(mSpectrum, mSpectrumNorm);
 	//helper::print_matrix(mSpectrumNorm);
-	helper::matrix_to_vector(mSpectrumNorm, imageHeight, imageWidth, vSpectrumNormalized);
-	render::vector_to_PNG(audioFilename, "_spec", "log", imageHeight, imageWidth, vSpectrumNormalized);
+	//helper::matrix_to_vector(mSpectrumNorm, imageHeight, imageWidth, vSpectrumNormalized);
+	//render::vector_to_PNG(audioFilename, "_spec", "log", imageHeight, imageWidth, vSpectrumNormalized);
 
-	helper::matrix_to_normalized_matrix(mMfccBands, mMfccBandsNorm);
+	//helper::matrix_to_normalized_matrix(mMfccBands, mMfccBandsNorm);
 	//helper::print_matrix(mMfccBandsNorm);
-	helper::matrix_enlarge(mMfccBandsNorm, mMfccBandsEnlarged);
-	helper::matrix_to_vector(mMfccBandsEnlarged, imageHeight, imageWidth, vMfccBandsNormalized);
-	render::vector_to_PNG(audioFilename, "_bands", "log", imageHeight, imageWidth, vMfccBandsNormalized);
+	//helper::matrix_enlarge(mMfccBandsNorm, mMfccBandsEnlarged);
+	//helper::matrix_to_vector(mMfccBandsEnlarged, imageHeight, imageWidth, vMfccBandsNormalized);
+	//render::vector_to_PNG(audioFilename, "_bands", "log", imageHeight, imageWidth, vMfccBandsNormalized);
 
 	helper::matrix_to_normalized_matrix(mMfccCoeffs, mMfccCoeffsNorm);
 	//helper::print_matrix(mMfccCoeffs);
-	helper::matrix_enlarge(mMfccCoeffsNorm, mMfccCoeffsEnlarged);
-	helper::matrix_to_vector(mMfccCoeffsEnlarged, imageHeight, imageWidth, vMfccCoeffsNormalized);
-	render::vector_to_PNG(audioFilename, "_mfcc", "exp", imageHeight, imageWidth, vMfccCoeffsNormalized);
+	//helper::matrix_enlarge(mMfccCoeffsNorm, mMfccCoeffsEnlarged);
+	//helper::matrix_to_vector(mMfccCoeffsEnlarged, imageHeight, imageWidth, vMfccCoeffsNormalized);
+	//render::vector_to_PNG(audioFilename, "_mfcc", "exp", imageHeight, imageWidth, vMfccCoeffsNormalized);
 
 	// generate mfcc file from matrix
 	render::matrix_to_MFCC_file(mMfccCoeffsNorm, audioFilename);
