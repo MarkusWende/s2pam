@@ -28,6 +28,7 @@ class New_Blstm
 	private:
 		std::vector<New_Layer> layers_;
 		std::vector<std::vector<float>> weights_;
+		float _error;
 
 	public:
 
@@ -41,6 +42,8 @@ class New_Blstm
 		New_Blstm(
 				std::vector<unsigned> topo
 				);
+
+		void add_bias();
 		
 		/**
 		 * feed forward function to feed the neural net with input values
@@ -62,13 +65,18 @@ class New_Blstm
 
 		void random_weights();
 		
-		float sigmoid(float val);
-		float sigmoid_derivative(float val);
-		
 		/**
 		 * print network structure
 		 * @return void
 		 */
 		void print_structure();
+
+		/**
+		 * get the total error
+		 * @return float
+		 */
+		float get_error();
+
+		float get_results();
 };			// end of class NEW_BLSTM
 #endif		// NEW_BLSTM_H

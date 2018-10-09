@@ -124,6 +124,17 @@ namespace helper {
 			);
 	
 	/**
+	 * print the content of the vector
+	 * @param label a string containing something descriptive for the vector
+	 * @param vIn input vector
+	 * @return void
+	 */
+	void print_vector(
+			std::string label,
+			std::vector<float> &vIn
+			);
+	
+	/**
 	 * print the neural network graph to the console
 	 * @param nn the neural netwrok
 	 * @return void
