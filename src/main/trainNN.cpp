@@ -29,6 +29,7 @@ class TrainingData
 		TrainingData(const string filename);
 		bool isEof() { return m_trainingDataFile.eof(); };
 		void getTopology(vector<unsigned> &topology);
+		void returnToBeginOfFile();
 		unsigned getFileLength(void);
 
 		// Returns the number of input values read from the file:
@@ -83,6 +84,16 @@ unsigned TrainingData::getFileLength(void)
 TrainingData::TrainingData(const string filename)
 {
 	m_trainingDataFile.open(filename.c_str());
+}
+
+void TrainingData::returnToBeginOfFile()
+{
+	m_trainingDataFile.clear();
+	m_trainingDataFile.seekg(0, std::ios::beg);
+	
+	string line;
+	getline(m_trainingDataFile, line);
+	getline(m_trainingDataFile, line);
 }
 
 unsigned TrainingData::getNextInputs(vector<float> &inputVals)
@@ -384,95 +395,114 @@ int process()
 
 void process_new()
 {
-	TrainingData trainData("data/AND/testBIG.txt");
+	//TrainingData trainData("data/AND/testBIG.txt");
 	//TrainingData trainData("data/test/test01.txt");
-	//TrainingData trainData("data/AND/T241L20000.txt");
+	TrainingData trainData("data/AND/T241L20000.txt");
+	//TrainingData trainData("data/NAND/T241L20000.txt");
 	// e.g., { 3, 2, 1 }
 	vector<unsigned> topology;
-	trainData.getTopology(topology);
-	New_Blstm nn(topology);
-	nn.random_weights();
+	int T = 5;
 
+	trainData.getTopology(topology);
+	vector<vector<float>> X(T, vector<float> (topology.at(0), 0));
+	vector<vector<float>> Y(T, vector<float> (topology.at(2), 0));
+
+	cout << "X.size(): " << X.size() << endl;
+
+	helper::print_matrix("X:", X);
+
+	New_Blstm nn(topology, T);
+
+	//nn.add_recursion();
+	nn.random_weights();
 	//nn.add_bias();
-	
+
 	//nn.print_structure();
+	//return;	
 
 	unsigned fileLength = trainData.getFileLength();
 	
 	vector<float> inputVals, targetVals, error;
+	vector<float> resultsToFile, targetsToFile;
+	float results;
 	int trainingPass = 0;
+	int testPass = 0;
+	int epoch = 0;
 
 	bool done = false;	
 
 	do {
 		++trainingPass;
 		error.push_back(nn.get_error());
-		cout << trainingPass << "\t\tError: " << nn.get_error() << endl;
+		//cout << "Epoch: " << epoch << "\tTrainPass: " << trainingPass << "\t\tError: " << nn.get_error() << endl;
 
 		// Get new input data feed it forward:
 		if (trainData.getNextInputs(inputVals) != topology[0]) {
+			cout << "BASASDS" << endl;
 			break;
+		}
+
+		rotate(X.begin(), X.begin()+1, X.end());
+		for (int i = 0; i < X.back().size(); i++)
+		{
+			X.back().at(i) = inputVals.at(i);
+		}
+
+		helper::print_matrix("X:", X);
+		
+		
+		trainData.getTargetOutputs(targetVals);
+		
+		rotate(Y.begin(), Y.begin()+1, Y.end());
+		for (int i = 0; i < Y.back().size(); i++)
+		{
+			Y.back().at(i) = targetVals.at(i);
 		}
 
 		//cout << "===================== FEED FORWARD ============================================" << endl;
-		helper::print_vector("Input: ", inputVals);
+		//helper::print_vector("Input: ", inputVals);
 		nn.feed_forward(inputVals);
-		
+		nn.forward_prop(X);
 
-		// Train the net what the outputs should have been:
-		trainData.getTargetOutputs(targetVals);
-		helper::print_vector("Target: ", targetVals);
-
-		//cout << "\n\n===================== BACK PROPAGATION ========================================" << endl;
-		if (trainingPass < 800)
-			nn.back_prop(targetVals);
-
-		// Report how well the training is working, averaged over recent 
-		if (trainingPass == fileLength + 1) {
-			done = true;
-		}
-
-	} while (!done);
-/*
-	//nn.print_structure();
-
-	int testPass = 0;
-	float results;
-	vector<float> resultsToFile, targetsToFile;
-
-	done = false;	
-
-	do {
-		++testPass;
-
-		// Get new input data feed it forward:
-		if (trainData.getNextInputs(inputVals) != topology[0]) {
-			break;
-		}
-		helper::print_vector("Input: ", inputVals);
-		nn.feed_forward(inputVals);
 		results = nn.get_results();
-
-		cout << "Result: " << results << endl;
-
-		resultsToFile.push_back(results);
-
-		// Train the net what the outputs should have been:
-		trainData.getTargetOutputs(targetVals);
-
-		targetsToFile.push_back(targetVals.at(0));
-
-		//helper::print_vector("Target: ", targetVals);
+		//cout << "Result: " << results << endl;
 		//helper::print_vector("Outputs:", results);
 
+		// Train the net what the outputs should have been:
+		//helper::print_vector("Target: ", targetVals);
+
+		//cout << "\n\n===================== BACK PROPAGATION ========================================" << endl;
+		if (epoch < 1)
+		{
+			if (trainingPass < 5)
+			{
+				nn.back_prop(targetVals);
+				nn.bptt(Y);
+			} else
+			{
+				epoch++;
+				trainingPass = 0;
+				trainData.returnToBeginOfFile();
+			}
+		} else
+		{
+			testPass++;
+			resultsToFile.push_back(results);
+			targetsToFile.push_back(targetVals.at(0));
+		}
 
 		// Report how well the training is working, averaged over recent 
-		if (testPass == 2000) {
+		//if (trainingPass == fileLength + 1) {
+		if (testPass == 1) {
 			done = true;
 		}
 
 	} while (!done);
 
+	nn.set_target_vals(targetVals);
+
+	//nn.print_structure();
+	
 	float sum = 0.0;
 	for (int i = 1; i < error.size(); i++) {
 		sum += error.at(i);
@@ -484,8 +514,6 @@ void process_new()
 	render::vector_to_file(resultsToFile, "results");
 	render::vector_to_file(error, "error");
 	render::vector_to_file(targetsToFile, "targets");
-	//nn.print_structure();
-*/
 }
 
 int main(int argc, char* argv[])

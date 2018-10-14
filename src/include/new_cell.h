@@ -21,17 +21,21 @@
 #include <string>
 #include <iostream>
 
+#include "helper.h"
+
 class New_Cell;
 
 struct New_Connection
 {
+	std::vector<float> weightHT;
+	std::vector<float> oldWeightHT;
 	float weight;
 	float oldWeight;
 	int fromLayer;
 	int toLayer;
 	int fromCell;
 	int toCell;
-
+	bool recursive;
 };
 
 class New_Cell
@@ -40,17 +44,23 @@ class New_Cell
 		std::vector<New_Connection> connectionsIn_;
 		std::vector<New_Connection> connectionsOut_;
 		int id_;
-		float cT_;									///	state of the cell C_t
+		int _T;
+		float _s;									///	state of the cell C_t
 		float _out;
 		float _in;
+		std::vector<float> _cT;
+		std::vector<float> _outT;
+		std::vector<float> _inT;
+		std::vector<float> _inHT;
 		//float _error;
 		//float _delta;
 		float _target;
-		unsigned _type;								///	1 = input layer, 2 = hidden layer, 3 = output layer
+		unsigned _type;								///	1 = input, 2 = hidden, 3 = output, 4 = bias
 
 	public:
 		
 		float _delta;
+		std::vector<float> _deltaT;
 		float _error;
 
 		/**
@@ -63,7 +73,8 @@ class New_Cell
 				int numOutputs,
 				int layerId,
 				bool hiddenLayer,
-				unsigned type
+				unsigned type,
+				int T
 				);
 		
 		/**
@@ -74,17 +85,16 @@ class New_Cell
 		 * @param cellTo the cell the connection goes to
 		 * @return void
 		 */
-		void create_connection(
-				int layerFrom,
-				int layerTo,
-				int cellFrom,
-				int cellTo);
+		void create_recursive_connection(
+				int layer,
+				int cell
+				);
 		
 		/**
 		 * get the state of the cell
 		 * @return the cell state as a float
 		 */
-		float get_Ct() { return cT_; };
+		float get_s() { return _s; };
 
 		/**
 		 * get the output value
@@ -123,6 +133,12 @@ class New_Cell
 		int get_id() { return id_; };
 		
 		/**
+		 * return type of the cell
+		 * @return int the id value
+		 */
+		unsigned get_type() { return _type; };
+
+		/**
 		 * get the weight of the specified connection
 		 * @param layerFrom the layer the connection comes from
 		 * @param layerTo the layer the connection goes to
@@ -157,7 +173,7 @@ class New_Cell
 		 * @param val
 		 * @return void
 		 */
-		void set_Ct(float val) { cT_ = val; };
+		void set_cell_T(float cT);
 		
 		/**
 		 * set the output value
@@ -165,6 +181,8 @@ class New_Cell
 		 * @return void
 		 */
 		void set_output(float val) { _out = val; };
+		
+		void set_output_T(float val);
 
 		/**
 		 * set the input value
@@ -173,6 +191,8 @@ class New_Cell
 		 */
 		void set_input(float val) { _in = val; };
 
+		void set_input_T(float val);
+		
 		/**
 		 * set the error value
 		 * @param val
@@ -215,6 +235,8 @@ class New_Cell
 		 * @return void
 		 */
 		void print_connections();
+
+		void print_cell_T();
 
 };			// end of class NEW_CELL
 #endif		// NEW_CELL_H

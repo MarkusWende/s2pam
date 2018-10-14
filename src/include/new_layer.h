@@ -32,6 +32,7 @@ class New_Layer
 		unsigned _type;
 		float _error;
 		bool _bias;
+		bool _recursive;
 
 	public:
 		/**
@@ -56,13 +57,23 @@ class New_Layer
 				std::vector<float> inVals
 				);
 
+		void forward_prop(
+				std::vector<float> inVals,
+				std::vector<float> inHVals
+				);
+		
 		void back_prop(
 				New_Layer& nextLayer,
 				New_Layer& nextButOneLayer
 				);
 		
-		float sigmoid(float val);
-		float sigmoid_derivative(float val);
+		float sigmoid(float x);
+		float tanhyp(float x);
+		float sigmoid_derivative(float out);
+		float tanhyp_derivative(float x);
+		
+		bool is_recursive() { return _recursive; };
+		
 		void get_target_vals(std::vector<float>& targets);
 		
 		/**
@@ -105,9 +116,13 @@ class New_Layer
 		 */
 		void set_targets(std::vector<float> tarVals);
 
+		void create_recursive_connection(int layer);
+
 		void set_error(float error);
 
 		void set_bias(bool val) { _bias = val; };
+		
+		void set_recursion(bool val) { _recursive = val; };
 		
 		/**
 		 * add a new cell to the layer

@@ -20,6 +20,8 @@
 #include <vector>
 #include <iostream>
 #include <math.h>
+#include <stdlib.h>		/// rand
+#include <ctime>
 
 #include "new_layer.h"
 
@@ -27,8 +29,20 @@ class New_Blstm
 {
 	private:
 		std::vector<New_Layer> layers_;
-		std::vector<std::vector<float>> weights_;
+		std::vector<std::vector<float>> _U;
+		std::vector<std::vector<float>> _V;
+		std::vector<std::vector<float>> _W;
+
+		std::vector<std::vector<float>> _s;
+		std::vector<std::vector<float>> _o;
+
 		float _error;
+		
+		///	number of time steps
+		int _T;
+		int _hLSize;
+		int _iLSize;
+		int _oLSize;
 
 	public:
 
@@ -40,10 +54,13 @@ class New_Blstm
 		 * an output layer with 1 cell
 		 */
 		New_Blstm(
-				std::vector<unsigned> topo
+				std::vector<unsigned> topo,
+				int T
 				);
 
 		void add_bias();
+
+		void add_recursion();
 		
 		/**
 		 * feed forward function to feed the neural net with input values
@@ -52,6 +69,19 @@ class New_Blstm
 		 */
 		void feed_forward(
 				std::vector<float> inVals
+				);
+
+		float tanhyp(float x);
+
+		std::vector<float> softmax(std::vector<float> x);
+
+		/**
+		 * feed forward function to feed the neural net with input values
+		 * @param inVals contain the network input Values
+		 * @return void
+		 */
+		void forward_prop(
+				std::vector<std::vector<float>> X
 				);
 
 		/**
@@ -63,7 +93,15 @@ class New_Blstm
 				std::vector<float> targetVals
 				);
 
+		void bptt(
+				std::vector<std::vector<float>> Y
+				);
+
 		void random_weights();
+
+		float calculate_loss(
+				std::vector<std::vector<float>> Y
+				);
 		
 		/**
 		 * print network structure
@@ -78,5 +116,7 @@ class New_Blstm
 		float get_error();
 
 		float get_results();
+
+		void set_target_vals(std::vector<float> targets);
 };			// end of class NEW_BLSTM
 #endif		// NEW_BLSTM_H

@@ -193,6 +193,40 @@ void print_matrix(vector<vector<float>> &mIn)
 	cout << columnLength << endl;
 }
 
+void print_matrix(string label, vector<vector<float>> &mIn)
+{
+	/// get spectrogram dimensions
+	unsigned int rowSize = mIn.size();
+	unsigned int columnLength = mIn[0].size();
+
+
+	/// maximum value initilization
+	float maxVal = 0.0;
+	float minVal = 0.0;
+
+	///
+	cout << label << endl;
+	cout << "====================================================================" << endl;
+	/// search for the maximal value in input matrix
+	for (int i = 0; i < rowSize; i++)
+	{
+		for (int j = 0; j < columnLength; j++)
+		{
+			cout << mIn.at(i).at(j) << "\t";
+			if (mIn.at(i).at(j) > maxVal)
+				maxVal = mIn.at(i).at(j);
+			if (mIn.at(i).at(j) < minVal)
+				minVal = mIn.at(i).at(j);
+		}
+		cout << endl;
+	}
+	cout << "--------------------------------------------------------------------" << endl;
+	cout << "MaxVal: " << maxVal << "\tMinVal: " << minVal << endl;
+	cout << "Num Rows: " << rowSize << endl;
+	cout << "Num Columns: " << columnLength << endl;
+	cout << "====================================================================" << endl << endl;
+}
+
 void print_vector(string label, vector<double> &vIn)
 {
 	cout << label << " ";

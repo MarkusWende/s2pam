@@ -113,6 +113,17 @@ namespace helper {
 			);
 
 	/**
+	 * print the content of the matrix
+	 * @param mIn a string cintaining something descriptive for the matrix
+	 * @param mIn input matrix
+	 * @return void
+	 */
+	void print_matrix(
+			std::string label,
+			std::vector<std::vector<float>> &mIn
+			);
+
+	/**
 	 * print the content of the vector
 	 * @param label a string containing something descriptive for the vector
 	 * @param vIn input vector
