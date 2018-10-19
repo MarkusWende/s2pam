@@ -297,26 +297,6 @@ void print_vector(string label, vector<float> &vIn)
 	cout << endl;
 }
 
-void print_neural_network_graph(Blstm &nn)
-{
-	for (unsigned l = 0; l < nn.get_layers().size(); ++l) {
-		Layer currentLayer = nn.get_layers().at(l);
-		for (unsigned n = 0; n < currentLayer.size() - 1; ++n ) {
-			Cell currentNeuron = currentLayer.at(n);
-			vector<Connection> weights;
-			currentNeuron.get_weights(weights);
-			cout.precision(2);
-			cout << "Layer: " << l << endl;
-			cout << "\tNeuron Index: " << currentNeuron.get_cell_index() << " || OutputVal: "
-				<< currentNeuron.get_output_val() << endl;
-			for (unsigned w = 0; w < weights.size(); ++w) {
-				cout << "\t\tWeight: " << fixed << weights[w].weight
-					<< " || DeltaWeight: " << fixed << weights[w].deltaWeight << endl;
-			}
-		}
-	}
-}
-
 void get_textGrid_targetVals_vc(item_c& tgItem, int frame, vector<double>& targetVals)
 {
 	/// Train the net what the outputs should have been

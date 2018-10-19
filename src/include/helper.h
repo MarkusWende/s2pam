@@ -26,8 +26,6 @@
 #include <essentia/algorithmfactory.h>
 #include <iomanip>							// std::setprecision
 
-#include "blstm.h"
-#include "cell.h"
 #include "textgrid.h"
 
 /// group functions in namespace helper
@@ -157,15 +155,6 @@ namespace helper {
 	void print_vector(
 			std::string label,
 			std::vector<float> &vIn
-			);
-	
-	/**
-	 * print the neural network graph to the console
-	 * @param nn the neural netwrok
-	 * @return void
-	 */
-	void print_neural_network_graph(
-			Blstm &nn
 			);
 
 	void get_textGrid_targetVals_vc(
