@@ -173,7 +173,7 @@ class Blstm
 				);
 		
 		/**
-		 * a * b
+		 * a \otimes b
 		 * outer product function of two vectors
 		 * @param a input vector a, |R^m
 		 * @param b input vector b, |R^n
@@ -185,7 +185,10 @@ class Blstm
 				);
 
 		/**
-		 *
+		 * print the output of the neural net by the given target matrix Y in two columns to the console
+		 * @param Y target matrix Y
+		 * @return void
+		 */
 		void print_result(std::vector<std::vector<float>> Y);
 
 };			// end of class BLSTM
