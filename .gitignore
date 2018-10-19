@@ -2,6 +2,11 @@
 build/
 data/
 
+# Doxygen
+Doxyfile
+html/
+latex/
+
 # Data Input- Outputfiles
 *.png
 *.pgm
