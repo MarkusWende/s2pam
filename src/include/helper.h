@@ -18,12 +18,13 @@
 #include <math.h>
 #include <malloc.h>
 #include <png.h>
-#include <iostream>
+#include <iostream>							// std::cout, std::fixed
 #include <vector>
 #include <fstream>
 #include <malloc.h>
 #include <png.h>
 #include <essentia/algorithmfactory.h>
+#include <iomanip>							// std::setprecision
 
 #include "blstm.h"
 #include "cell.h"
@@ -114,13 +115,26 @@ namespace helper {
 
 	/**
 	 * print the content of the matrix
-	 * @param mIn a string cintaining something descriptive for the matrix
+	 * @param label a string cintaining something descriptive for the matrix
 	 * @param mIn input matrix
 	 * @return void
 	 */
 	void print_matrix(
 			std::string label,
 			std::vector<std::vector<float>> &mIn
+			);
+
+	/**
+	 * print the content of the matrix
+	 * @param label a string cintaining something descriptive for the matrix
+	 * @param mIn input matrix 1
+	 * @param mIn2 input matrix 2
+	 * @return void
+	 */
+	void print_2matrices_column(
+			std::string label,
+			std::vector<std::vector<float>> &mIn,
+			std::vector<std::vector<float>> &mIn2
 			);
 
 	/**

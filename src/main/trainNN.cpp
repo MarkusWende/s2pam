@@ -257,7 +257,7 @@ int process()
 	vector<unsigned> topology;
 	topology.push_back(13);
 	topology.push_back(26);
-	topology.push_back(1);
+	topology.push_back(3);
 
 	///	create NN with topology
 	Blstm nn(topology);
@@ -397,21 +397,19 @@ void process_new()
 {
 	//TrainingData trainData("data/AND/testBIG.txt");
 	//TrainingData trainData("data/test/test01.txt");
-	TrainingData trainData("data/AND/T241L20000.txt");
+	//TrainingData trainData("data/AND/T241L20000.txt");
+	TrainingData trainData("data/AND/vctest.txt");
 	//TrainingData trainData("data/NAND/T241L20000.txt");
 	// e.g., { 3, 2, 1 }
 	vector<unsigned> topology;
-	int T = 5;
+	int T = 50;
+	float learningRate = 0.001;
 
 	trainData.getTopology(topology);
-	vector<vector<float>> X(T, vector<float> (topology.at(0), 0));
-	vector<vector<float>> Y(T, vector<float> (topology.at(2), 0));
+	vector<vector<float>> X;
+	vector<vector<float>> Y;
 
-	cout << "X.size(): " << X.size() << endl;
-
-	helper::print_matrix("X:", X);
-
-	New_Blstm nn(topology, T);
+	New_Blstm nn(topology, T, learningRate);
 
 	//nn.add_recursion();
 	nn.random_weights();
@@ -425,95 +423,69 @@ void process_new()
 	vector<float> inputVals, targetVals, error;
 	vector<float> resultsToFile, targetsToFile;
 	float results;
-	int trainingPass = 0;
-	int testPass = 0;
+	int trainingSize = 0;
+	int testSize = 0;
 	int epoch = 0;
 
 	bool done = false;	
-
-	do {
-		++trainingPass;
-		error.push_back(nn.get_error());
-		//cout << "Epoch: " << epoch << "\tTrainPass: " << trainingPass << "\t\tError: " << nn.get_error() << endl;
-
+	
+	for (int t = 0; t < T; t++)
+	{
 		// Get new input data feed it forward:
 		if (trainData.getNextInputs(inputVals) != topology[0]) {
-			cout << "BASASDS" << endl;
+			cout << "Topo[0]: " << topology[0] << "\tSize input: " << inputVals.size() << endl;
 			break;
 		}
 
-		rotate(X.begin(), X.begin()+1, X.end());
-		for (int i = 0; i < X.back().size(); i++)
-		{
-			X.back().at(i) = inputVals.at(i);
-		}
+		X.push_back( inputVals );
 
-		helper::print_matrix("X:", X);
-		
+		//helper::print_matrix("X:", X);
 		
 		trainData.getTargetOutputs(targetVals);
-		
-		rotate(Y.begin(), Y.begin()+1, Y.end());
-		for (int i = 0; i < Y.back().size(); i++)
-		{
-			Y.back().at(i) = targetVals.at(i);
-		}
+		Y.push_back( targetVals );
+	}
 
-		//cout << "===================== FEED FORWARD ============================================" << endl;
-		//helper::print_vector("Input: ", inputVals);
-		nn.feed_forward(inputVals);
+	do {
+		epoch++;
+		//helper::print_matrix("X", X);
+		//helper::print_matrix("Y", Y);
+
 		nn.forward_prop(X);
+		float L = nn.calculate_loss(Y);
 
-		results = nn.get_results();
-		//cout << "Result: " << results << endl;
-		//helper::print_vector("Outputs:", results);
+		cout << "Loss: " << L << endl;
 
-		// Train the net what the outputs should have been:
-		//helper::print_vector("Target: ", targetVals);
+		nn.bptt(X,Y);
 
-		//cout << "\n\n===================== BACK PROPAGATION ========================================" << endl;
-		if (epoch < 1)
-		{
-			if (trainingPass < 5)
-			{
-				nn.back_prop(targetVals);
-				nn.bptt(Y);
-			} else
-			{
-				epoch++;
-				trainingPass = 0;
-				trainData.returnToBeginOfFile();
-			}
-		} else
-		{
-			testPass++;
-			resultsToFile.push_back(results);
-			targetsToFile.push_back(targetVals.at(0));
-		}
-
-		// Report how well the training is working, averaged over recent 
-		//if (trainingPass == fileLength + 1) {
-		if (testPass == 1) {
+		if (epoch == 600) {
+			//nn.print_result(Y);
 			done = true;
 		}
 
 	} while (!done);
-
-	nn.set_target_vals(targetVals);
-
-	//nn.print_structure();
 	
-	float sum = 0.0;
-	for (int i = 1; i < error.size(); i++) {
-		sum += error.at(i);
-	}
-	sum = sum / (error.size() - 1);
+	/// Testing
+	X.clear();
+	Y.clear();
+	for (int t = 0; t < T; t++)
+	{
+		// Get new input data feed it forward:
+		if (trainData.getNextInputs(inputVals) != topology[0]) {
+			cout << "Topo[0]: " << topology[0] << "\tSize input: " << inputVals.size() << endl;
+			break;
+		}
 
-	cout << "Avg. Error: " << sum << endl;
-	 
-	render::vector_to_file(resultsToFile, "results");
-	render::vector_to_file(error, "error");
-	render::vector_to_file(targetsToFile, "targets");
+		X.push_back( inputVals );
+
+		//helper::print_matrix("X:", X);
+		
+		trainData.getTargetOutputs(targetVals);
+		Y.push_back( targetVals );
+	}
+
+	nn.forward_prop(X);
+	nn.print_result(Y);
+
 }
 
 int main(int argc, char* argv[])

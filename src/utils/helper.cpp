@@ -193,6 +193,55 @@ void print_matrix(vector<vector<float>> &mIn)
 	cout << columnLength << endl;
 }
 
+void print_2matrices_column(string label, vector<vector<float>> &mIn, vector<vector<float>> &mIn2)
+{
+	/// get spectrogram dimensions
+	unsigned int rowSize = mIn.size();
+	unsigned int columnLength = mIn[0].size();
+
+
+	/// maximum value initilization
+	float maxVal = 0.0;
+	float minVal = 0.0;
+	float maxVal2 = 0.0;
+	float minVal2 = 0.0;
+
+	///
+	cout << label << endl;
+	cout << "====================================================================" << endl;
+	/// search for the maximal value in input matrix
+	for (int i = 0; i < rowSize; i++)
+	{
+		for (int j = 0; j < columnLength; j++)
+		{
+			std::cout << std::fixed;
+			cout << std::setprecision(3) << mIn.at(i).at(j) << "\t";
+			if (mIn.at(i).at(j) > maxVal)
+				maxVal = mIn.at(i).at(j);
+			if (mIn.at(i).at(j) < minVal)
+				minVal = mIn.at(i).at(j);
+		}
+		
+		cout << "\t||\t";
+		for (int j = 0; j < columnLength; j++)
+		{
+			std::cout << std::fixed;
+			cout << std::setprecision(3) << mIn2.at(i).at(j) << "\t";
+			if (mIn2.at(i).at(j) > maxVal2)
+				maxVal2 = mIn2.at(i).at(j);
+			if (mIn2.at(i).at(j) < minVal2)
+				minVal2 = mIn2.at(i).at(j);
+		}
+		cout << endl;
+	}
+	cout << "--------------------------------------------------------------------" << endl;
+	cout << "MaxVal: " << maxVal << "\tMinVal: " << minVal << "\t||\t";
+	cout << "MaxVal: " << maxVal2 << "\tMinVal: " << minVal2 << endl;
+	cout << "Num Rows: " << rowSize << endl;
+	cout << "Num Columns: " << columnLength << endl;
+	cout << "====================================================================" << endl << endl;
+}
+
 void print_matrix(string label, vector<vector<float>> &mIn)
 {
 	/// get spectrogram dimensions
@@ -212,7 +261,8 @@ void print_matrix(string label, vector<vector<float>> &mIn)
 	{
 		for (int j = 0; j < columnLength; j++)
 		{
-			cout << mIn.at(i).at(j) << "\t";
+			std::cout << std::fixed;
+			cout << std::setprecision(3) << mIn.at(i).at(j) << "\t";
 			if (mIn.at(i).at(j) > maxVal)
 				maxVal = mIn.at(i).at(j);
 			if (mIn.at(i).at(j) < minVal)
@@ -273,20 +323,20 @@ void get_textGrid_targetVals_vc(item_c& tgItem, int frame, vector<double>& targe
 	targetVals.clear();
 	if (tgItem.interval[frame].text.compare("sil") == 0)
 	{
-		//targetVals.push_back(1.0);
-		//targetVals.push_back(0.0);
+		targetVals.push_back(1.0);
+		targetVals.push_back(0.0);
 		targetVals.push_back(0.0);
 		//cout << "out: 0.0" << endl;
 	} else if (tgItem.interval[frame].text.compare("c") == 0)
 	{	
-		//targetVals.push_back(0.0);
-		//targetVals.push_back(1.0);
+		targetVals.push_back(0.0);
+		targetVals.push_back(1.0);
 		targetVals.push_back(0.0);
 		//cout << "out: 0.0" << endl;
 	} else if (tgItem.interval[frame].text.compare("v") == 0)
 	{	
-		//targetVals.push_back(0.0);
-		//targetVals.push_back(0.0);
+		targetVals.push_back(0.0);
+		targetVals.push_back(0.0);
 		targetVals.push_back(1.0);
 		//cout << "out: 1.0" << endl;
 	}

@@ -33,6 +33,10 @@ class New_Blstm
 		std::vector<std::vector<float>> _V;
 		std::vector<std::vector<float>> _W;
 
+		std::vector<std::vector<float>> _dU;
+		std::vector<std::vector<float>> _dV;
+		std::vector<std::vector<float>> _dW;
+
 		std::vector<std::vector<float>> _s;
 		std::vector<std::vector<float>> _o;
 
@@ -43,6 +47,8 @@ class New_Blstm
 		int _hLSize;
 		int _iLSize;
 		int _oLSize;
+		int _bpttTruncate;
+		float _learningRate;
 
 	public:
 
@@ -55,7 +61,8 @@ class New_Blstm
 		 */
 		New_Blstm(
 				std::vector<unsigned> topo,
-				int T
+				int T,
+				float lR
 				);
 
 		void add_bias();
@@ -72,6 +79,15 @@ class New_Blstm
 				);
 
 		float tanhyp(float x);
+
+		std::vector<float> tanhyp_vec(
+				std::vector<float> x
+				);
+
+		std::vector<std::vector<float>> outer(
+				std::vector<float> a,
+				std::vector<float> b
+				);
 
 		std::vector<float> softmax(std::vector<float> x);
 
@@ -94,6 +110,7 @@ class New_Blstm
 				);
 
 		void bptt(
+				std::vector<std::vector<float>> X,
 				std::vector<std::vector<float>> Y
 				);
 
@@ -102,12 +119,30 @@ class New_Blstm
 		float calculate_loss(
 				std::vector<std::vector<float>> Y
 				);
+
+		std::vector<std::vector<float>> matrix_add(
+				std::vector<std::vector<float>> A,
+				std::vector<std::vector<float>> B
+				);
+		
+		std::vector<std::vector<float>> matrix_add_with_const(
+				std::vector<std::vector<float>> A,
+				std::vector<std::vector<float>> B,
+				float x
+				);
+		
+		std::vector<std::vector<float>> matrix_mult(
+				std::vector<std::vector<float>> A,
+				std::vector<std::vector<float>> B
+				);
 		
 		/**
 		 * print network structure
 		 * @return void
 		 */
 		void print_structure();
+
+		void print_result(std::vector<std::vector<float>> Y);
 
 		/**
 		 * get the total error
