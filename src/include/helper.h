@@ -18,15 +18,14 @@
 #include <math.h>
 #include <malloc.h>
 #include <png.h>
-#include <iostream>
+#include <iostream>							// std::cout, std::fixed
 #include <vector>
 #include <fstream>
 #include <malloc.h>
 #include <png.h>
 #include <essentia/algorithmfactory.h>
+#include <iomanip>							// std::setprecision
 
-#include "blstm.h"
-#include "cell.h"
 #include "textgrid.h"
 
 /// group functions in namespace helper
@@ -113,6 +112,30 @@ namespace helper {
 			);
 
 	/**
+	 * print the content of the matrix
+	 * @param label a string cintaining something descriptive for the matrix
+	 * @param mIn input matrix
+	 * @return void
+	 */
+	void print_matrix(
+			std::string label,
+			std::vector<std::vector<float>> &mIn
+			);
+
+	/**
+	 * print the content of the matrix
+	 * @param label a string cintaining something descriptive for the matrix
+	 * @param mIn input matrix 1
+	 * @param mIn2 input matrix 2
+	 * @return void
+	 */
+	void print_2matrices_column(
+			std::string label,
+			std::vector<std::vector<float>> &mIn,
+			std::vector<std::vector<float>> &mIn2
+			);
+
+	/**
 	 * print the content of the vector
 	 * @param label a string containing something descriptive for the vector
 	 * @param vIn input vector
@@ -132,15 +155,6 @@ namespace helper {
 	void print_vector(
 			std::string label,
 			std::vector<float> &vIn
-			);
-	
-	/**
-	 * print the neural network graph to the console
-	 * @param nn the neural netwrok
-	 * @return void
-	 */
-	void print_neural_network_graph(
-			Blstm &nn
 			);
 
 	void get_textGrid_targetVals_vc(

@@ -193,6 +193,90 @@ void print_matrix(vector<vector<float>> &mIn)
 	cout << columnLength << endl;
 }
 
+void print_2matrices_column(string label, vector<vector<float>> &mIn, vector<vector<float>> &mIn2)
+{
+	/// get spectrogram dimensions
+	unsigned int rowSize = mIn.size();
+	unsigned int columnLength = mIn[0].size();
+
+
+	/// maximum value initilization
+	float maxVal = 0.0;
+	float minVal = 0.0;
+	float maxVal2 = 0.0;
+	float minVal2 = 0.0;
+
+	///
+	cout << label << endl;
+	cout << "====================================================================" << endl;
+	/// search for the maximal value in input matrix
+	for (int i = 0; i < rowSize; i++)
+	{
+		for (int j = 0; j < columnLength; j++)
+		{
+			std::cout << std::fixed;
+			cout << std::setprecision(3) << mIn.at(i).at(j) << "\t";
+			if (mIn.at(i).at(j) > maxVal)
+				maxVal = mIn.at(i).at(j);
+			if (mIn.at(i).at(j) < minVal)
+				minVal = mIn.at(i).at(j);
+		}
+		
+		cout << "\t||\t";
+		for (int j = 0; j < columnLength; j++)
+		{
+			std::cout << std::fixed;
+			cout << std::setprecision(3) << mIn2.at(i).at(j) << "\t";
+			if (mIn2.at(i).at(j) > maxVal2)
+				maxVal2 = mIn2.at(i).at(j);
+			if (mIn2.at(i).at(j) < minVal2)
+				minVal2 = mIn2.at(i).at(j);
+		}
+		cout << endl;
+	}
+	cout << "--------------------------------------------------------------------" << endl;
+	cout << "MaxVal: " << maxVal << "\tMinVal: " << minVal << "\t||\t";
+	cout << "MaxVal: " << maxVal2 << "\tMinVal: " << minVal2 << endl;
+	cout << "Num Rows: " << rowSize << endl;
+	cout << "Num Columns: " << columnLength << endl;
+	cout << "====================================================================" << endl << endl;
+}
+
+void print_matrix(string label, vector<vector<float>> &mIn)
+{
+	/// get spectrogram dimensions
+	unsigned int rowSize = mIn.size();
+	unsigned int columnLength = mIn[0].size();
+
+
+	/// maximum value initilization
+	float maxVal = 0.0;
+	float minVal = 0.0;
+
+	///
+	cout << label << endl;
+	cout << "====================================================================" << endl;
+	/// search for the maximal value in input matrix
+	for (int i = 0; i < rowSize; i++)
+	{
+		for (int j = 0; j < columnLength; j++)
+		{
+			std::cout << std::fixed;
+			cout << std::setprecision(3) << mIn.at(i).at(j) << "\t";
+			if (mIn.at(i).at(j) > maxVal)
+				maxVal = mIn.at(i).at(j);
+			if (mIn.at(i).at(j) < minVal)
+				minVal = mIn.at(i).at(j);
+		}
+		cout << endl;
+	}
+	cout << "--------------------------------------------------------------------" << endl;
+	cout << "MaxVal: " << maxVal << "\tMinVal: " << minVal << endl;
+	cout << "Num Rows: " << rowSize << endl;
+	cout << "Num Columns: " << columnLength << endl;
+	cout << "====================================================================" << endl << endl;
+}
+
 void print_vector(string label, vector<double> &vIn)
 {
 	cout << label << " ";
@@ -213,46 +297,26 @@ void print_vector(string label, vector<float> &vIn)
 	cout << endl;
 }
 
-void print_neural_network_graph(Blstm &nn)
-{
-	for (unsigned l = 0; l < nn.get_layers().size(); ++l) {
-		Layer currentLayer = nn.get_layers().at(l);
-		for (unsigned n = 0; n < currentLayer.size() - 1; ++n ) {
-			Cell currentNeuron = currentLayer.at(n);
-			vector<Connection> weights;
-			currentNeuron.get_weights(weights);
-			cout.precision(2);
-			cout << "Layer: " << l << endl;
-			cout << "\tNeuron Index: " << currentNeuron.get_cell_index() << " || OutputVal: "
-				<< currentNeuron.get_output_val() << endl;
-			for (unsigned w = 0; w < weights.size(); ++w) {
-				cout << "\t\tWeight: " << fixed << weights[w].weight
-					<< " || DeltaWeight: " << fixed << weights[w].deltaWeight << endl;
-			}
-		}
-	}
-}
-
 void get_textGrid_targetVals_vc(item_c& tgItem, int frame, vector<double>& targetVals)
 {
 	/// Train the net what the outputs should have been
 	targetVals.clear();
 	if (tgItem.interval[frame].text.compare("sil") == 0)
 	{
-		//targetVals.push_back(1.0);
-		//targetVals.push_back(0.0);
+		targetVals.push_back(1.0);
+		targetVals.push_back(0.0);
 		targetVals.push_back(0.0);
 		//cout << "out: 0.0" << endl;
 	} else if (tgItem.interval[frame].text.compare("c") == 0)
 	{	
-		//targetVals.push_back(0.0);
-		//targetVals.push_back(1.0);
+		targetVals.push_back(0.0);
+		targetVals.push_back(1.0);
 		targetVals.push_back(0.0);
 		//cout << "out: 0.0" << endl;
 	} else if (tgItem.interval[frame].text.compare("v") == 0)
 	{	
-		//targetVals.push_back(0.0);
-		//targetVals.push_back(0.0);
+		targetVals.push_back(0.0);
+		targetVals.push_back(0.0);
 		targetVals.push_back(1.0);
 		//cout << "out: 1.0" << endl;
 	}
