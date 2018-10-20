@@ -24,6 +24,7 @@
 #include <ctime>
 
 #include "helper.h"
+#include "render.h"
 
 class Blstm
 {
@@ -67,8 +68,8 @@ class Blstm
 		 * Constructor
 		 * create a new blstm neural network
 		 * @param topo contains the topology of the neural net e.g {4,12,12,1}
-		 * => a network with an input layer with 4 cells, two hiiden layers with 12 cells each and
-		 * an output layer with 1 cell
+		 * => a network with an input layer with 4 cells, two hiiden layers
+		 * with 12 cells each and an output layer with 1 cell
 		 * @param T length of the input X and output Y train
 		 * @param lR learning rate
 		 */
@@ -124,7 +125,8 @@ class Blstm
 		void random_weights();
 
 		/**
-		 * loss function to calculate the Error/Loss of the network, meaning the smaller the value the
+		 * loss function to calculate the Error/Loss of the network,
+		 * meaning the smaller the value the
 		 * better does the network predicts the right output
 		 * @param Y the target matrix
 		 * @retrun float the loss/error value
@@ -147,7 +149,8 @@ class Blstm
 		
 		/**
 		 * A + x * B
-		 * add two matrices with each other by multiplying a constant to every element of the secound matrix,
+		 * add two matrices with each other by multiplying a constant to every
+		 * element of the secound matrix,
 		 * Dimension of A an B has to be the same
 		 * @param A input matrix A, m x n
 		 * @param B input matrix B, m x n
@@ -162,7 +165,8 @@ class Blstm
 		
 		/**
 		 * A * B
-		 * multiply two matrices with each other, column size m of A has to be the same size as row size m of B
+		 * multiply two matrices with each other, column size m of A has to be
+		 * the same size as row size m of B
 		 * @param A input matrix A, |R^(n x m)
 		 * @param B input matrix B, |R^(m x p)
 		 * @return vector<vector<float>> the multiplied matrix, |R^(n x p)
@@ -185,11 +189,35 @@ class Blstm
 				);
 
 		/**
-		 * print the output of the neural net by the given target matrix Y in two columns to the console
+		 * print the output of the neural net by the given target matrix Y
+		 * in two columns to the console
 		 * @param Y target matrix Y
 		 * @return void
 		 */
-		void print_result(std::vector<std::vector<float>> Y);
+		void print_result(
+				std::vector<std::vector<float>> Y
+				);
+		
+		/**
+		 * render weight matrices to png files
+		 * @param index append a rising index to the files end
+		 * @return void
+		 */
+		void render_weights(
+				int index
+				);
+
+		/**
+		 * save neural network to binary file
+		 * @return void
+		 */
+		void save();
+
+		/**
+		 * load neural network from binary file
+		 * @return void
+		 */
+		void load();
 
 };			// end of class BLSTM
 #endif		// BLSTM_H

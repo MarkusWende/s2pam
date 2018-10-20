@@ -144,7 +144,7 @@ void process()
 	//TrainingData trainData("data/NAND/T241L20000.txt");
 	// e.g., { 3, 2, 1 }
 	vector<unsigned> topology;
-	int T = 50;
+	int T = 200;
 	float learningRate = 0.001;
 
 	trainData.getTopology(topology);
@@ -198,8 +198,10 @@ void process()
 		cout << "Loss: " << L << endl;
 
 		nn.bptt(X,Y);
+		
+		nn.render_weights(epoch);
 
-		if (epoch == 600) {
+		if (epoch == 180) {
 			//nn.print_result(Y);
 			done = true;
 		}
@@ -228,6 +230,7 @@ void process()
 	nn.forward_prop(X);
 	nn.print_result(Y);
 
+	nn.save();
 }
 
 int main(int argc, char* argv[])
