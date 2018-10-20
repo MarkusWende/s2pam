@@ -433,3 +433,123 @@ void Blstm::print_result(vector<vector<float>> Y)
 	helper::print_matrix("_W", _W);
 	helper::print_matrix("_V", _V);
 }
+
+void Blstm::render_weights(int index)
+{	
+	/// render weight matrix _U
+	vector<float> _u;
+	unsigned int heightU, widthU;
+	vector<vector<float>> ampU(_U.size(), vector<float>(_U.at(0).size(), 0));
+	ampU = matrix_add_with_const(ampU, _U, 10);
+
+	helper::matrix_to_vector(ampU, heightU, widthU, _u);
+	render::vector_to_PNG("weight_U_", std::to_string(index), "exp", heightU, widthU, _u);
+
+
+	/// render weight matrix _W
+	vector<float> _w;
+	unsigned int heightW, widthW;
+	vector<vector<float>> ampW(_W.size(), vector<float>(_W.at(0).size(), 0));
+	ampW = matrix_add_with_const(ampW, _W, 10);
+
+	helper::matrix_to_vector(ampW, heightW, widthW, _w);
+	render::vector_to_PNG("weight_W_", std::to_string(index), "exp", heightW, widthW, _w);
+
+
+	/// render weight matrix _V
+	vector<float> _v;
+	unsigned int heightV, widthV;
+	vector<vector<float>> ampV(_V.size(), vector<float>(_V.at(0).size(), 0));
+	ampV = matrix_add_with_const(ampV, _V, 10);
+
+	helper::matrix_to_vector(ampV, heightV, widthV, _v);
+	render::vector_to_PNG("weight_V_", std::to_string(index), "exp", heightV, widthV, _v);
+}
+
+void Blstm::save()
+{
+	/// file name of the neural network binary
+	string filename = "data.bin";
+
+	///	append the parent folder the file is stored in
+	filename.insert(0,"./data/nn/");
+
+	///	construct ofstream object and initialze filename
+	ofstream outputFile;
+	outputFile.open(filename);
+
+	/// write topology of the nn to the file
+	outputFile << "topology " << _iLSize << ' ' << _hLSize << ' ' << _oLSize << endl;
+
+	/// write train length to the file
+	outputFile << "T " << _T << endl;
+
+	/// write bptt truncate to the file
+	outputFile << "bpttTrunc " << _bpttTruncate << endl;
+
+	/// write learning rate to the file
+	outputFile << "lR " << _learningRate << endl;
+
+	/**
+	 * write weight matrix _U, _W and _V to the file
+	 */
+
+	/// _U
+	outputFile << "U" << endl;
+	/// get matrix dimensions
+	int height = _U.size();
+	int width = _U.at(0).size();
+
+	///	write matrix values to file
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width; j++) {
+			if (j < (width - 1))
+				outputFile << _U.at(i).at(j) << ' ';
+			else
+				outputFile << _U.at(i).at(j);
+		}
+		outputFile << endl;
+	}
+
+	/// _W
+	outputFile << "W" << endl;
+	/// get matrix dimensions
+	height = _W.size();
+	width = _W.at(0).size();
+
+	///	write matrix values to file
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width; j++) {
+			if (j < (width - 1))
+				outputFile << _W.at(i).at(j) << ' ';
+			else
+				outputFile << _W.at(i).at(j);
+		}
+		outputFile << endl;
+	}
+
+	/// _V
+	outputFile << "V" << endl;
+	/// get matrix dimensions
+	height = _V.size();
+	width = _V.at(0).size();
+
+	///	write matrix values to file
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width; j++) {
+			if (j < (width - 1))
+				outputFile << _V.at(i).at(j) << ' ';
+			else
+				outputFile << _V.at(i).at(j);
+		}
+		outputFile << endl;
+	}
+
+	///	close file
+	outputFile.close();
+}
+
+void Blstm::load()
+{
+
+}

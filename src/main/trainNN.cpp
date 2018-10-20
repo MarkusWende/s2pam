@@ -198,6 +198,8 @@ void process()
 		cout << "Loss: " << L << endl;
 
 		nn.bptt(X,Y);
+		
+		nn.render_weights(epoch);
 
 		if (epoch == 180) {
 			//nn.print_result(Y);
@@ -228,6 +230,7 @@ void process()
 	nn.forward_prop(X);
 	nn.print_result(Y);
 
+	nn.save();
 }
 
 int main(int argc, char* argv[])
