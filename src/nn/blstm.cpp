@@ -50,6 +50,21 @@ Blstm::Blstm(vector<unsigned> topo, int T, float lR)
 	_V.resize(_oLSize, vector<float> (_hLSize, 0));
 	_W.clear();
 	_W.resize(_hLSize, vector<float> (_hLSize, 0));
+	
+	_Wi.clear();
+	_Wi.resize(_hLSize + _iLSize, vector<float> (_hLSize, 0));
+	
+	_Wf.clear();
+	_Wf.resize(_hLSize + _iLSize, vector<float> (_hLSize, 0));
+	
+	_Wo.clear();
+	_Wo.resize(_hLSize + _iLSize, vector<float> (_hLSize, 0));
+	
+	_Wc.clear();
+	_Wc.resize(_hLSize + _iLSize, vector<float> (_hLSize, 0));
+	
+	_Wy.clear();
+	_Wy.resize(_hLSize, vector<float> (_oLSize, 0));
 }
 
 float Blstm::tanhyp(float x)
@@ -59,6 +74,20 @@ float Blstm::tanhyp(float x)
 	fx = tanh(x);
 
 	return fx;
+}
+
+vector<float> Blstm::tanhyp(vector<float> x)
+{
+	/// initialze the output vector
+	vector<float> tan(x.size(), 0);
+	
+	/// loop every element of the input vector and save it into the output vector
+	for (int i = 0; i < x.size(); i++)
+	{
+		tan.at(i) = tanhyp(x.at(i));
+	}
+
+	return tan;
 }
 
 vector<float> Blstm::softmax(vector<float> x)
@@ -74,13 +103,37 @@ vector<float> Blstm::softmax(vector<float> x)
 		xExpSum += exp(x.at(i));
 	}
 
-	/// loop every element of the input vector and save it into the outputvector
+	/// loop every element of the input vector and save it into the output vector
 	for (int i = 0; i < x.size(); i++)
 	{
 		softmax.at(i) = exp(x.at(i)) / xExpSum;
 	}
 
 	return softmax;
+}
+
+float Blstm::sigmoid(float x)
+{
+	/// initialze the output
+	float sig = 0;
+	
+	sig = 1 / (1 + exp(-x));
+
+	return sig;
+}
+
+vector<float> Blstm::sigmoid(vector<float> x)
+{
+	/// initialze the output vector
+	vector<float> sig(x.size(), 0);
+	
+	/// loop every element of the input vector and save it into the output vector
+	for (int i = 0; i < x.size(); i++)
+	{
+		sig.at(i) = sigmoid(x.at(i));
+	}
+
+	return sig;
 }
 
 vector<vector<float>> Blstm::matrix_add(vector<vector<float>> A, vector<vector<float>> B)
@@ -149,6 +202,71 @@ vector<vector<float>> Blstm::matrix_mult(vector<vector<float>> A, vector<vector<
 	return out;
 }
 
+vector<float> Blstm::vec_matrix_mult(vector<float> a, vector<vector<float>> B)
+{
+	/// check if matrices dimensions correspond to the matrix multiplication rule
+	/// A with m x n and B with n x p to get C with m x p
+	if (a.size() != B.size())
+	{
+		cout << "Vector and matrix cant be multiplied." << endl;
+	}
+
+	/// initliaze output vector with zeros
+	vector<float> out(B.at(0).size(), 0);
+
+	/// loop every element of the output vector
+	for (int i = 0; i < out.size(); i++)
+	{
+		/// sum up the elements in a multiplied by the elements in the column of B
+		for (int j = 0; j < a.size(); j++)
+		{
+			out.at(i) = a.at(j) * B.at(j).at(i);
+		}
+	}
+
+	return out;
+}
+
+vector<float> Blstm::vec_ele_add(vector<float> a, vector<float> b)
+{
+	/// check if vector dimensions are the same
+	if (a.size() != b.size())
+	{
+		cout << "Vectors cant be added element wise." << endl;
+	}
+
+	/// initliaze output vector with zeros
+	vector<float> out(a.size(), 0);
+
+	/// loop every element of the output vector
+	for (int i = 0; i < out.size(); i++)
+	{
+		out.at(i) = a.at(i) + b.at(i);
+	}
+
+	return out;
+}
+
+vector<float> Blstm::vec_ele_mult(vector<float> a, vector<float> b)
+{
+	/// check if vector dimensions are the same
+	if (a.size() != b.size())
+	{
+		cout << "Vectors cant be multiplied element wise." << endl;
+	}
+
+	/// initliaze output vector with zeros
+	vector<float> out(a.size(), 0);
+
+	/// loop every element of the output vector
+	for (int i = 0; i < out.size(); i++)
+	{
+		out.at(i) = a.at(i) * b.at(i);
+	}
+
+	return out;
+}
+
 vector<vector<float>> Blstm::outer(vector<float> a, vector<float> b)
 {
 	/// initialize the output matrix for the outer product of vector a and b
@@ -167,15 +285,45 @@ vector<vector<float>> Blstm::outer(vector<float> a, vector<float> b)
 	return out;
 }
 
+vector<float> Blstm::vec_concat(vector<float> a, vector<float> b)
+{
+	vector<float> out(a.size() + b.size(), 0);
+	int index = 0;
+	
+	for (int i = 0; i < a.size(); i++)
+	{
+		out.at(i) = a.at(i);
+		index = i;
+	}
+
+	for (int j = 0; j < b.size(); j++)
+	{
+		out.at(index + j) = b.at(j);
+	}
+
+	return out;
+}
+
 void Blstm::forward_prop(vector<vector<float>> X)
 {
-	/// dump the content of the cell matrix and initialze the new cell matrix with zeros
+	/// dump the content of the cell output matrix and initialze the
+	/// new cell output matrix with zeros
 	_s.clear();
 	_s.resize(_T, vector<float> (_hLSize, 0));
+	_h.clear();
+	_h.resize(_T, vector<float> (_hLSize, 0));
+	
+	/// dump the content of the cell matrix and initialze the new cell matrix with zeros
+	_c.clear();
+	_c.resize(_T, vector<float> (_hLSize, 0));
 	
 	/// dump the content of the output matrix and initialze the new output matrix with zeros
 	_o.clear();
 	_o.resize(_T, vector<float> (_oLSize, 0));
+	_y.clear();
+	_y.resize(_T, vector<float> (_oLSize, 0));
+
+	vector<float> h_old(_hLSize, 0);
 
 	/// loop from timestep t = 0 to the end of input matrix X, X(0) to X(_T)
 	for (int t = 0; t < _T; t++)
@@ -185,12 +333,58 @@ void Blstm::forward_prop(vector<vector<float>> X)
 		/// time t and has therefore the size of the output layer
 		vector<float> VdotS(_oLSize, 0);
 
-		/// initialize tmp vector UPlusW with zeros, this vector is a product of the
-		/// multiplication of the hidden weight matrix _W and the cell state matrix _s at 
-		/// time t-1 added with the multiplication the input weight matrix _U and the 
-		/// input matrix X at time t and has therefore the size of the hidden layer
-		vector<float> UPlusW(_hLSize, 0);
+		/**
+		 *														    ^
+		 *													   h(t)	|	
+		 *				=====================================================
+		 *				#											|		#
+		 *	C(t-1) ---->#------	x ---------	+ --------------┬---------------#----> C(t)
+		 *				#	hf	|	hi		|			 |tanh|		|		#
+		 *				#		|	┌------>x		ho		|		|		#
+		 *				#		|	|		| hc	┌------>x		|		#
+		 *				#	   |σ| |σ|   |tanh|	   |σ|		|		|		#
+		 *	h(t-1) ---->#---┬---┴---┴-------┴-------┴		└-------┴-------#----> h(t)
+		 *				#	|												#
+		 *				=====================================================
+		 *					^
+		 *					| x(t)
+		 *
+		 */
+		vector<float> hf(_hLSize, 0);
+		vector<float> hi(_hLSize, 0);
+		vector<float> ho(_hLSize, 0);
+		vector<float> hc(_hLSize, 0);
 
+		vector<float> x_t(_iLSize, 0);
+		x_t = X.at(t);
+		vector<float> cell_in(_iLSize + _hLSize, 0);
+
+		vector<float> h_old(_hLSize, 0);
+		if (t > 0)
+			h_old = _h.at(t-1);
+
+		cell_in = vec_concat(h_old, x_t);
+
+		hf = vec_matrix_mult(cell_in, _Wf);
+		hf = sigmoid(hf);
+
+		hi = vec_matrix_mult(cell_in, _Wi);
+		hi = sigmoid(hi);
+
+		ho = vec_matrix_mult(cell_in, _Wo);
+		ho = sigmoid(ho);
+		
+		hc = vec_matrix_mult(cell_in, _Wc);
+		hc = tanhyp(hc);
+
+		vector<float> c_old(_hLSize, 0);
+		if (t > 0)
+			c_old = _c.at(t-1);
+		
+		_c.at(t) = vec_ele_add( vec_ele_mult(hf, c_old), vec_ele_mult(hi, hc) );
+		_h.at(t) = vec_ele_mult( ho, tanhyp(_c.at(t)) );
+		_y.at(t) = softmax( vec_matrix_mult(_h.at(t), _Wy) );
+		
 		/// loop every element of the hidden layer
 		for (int iHidden = 0; iHidden < _hLSize; iHidden++)
 		{
@@ -217,11 +411,10 @@ void Blstm::forward_prop(vector<vector<float>> X)
 			}
 
 			/// get the activated value of the hidden element
-			UPlusW.at(iHidden) = tanhyp(tmp + tmp2);
+			_s.at(t).at(iHidden) = tanhyp(tmp + tmp2);
 		}
 
 		/// set the cell state matrix row at time t to the calculated states
-		_s.at(t) = UPlusW;
 
 
 		/// loop every output element of the output layer
@@ -259,7 +452,7 @@ float Blstm::calculate_loss(vector<vector<float>> Y)
 		{
 			/// sum up the loss value by calculating the product Y(t)_i * log( _o(t)_i )
 			/// with i = 0 .. #output elements
-			L += -1 * Y.at(t).at(iOut) * log(_o.at(t).at(iOut));
+			L += -1 * Y.at(t).at(iOut) * log(_y.at(t).at(iOut));
 			//L += abs(Y.at(t).at(iOut) - _o.at(t).at(iOut));
 		}
 	}
@@ -421,17 +614,88 @@ void Blstm::random_weights()
 			_W.at(m).at(n) = rVal;
 		}
 	}
+	
+	/// loop every element in matrix _Wf and assign a random value
+	for (int m = 0; m < _Wf.size() ; m++)
+	{
+		for (int n = 0; n < _Wf.at(m).size() ; n++)
+		{
+			float rVal = rand() / float(RAND_MAX);
+			rVal = rVal - 0.5;
+			rVal = rVal / sqrt(_Wf.at(m).size());
+
+			_Wf.at(m).at(n) = rVal;
+		}
+	}
+	
+	/// loop every element in matrix _Wi and assign a random value
+	for (int m = 0; m < _Wi.size() ; m++)
+	{
+		for (int n = 0; n < _Wi.at(m).size() ; n++)
+		{
+			float rVal = rand() / float(RAND_MAX);
+			rVal = rVal - 0.5;
+			rVal = rVal / sqrt(_Wi.at(m).size());
+
+			_Wi.at(m).at(n) = rVal;
+		}
+	}
+	
+	/// loop every element in matrix _Wc and assign a random value
+	for (int m = 0; m < _Wc.size() ; m++)
+	{
+		for (int n = 0; n < _Wc.at(m).size() ; n++)
+		{
+			float rVal = rand() / float(RAND_MAX);
+			rVal = rVal - 0.5;
+			rVal = rVal / sqrt(_Wc.at(m).size());
+
+			_Wc.at(m).at(n) = rVal;
+		}
+	}
+	
+	/// loop every element in matrix _Wo and assign a random value
+	for (int m = 0; m < _Wo.size() ; m++)
+	{
+		for (int n = 0; n < _Wo.at(m).size() ; n++)
+		{
+			float rVal = rand() / float(RAND_MAX);
+			rVal = rVal - 0.5;
+			rVal = rVal / sqrt(_Wo.at(m).size());
+
+			_Wo.at(m).at(n) = rVal;
+		}
+	}
+	
+	/// loop every element in matrix _Wy and assign a random value
+	for (int m = 0; m < _Wy.size() ; m++)
+	{
+		for (int n = 0; n < _Wy.at(m).size() ; n++)
+		{
+			float rVal = rand() / float(RAND_MAX);
+			rVal = rVal - 0.5;
+			rVal = rVal / sqrt(_Wy.at(m).size());
+
+			_Wy.at(m).at(n) = rVal;
+		}
+	}
 }
 
 void Blstm::print_result(vector<vector<float>> Y)
 {	
 	/// print predicted value matrix _o next to target value matrix Y
-	helper::print_2matrices_column("_o and Y", _o, Y);
+	//helper::print_2matrices_column("_o and Y", _o, Y);
+	helper::print_2matrices_column("_y and Y", _y, Y);
 
 	/// print weight matrix _U, _V and _W
-	helper::print_matrix("_U", _U);
-	helper::print_matrix("_W", _W);
-	helper::print_matrix("_V", _V);
+	//helper::print_matrix("_U", _U);
+	//helper::print_matrix("_W", _W);
+	//helper::print_matrix("_V", _V);
+	helper::print_matrix("_Wf", _Wf);
+	helper::print_matrix("_Wi", _Wi);
+	helper::print_matrix("_Wc", _Wc);
+	helper::print_matrix("_Wo", _Wo);
+	helper::print_matrix("_Wy", _Wy);
 }
 
 void Blstm::render_weights(int index)

@@ -144,7 +144,7 @@ void process()
 	//TrainingData trainData("data/NAND/T241L20000.txt");
 	// e.g., { 3, 2, 1 }
 	vector<unsigned> topology;
-	int T = 200;
+	int T = 2;
 	float learningRate = 0.001;
 
 	trainData.getTopology(topology);
@@ -201,7 +201,7 @@ void process()
 		
 		nn.render_weights(epoch);
 
-		if (epoch == 180) {
+		if (epoch == 1) {
 			//nn.print_result(Y);
 			done = true;
 		}

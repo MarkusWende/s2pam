@@ -31,10 +31,19 @@ class Blstm
 	private:
 		///	weight matrix _U stores the weights of the input layer to the hidden layer
 		std::vector<std::vector<float>> _U;
+		std::vector<std::vector<float>> _Ui;
+		std::vector<std::vector<float>> _Uf;
+		std::vector<std::vector<float>> _Uo;
+		std::vector<std::vector<float>> _Ug;
 		///	weight matrix _V stores the weights of the hidden layer to the output layer
 		std::vector<std::vector<float>> _V;
 		///	weight matrix _W stores the weights of the hidden layer
 		std::vector<std::vector<float>> _W;
+		std::vector<std::vector<float>> _Wi;
+		std::vector<std::vector<float>> _Wf;
+		std::vector<std::vector<float>> _Wo;
+		std::vector<std::vector<float>> _Wc;
+		std::vector<std::vector<float>> _Wy;
 
 		///	_dU containing the small weight changes which are applied to _U in the BPTT step
 		std::vector<std::vector<float>> _dU;
@@ -43,10 +52,16 @@ class Blstm
 		///	_dW containing the small weight changes which are applied to _W in the BPTT step
 		std::vector<std::vector<float>> _dW;
 
-		///	cell states
+		///	hidden output states
 		std::vector<std::vector<float>> _s;
+		std::vector<std::vector<float>> _h;
+		
+		/// hidden cell states
+		std::vector<std::vector<float>> _c;
+
 		/// output states
 		std::vector<std::vector<float>> _o;
+		std::vector<std::vector<float>> _y;
 
 		///	number of time steps = x/y train lenght
 		int _T;
@@ -89,12 +104,41 @@ class Blstm
 				);
 
 		/**
+		 * Activation function tanh(x) for vector input
+		 * @param x the input vector which is activated
+		 * @return the activated vector value as a float vector
+		 */
+		std::vector<float> tanhyp(
+				std::vector<float> x
+				);
+
+		/**
 		 * Softmax layer function
 		 * takes a float vector and squashes it in the range of [0,1]
 		 * @param x input vector
 		 * @return vector<float> the squashed vector
 		 */
 		std::vector<float> softmax(
+				std::vector<float> x
+				);
+
+		/**
+		 * sigmoid function for single value input
+		 * takes a float and squashed into the range [0,1]
+		 * @param x input value
+		 * @return the squashed value
+		 */
+		float sigmoid(
+				float x
+				);
+
+		/**
+		 * sigmoid function for vector input
+		 * takes a float vector and squashes it in the range of [0,1]
+		 * @param x input vector
+		 * @return vector<float> the squashed vector
+		 */
+		std::vector<float> sigmoid(
 				std::vector<float> x
 				);
 
@@ -177,6 +221,41 @@ class Blstm
 				);
 		
 		/**
+		 * a * B
+		 * multiply a vector with a matrix, length of a has to be
+		 * the same size as column size m of B
+		 * @param a input vector a, |R^(1 x m)
+		 * @param B input matrix B, |R^(m x p)
+		 * @return vector<float> the product, |R^p
+		 */
+		std::vector<float> vec_matrix_mult(
+				std::vector<float> a,
+				std::vector<std::vector<float>> B
+				);
+		
+		/**
+		 * add to vectors element wise together
+		 * @param a input vector a, |R^m
+		 * @param b input vector b, |R^m
+		 * @return vector<float> output vector, |R^m
+		 */
+		std::vector<float> vec_ele_add(
+				std::vector<float> a,
+				std::vector<float> b
+				);
+
+		/**
+		 * multiply to vectors element wise together
+		 * @param a input vector a, |R^m
+		 * @param b input vector b, |R^m
+		 * @return vector<float> output vector, |R^m
+		 */
+		std::vector<float> vec_ele_mult(
+				std::vector<float> a,
+				std::vector<float> b
+				);
+
+		/**
 		 * a \otimes b
 		 * outer product function of two vectors
 		 * @param a input vector a, |R^m
@@ -184,6 +263,17 @@ class Blstm
 		 * @return vector<vector<float>> the outer product matrix, |R^(m x n)
 		 */
 		std::vector<std::vector<float>> outer(
+				std::vector<float> a,
+				std::vector<float> b
+				);
+
+		/**
+		 * concatenate two vectors a and b with each other
+		 * @param a input vector a, |R^m
+		 * @param b input vector b, |R^n
+		 * @return vector<float> concatenated vector, |R^(1 x (m+n))
+		 */
+		std::vector<float> vec_concat(
 				std::vector<float> a,
 				std::vector<float> b
 				);
