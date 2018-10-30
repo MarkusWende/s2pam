@@ -32,8 +32,8 @@ class TrainingData
 		unsigned getFileLength(void);
 
 		// Returns the number of input values read from the file:
-		unsigned getNextInputs(vector<float> &inputVals);
-		unsigned getTargetOutputs(vector<float> &targetOutputVals);
+		unsigned getNextInputs(vector<double> &inputVals);
+		unsigned getTargetOutputs(vector<double> &targetOutputVals);
 
 	private:
 		ifstream m_trainingDataFile;
@@ -95,7 +95,7 @@ void TrainingData::returnToBeginOfFile()
 	getline(m_trainingDataFile, line);
 }
 
-unsigned TrainingData::getNextInputs(vector<float> &inputVals)
+unsigned TrainingData::getNextInputs(vector<double> &inputVals)
 {
 	inputVals.clear();
 
@@ -106,7 +106,7 @@ unsigned TrainingData::getNextInputs(vector<float> &inputVals)
 	string label;
 	ss >> label;
 	if (label.compare("in:") == 0) {
-		float oneValue;
+		double oneValue;
 		while (ss >> oneValue) {
 			inputVals.push_back(oneValue);
 		}
@@ -115,7 +115,7 @@ unsigned TrainingData::getNextInputs(vector<float> &inputVals)
 	return inputVals.size();
 }
 
-unsigned TrainingData::getTargetOutputs(vector<float> &targetOutputVals)
+unsigned TrainingData::getTargetOutputs(vector<double> &targetOutputVals)
 {
 	targetOutputVals.clear();
 
@@ -126,7 +126,7 @@ unsigned TrainingData::getTargetOutputs(vector<float> &targetOutputVals)
 	string label;
 	ss >> label;
 	if (label.compare("out:") == 0) {
-		float oneValue;
+		double oneValue;
 		while (ss >> oneValue) {
 			targetOutputVals.push_back(oneValue);
 		}
@@ -144,12 +144,13 @@ void process()
 	//TrainingData trainData("data/NAND/T241L20000.txt");
 	// e.g., { 3, 2, 1 }
 	vector<unsigned> topology;
-	int T = 2;
-	float learningRate = 0.001;
+	int T = 200;
+	int maxEpoch = 10000;
+	double learningRate = 0.0001;
 
 	trainData.getTopology(topology);
-	vector<vector<float>> X;
-	vector<vector<float>> Y;
+	vector<vector<double>> X;
+	vector<vector<double>> Y;
 
 	Blstm nn(topology, T, learningRate);
 
@@ -162,9 +163,9 @@ void process()
 
 	unsigned fileLength = trainData.getFileLength();
 	
-	vector<float> inputVals, targetVals, error;
-	vector<float> resultsToFile, targetsToFile;
-	float results;
+	vector<double> inputVals, targetVals, error;
+	vector<double> resultsToFile, targetsToFile;
+	double results;
 	int trainingSize = 0;
 	int testSize = 0;
 	int epoch = 0;
@@ -193,15 +194,16 @@ void process()
 		//helper::print_matrix("Y", Y);
 
 		nn.forward_prop(X);
-		float L = nn.calculate_loss(Y);
+		double L = nn.calculate_loss(Y);
 
-		cout << "Loss: " << L << endl;
+		cout << "Epoch: (" << epoch << "|" << maxEpoch << ")\tLoss: " << L;
 
 		nn.bptt(X,Y);
+		nn.check_weight_sum();
 		
 		nn.render_weights(epoch);
 
-		if (epoch == 1) {
+		if (epoch == maxEpoch || L >= 10.0) {
 			//nn.print_result(Y);
 			done = true;
 		}
@@ -230,7 +232,7 @@ void process()
 	nn.forward_prop(X);
 	nn.print_result(Y);
 
-	nn.save();
+	//nn.save();
 }
 
 int main(int argc, char* argv[])
