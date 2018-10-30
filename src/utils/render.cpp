@@ -20,7 +20,7 @@ using namespace std;
 //using namespace essentia::standard;
 
 namespace render {
-void matrix_to_PGM(std::vector<std::vector<float>> m)
+void matrix_to_PGM(std::vector<std::vector<double>> m)
 {
 	///	construct ofstream object and initialize filename
 	ofstream outputFile;
@@ -74,7 +74,7 @@ void matrix_to_MFCC_file(std::vector<std::vector<float>> m, string audioFilename
 	outputFile.close();
 }
 
-void vector_to_file(std::vector<float> v, string filename)
+void vector_to_file(std::vector<double> v, string filename)
 {
 
 	///	append the parent folder the file is stored in
@@ -96,7 +96,7 @@ void vector_to_file(std::vector<float> v, string filename)
 	outputFile.close();
 }
 
-inline void set_RGB(png_byte *ptr, string type, float val)
+inline void set_RGB(png_byte *ptr, string type, double val)
 {
 	/// set rgb range to 255 = 8 bit
 	int range = 255;
@@ -170,7 +170,7 @@ inline void set_RGB(png_byte *ptr, string type, float val)
 	}
 }
 
-void vector_to_PNG(string path, string addStr, string type, int unsigned height, int unsigned width, vector<float> v)
+void vector_to_PNG(string path, string addStr, string type, int unsigned height, int unsigned width, vector<double> v)
 {
 	/// get filename from input path, removing all slashes and parent foldernames
 	size_t found = path.find_last_of("/\\");
@@ -245,7 +245,7 @@ void vector_to_PNG(string path, string addStr, string type, int unsigned height,
 
 	/// Write image data
 	int x, y;
-	float max_value = 0;
+	double max_value = 0;
 	for (y=height-1 ; y>=0 ; y--) {
 		for (x=0 ; x<width ; x++) {
 			if(v.at(y*width + x) > max_value) {max_value = v.at(y*width + x); }
@@ -265,7 +265,7 @@ void vector_to_PNG(string path, string addStr, string type, int unsigned height,
 
 }
 
-void get_mfcc_from_file(vector<vector<float>>& mMfccCoeffs, string mfccFilename)
+void get_mfcc_from_file(vector<vector<double>>& mMfccCoeffs, string mfccFilename)
 {
 		///	initialze mfcc file
 		ifstream mfccFile;
@@ -289,10 +289,10 @@ void get_mfcc_from_file(vector<vector<float>>& mMfccCoeffs, string mfccFilename)
 			istringstream ss(line);
 
 			///	initialize new matrix row
-			mMfccCoeffs.push_back(vector<float> (0,0));
+			mMfccCoeffs.push_back(vector<double> (0,0));
 
 			///	traverse through all words
-			float val;
+			double val;
 			while (ss >> val)
 			{
 				///	read value
@@ -313,13 +313,13 @@ void write_color_test_pngs()
 		unsigned int imageWidth;
 		
 		/// color test
-		vector<vector<float>> mColorTest(1200,vector<float>(420,0));
+		vector<vector<double>> mColorTest(1200,vector<double>(420,0));
 		for (int i = 0; i < mColorTest.size(); i++) {
 			for (int j = 0; j < mColorTest[0].size(); j++) {
-				mColorTest.at(i).at(j) = (float) i / (mColorTest.size() - 1);
+				mColorTest.at(i).at(j) = (double) i / (mColorTest.size() - 1);
 			}	
 		}
-		vector<float> vColorTest;
+		vector<double> vColorTest;
 		helper::matrix_to_vector(mColorTest, imageHeight, imageWidth, vColorTest);
 
 		render::vector_to_PNG("colorTest", "_lin", "lin", imageHeight, imageWidth, vColorTest);

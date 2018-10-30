@@ -19,9 +19,11 @@
 
 #include <vector>
 #include <iostream>
-#include <math.h>
+#include <cmath>
 #include <stdlib.h>		/// rand
 #include <ctime>
+#include <chrono>		/// random seed
+#include <random>		/// normal_distributuion
 
 #include "helper.h"
 #include "render.h"
@@ -29,31 +31,43 @@
 class Blstm
 {
 	private:
-		///	weight matrix _U stores the weights of the input layer to the hidden layer
-		std::vector<std::vector<float>> _U;
-		///	weight matrix _V stores the weights of the hidden layer to the output layer
-		std::vector<std::vector<float>> _V;
 		///	weight matrix _W stores the weights of the hidden layer
-		std::vector<std::vector<float>> _W;
+		std::vector<std::vector<double>> _Wi;
+		std::vector<std::vector<double>> _Wf;
+		std::vector<std::vector<double>> _Wo;
+		std::vector<std::vector<double>> _Wz;
 
-		///	_dU containing the small weight changes which are applied to _U in the BPTT step
-		std::vector<std::vector<float>> _dU;
-		///	_dV containing the small weight changes which are applied to _V in the BPTT step
-		std::vector<std::vector<float>> _dV;
-		///	_dW containing the small weight changes which are applied to _W in the BPTT step
-		std::vector<std::vector<float>> _dW;
+		std::vector<std::vector<double>> _Ri;
+		std::vector<std::vector<double>> _Rf;
+		std::vector<std::vector<double>> _Ro;
+		std::vector<std::vector<double>> _Rz;
+		
+		std::vector<std::vector<double>> _Wy;
 
-		///	cell states
-		std::vector<std::vector<float>> _s;
+		///	hidden output states
+		std::vector<std::vector<double>> _y;
+		
+		/// internal hidden connections
+		std::vector<std::vector<double>> _f;
+		std::vector<std::vector<double>> _i;
+		std::vector<std::vector<double>> _o;
+		std::vector<std::vector<double>> _z;
+		
+		std::vector<std::vector<double>> _f_head;
+		std::vector<std::vector<double>> _i_head;
+		std::vector<std::vector<double>> _o_head;
+		std::vector<std::vector<double>> _z_head;
+		
+		/// hidden cell states
+		std::vector<std::vector<double>> _c;
+
 		/// output states
-		std::vector<std::vector<float>> _o;
+		std::vector<std::vector<double>> _prediction;
 
 		///	number of time steps = x/y train lenght
 		int _T;
-		///	number of steps the bptt algrorithm is going back
-		int _bpttTruncate;
 		/// learning rate determines how fast the neural network learns
-		float _learningRate;
+		double _learningRate;
 		
 		/// hidden layer size
 		int _hLSize;
@@ -76,26 +90,91 @@ class Blstm
 		Blstm(
 				std::vector<unsigned> topo,
 				int T,
-				float lR
+				double lR
 				);
 
 		/**
 		 * Activation function tanh(x)
 		 * @param x the input which is activated
-		 * @return float the activated value as a float
+		 * @return double the activated value as a double
 		 */
-		float tanhyp(
-				float x
+		double tanhyp(
+				double x
+				);
+
+		/**
+		 * derivative of the activation function tanh(x)
+		 * @param x input value
+		 * @return double
+		 */
+		double dtanhyp(
+				double x
+				);
+
+		/**
+		 * Activation function tanh(x) for vector input
+		 * @param x the input vector which is activated
+		 * @return the activated vector value as a double vector
+		 */
+		std::vector<double> tanhyp(
+				std::vector<double> x
+				);
+
+		/**
+		 * derivative of the activation function tanh(x) for vector input
+		 * @param x input vector
+		 * @return double vector
+		 */
+		std::vector<double> dtanhyp(
+				std::vector<double> x
 				);
 
 		/**
 		 * Softmax layer function
-		 * takes a float vector and squashes it in the range of [0,1]
+		 * takes a double vector and squashes it in the range of [0,1]
 		 * @param x input vector
-		 * @return vector<float> the squashed vector
+		 * @return vector<double> the squashed vector
 		 */
-		std::vector<float> softmax(
-				std::vector<float> x
+		std::vector<double> softmax(
+				std::vector<double> x
+				);
+
+		/**
+		 * sigmoid function for single value input
+		 * takes a double and squashed into the range [0,1]
+		 * @param x input value
+		 * @return the squashed value
+		 */
+		double sigmoid(
+				double x
+				);
+
+		/**
+		 * derivative of the sigmoid function for single value input
+		 * @param x input value
+		 * @return double
+		 */
+		double dsigmoid(
+				double x
+				);
+
+		/**
+		 * sigmoid function for vector input
+		 * takes a double vector and squashes it in the range of [0,1]
+		 * @param x input vector
+		 * @return vector<double> the squashed vector
+		 */
+		std::vector<double> sigmoid(
+				std::vector<double> x
+				);
+
+		/**
+		 * derivative of the sigmoid function for vector input
+		 * @param x input vector
+		 * @return vector<double>
+		 */
+		std::vector<double> dsigmoid(
+				std::vector<double> x
 				);
 
 		/**
@@ -104,7 +183,7 @@ class Blstm
 		 * @return void
 		 */
 		void forward_prop(
-				std::vector<std::vector<float>> X
+				std::vector<std::vector<double>> X
 				);
 
 		/**
@@ -114,8 +193,8 @@ class Blstm
 		 * @return void
 		 */
 		void bptt(
-				std::vector<std::vector<float>> X,
-				std::vector<std::vector<float>> Y
+				std::vector<std::vector<double>> X,
+				std::vector<std::vector<double>> Y
 				);
 
 		/**
@@ -129,63 +208,10 @@ class Blstm
 		 * meaning the smaller the value the
 		 * better does the network predicts the right output
 		 * @param Y the target matrix
-		 * @retrun float the loss/error value
+		 * @retrun double the loss/error value
 		 */
-		float calculate_loss(
-				std::vector<std::vector<float>> Y
-				);
-
-		/**
-		 * A + B
-		 * add two matrices with each other, Dimension of A an B has to be the same
-		 * @param A input matrix A, |R^(m x n)
-		 * @param B input matrix B, |R^(m x n)
-		 * @return vector<vector<float>> the summarized matrix, |R^(m x n)
-		 */
-		std::vector<std::vector<float>> matrix_add(
-				std::vector<std::vector<float>> A,
-				std::vector<std::vector<float>> B
-				);
-		
-		/**
-		 * A + x * B
-		 * add two matrices with each other by multiplying a constant to every
-		 * element of the secound matrix,
-		 * Dimension of A an B has to be the same
-		 * @param A input matrix A, m x n
-		 * @param B input matrix B, m x n
-		 * @param x constant that B is multiplied with
-		 * @return vector<vector<float>> the summarized matrix, |R^(m x n)
-		 */
-		std::vector<std::vector<float>> matrix_add_with_const(
-				std::vector<std::vector<float>> A,
-				std::vector<std::vector<float>> B,
-				float x
-				);
-		
-		/**
-		 * A * B
-		 * multiply two matrices with each other, column size m of A has to be
-		 * the same size as row size m of B
-		 * @param A input matrix A, |R^(n x m)
-		 * @param B input matrix B, |R^(m x p)
-		 * @return vector<vector<float>> the multiplied matrix, |R^(n x p)
-		 */
-		std::vector<std::vector<float>> matrix_mult(
-				std::vector<std::vector<float>> A,
-				std::vector<std::vector<float>> B
-				);
-		
-		/**
-		 * a \otimes b
-		 * outer product function of two vectors
-		 * @param a input vector a, |R^m
-		 * @param b input vector b, |R^n
-		 * @return vector<vector<float>> the outer product matrix, |R^(m x n)
-		 */
-		std::vector<std::vector<float>> outer(
-				std::vector<float> a,
-				std::vector<float> b
+		double calculate_loss(
+				std::vector<std::vector<double>> Y
 				);
 
 		/**
@@ -195,7 +221,7 @@ class Blstm
 		 * @return void
 		 */
 		void print_result(
-				std::vector<std::vector<float>> Y
+				std::vector<std::vector<double>> Y
 				);
 		
 		/**
@@ -206,6 +232,8 @@ class Blstm
 		void render_weights(
 				int index
 				);
+
+		bool check_weight_sum();
 
 		/**
 		 * save neural network to binary file

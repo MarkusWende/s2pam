@@ -16,13 +16,12 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <cmath>
 #include <malloc.h>
 #include <png.h>
 #include <iostream>							// std::cout, std::fixed
 #include <vector>
 #include <fstream>
-#include <malloc.h>
-#include <png.h>
 #include <essentia/algorithmfactory.h>
 #include <iomanip>							// std::setprecision
 
@@ -40,8 +39,22 @@ namespace helper {
 	 */
 	void matrix_to_normalized_matrix(
 			std::string path,
-			std::vector<std::vector<float>> mSpectrum,
-			std::vector<std::vector<float>>& m
+			std::vector<std::vector<double>> mSpectrum,
+			std::vector<std::vector<double>>& m
+			);
+	
+	/**
+	 * normalize the matrix elements to a range betwen [0,1] by adding the absolute value of the minimum
+	 * value in the matrix to every element and dividing every matrix entry by the maximum value + absolute of
+	 * the minimum value
+	 * in the matrix
+	 * @param mIn reference to the input matrix
+	 * @param mOut is a reference to the normalized output matrix
+	 * @return void
+	 */
+	void matrix_to_normalized_matrix(
+			std::vector<std::vector<double>> &mIn,
+			std::vector<std::vector<double>> &mOut
 			);
 	
 	/**
@@ -68,10 +81,10 @@ namespace helper {
 	 * @return void
 	 */
 	void matrix_to_normalized_vector(
-			std::vector<std::vector<float>> mSpectrum,
+			std::vector<std::vector<double>> mSpectrum,
 			unsigned int& height,
 			unsigned int& width,
-			std::vector<float>& v
+			std::vector<double>& v
 			);
 	
 	/**
@@ -84,10 +97,10 @@ namespace helper {
 	 * @return void
 	 */
 	void matrix_to_vector(
-			std::vector<std::vector<float>> mIn,
+			std::vector<std::vector<double>> mIn,
 			unsigned int& height,
 			unsigned int& width,
-			std::vector<float>& vOut
+			std::vector<double>& vOut
 			);
 	
 	/**
@@ -98,8 +111,132 @@ namespace helper {
 	 * @return void
 	 */
 	void matrix_enlarge(
-			std::vector<std::vector<float>> mInput,
-			std::vector<std::vector<float>>& mOutput
+			std::vector<std::vector<double>> mInput,
+			std::vector<std::vector<double>>& mOutput
+			);
+
+	/**
+	 * A + B
+	 * add two matrices with each other, Dimension of A an B has to be the same
+	 * @param A input matrix A, |R^(m x n)
+	 * @param B input matrix B, |R^(m x n)
+	 * @return vector<vector<double>> the summarized matrix, |R^(m x n)
+	 */
+	std::vector<std::vector<double>> matrix_add(
+			std::vector<std::vector<double>> A,
+			std::vector<std::vector<double>> B
+			);
+	
+	/**
+	 * A + x * B
+	 * add two matrices with each other by multiplying a constant to every
+	 * element of the secound matrix,
+	 * Dimension of A an B has to be the same
+	 * @param A input matrix A, m x n
+	 * @param B input matrix B, m x n
+	 * @param x constant that B is multiplied with
+	 * @return vector<vector<double>> the summarized matrix, |R^(m x n)
+	 */
+	std::vector<std::vector<double>> matrix_add_with_const(
+			std::vector<std::vector<double>> A,
+			std::vector<std::vector<double>> B,
+			double x
+			);
+	
+	/**
+	 * A * B
+	 * multiply two matrices with each other, column size m of A has to be
+	 * the same size as row size m of B
+	 * @param A input matrix A, |R^(n x m)
+	 * @param B input matrix B, |R^(m x p)
+	 * @return vector<vector<double>> the multiplied matrix, |R^(n x p)
+	 */
+	std::vector<std::vector<double>> matrix_mult(
+			std::vector<std::vector<double>> A,
+			std::vector<std::vector<double>> B
+			);
+
+	/**
+	 * A.T
+	 * transpose given matrix
+	 * @param A input matrix A, |R^(n x m)
+	 * @return vector<vector<double>> the tranposed matrix, |R^(m x n)
+	 */
+	std::vector<std::vector<double>> matrix_T(
+			std::vector<std::vector<double>> A
+			);
+
+	double matrix_sum(
+			std::vector<std::vector<double>> A
+			);
+	
+	/**
+	 * a * B
+	 * multiply a vector with a matrix, length of a has to be
+	 * the same size as column size m of B
+	 * @param a input vector a, |R^(1 x m)
+	 * @param B input matrix B, |R^(m x p)
+	 * @return vector<double> the product, |R^p
+	 */
+	std::vector<double> vec_matrix_mult(
+			std::vector<double> a,
+			std::vector<std::vector<double>> B
+			);
+	
+	/**
+	 * add to vectors element wise together
+	 * @param a input vector a, |R^m
+	 * @param b input vector b, |R^m
+	 * @return vector<double> output vector, |R^m
+	 */
+	std::vector<double> vec_ele_add(
+			std::vector<double> a,
+			std::vector<double> b
+			);
+
+	/**
+	 * subtract to vectors element wise
+	 * @param a input vector a, |R^m
+	 * @param b input vector b, |R^m
+	 * @return vector<double> output vector, |R^m
+	 */
+	std::vector<double> vec_ele_sub(
+			std::vector<double> a,
+			std::vector<double> b
+			);
+
+	/**
+	 * multiply to vectors element wise together
+	 * @param a input vector a, |R^m
+	 * @param b input vector b, |R^m
+	 * @return vector<double> output vector, |R^m
+	 */
+	std::vector<double> vec_ele_mult(
+			std::vector<double> a,
+			std::vector<double> b
+			);
+
+	/**
+	 * a \otimes b
+	 * outer product function of two vectors
+	 * @param a input vector a, |R^m
+	 * @param b input vector b, |R^n
+	 * @return vector<vector<double>> the outer product matrix, |R^(m x n)
+	 */
+	std::vector<std::vector<double>> outer(
+			std::vector<double> a,
+			std::vector<double> b
+			);
+
+	/**
+	 * concatenate two vectors a and b with each other
+	 * @param a input vector a, |R^m
+	 * @param b input vector b, |R^n
+	 * @return vector<double> concatenated vector, |R^(1 x (m+n))
+	 */
+	std::vector<double> vec_concat(
+			std::vector<double> a,
+			std::vector<double> b
 			);
 	
 	/**
@@ -108,7 +245,7 @@ namespace helper {
 	 * @return void
 	 */
 	void print_matrix(
-			std::vector<std::vector<float>> &mIn
+			std::vector<std::vector<double>> &mIn
 			);
 
 	/**
@@ -119,7 +256,7 @@ namespace helper {
 	 */
 	void print_matrix(
 			std::string label,
-			std::vector<std::vector<float>> &mIn
+			std::vector<std::vector<double>> &mIn
 			);
 
 	/**
@@ -131,8 +268,8 @@ namespace helper {
 	 */
 	void print_2matrices_column(
 			std::string label,
-			std::vector<std::vector<float>> &mIn,
-			std::vector<std::vector<float>> &mIn2
+			std::vector<std::vector<double>> &mIn,
+			std::vector<std::vector<double>> &mIn2
 			);
 
 	/**
@@ -146,17 +283,6 @@ namespace helper {
 			std::vector<double> &vIn
 			);
 	
-	/**
-	 * print the content of the vector
-	 * @param label a string containing something descriptive for the vector
-	 * @param vIn input vector
-	 * @return void
-	 */
-	void print_vector(
-			std::string label,
-			std::vector<float> &vIn
-			);
-
 	void get_textGrid_targetVals_vc(
 			item_c& tgItem,
 			int frame,
@@ -166,7 +292,7 @@ namespace helper {
 			item_c& tgItem,
 			int mIndex,
 			int& frame,
-			float& frameEnd,
+			double& frameEnd,
 			int nSamples);
 }
 #endif		// HELPER_H

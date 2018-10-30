@@ -37,7 +37,7 @@ namespace render {
 	 * @return void
 	 */
 	void matrix_to_PGM(
-			std::vector<std::vector<float>> m
+			std::vector<std::vector<double>> m
 			);
 	
 	/**
@@ -63,18 +63,18 @@ namespace render {
 	inline void set_RGB(
 			png_byte *ptr,
 			std::string type,
-			float val
+			double val
 			);
 	
 	/**
-	 * Save a vector of floats to a png image file
+	 * Save a vector of doubles to a png image file
 	 * @param path contains the path and name of the file the png is saved under
 	 * @param addStr contains an additional string like: bands, mfcc, spec
 	 * @param type contains a string which describes the type <linear,log>
 	 * to represent what kind of image the file contains
 	 * @param height height of the image
 	 * @param width width of the image
-	 * @param v input float vector
+	 * @param v input double vector
 	 * @return void
 	 */
 	void vector_to_PNG(
@@ -83,17 +83,17 @@ namespace render {
 			std::string type,
 			int unsigned height,
 			int unsigned width,
-			std::vector<float> v
+			std::vector<double> v
 			);
 	
 	void get_mfcc_from_file(std::vector<
-			std::vector<float>>& mMfccCoeffs,
+			std::vector<double>>& mMfccCoeffs,
 			std::string mfccFilename);
 	
 	void write_color_test_pngs();
 
 	void vector_to_file(
-			std::vector<float> v,
+			std::vector<double> v,
 			std::string filename
 			);
 }

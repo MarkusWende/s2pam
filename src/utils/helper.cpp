@@ -17,7 +17,7 @@ using namespace std;
 using namespace essentia;
 
 namespace helper {
-void matrix_to_normalized_matrix(string path, vector<vector<float>> mSpectrum, vector<vector<float>>& m)
+void matrix_to_normalized_matrix(string path, vector<vector<double>> mSpectrum, vector<vector<double>>& m)
 {
 	/// get filename by removing the path and file extension
 	size_t found = path.find_last_of("/\\");
@@ -34,7 +34,7 @@ void matrix_to_normalized_matrix(string path, vector<vector<float>> mSpectrum, v
 	//printf("Spectrum frequence length in #bands: %d\n", freqLength);
 
 	/// maximum value initilization
-	float maxValue = 0;
+	double maxValue = 0;
 
 	/// search for the maximal value in input matrix
 	for (int i = 1; i < freqLength; i++) {
@@ -49,6 +49,42 @@ void matrix_to_normalized_matrix(string path, vector<vector<float>> mSpectrum, v
 		for (int j = 0; j < timeLength; j++) {
 			mSpectrum[j][i] = mSpectrum[j][i] / maxValue;
 			m[freqLength-i][j] = mSpectrum[j][i];
+		}
+	}
+}
+
+void matrix_to_normalized_matrix(vector<vector<double>> &mIn, vector<vector<double>> &mOut)
+{
+	/// get spectrogram dimensions
+	unsigned int rowSize = mIn.size();
+	unsigned int columnLength = mIn[0].size();
+
+	/// maximum value initilization
+	double maxVal = 0.0;
+	double minVal = 0.0;
+	
+	/// search for the maximal value in input matrix
+	for (int i = 0; i < rowSize; i++)
+	{
+		for (int j = 0; j < columnLength; j++)
+		{
+			if (mIn.at(i).at(j) > maxVal)
+				maxVal = mIn.at(i).at(j);
+			if (mIn.at(i).at(j) < minVal)
+				minVal = mIn.at(i).at(j);
+		}
+	}
+
+	double absMin = abs(minVal);
+	double absMax = absMin + maxVal;
+
+	/// normalize every matrix value by dividing the value by the maximal value
+	for (int i = 0; i < rowSize; i++)
+	{
+		for (int j = 0; j < columnLength; j++)
+		{
+			mOut.at(i).at(j) = mIn.at(i).at(j) + absMin;
+			mOut.at(i).at(j) = mOut.at(i).at(j) / absMax;
 		}
 	}
 }
@@ -75,8 +111,8 @@ void matrix_to_normalized_matrix(vector<vector<float>> &mIn, vector<vector<float
 		}
 	}
 
-	float absMin = abs(minVal);
-	float absMax = absMin + maxVal;
+	double absMin = abs(minVal);
+	double absMax = absMin + maxVal;
 
 	/// normalize every matrix value by dividing the value by the maximal value
 	for (int i = 0; i < rowSize; i++)
@@ -89,7 +125,7 @@ void matrix_to_normalized_matrix(vector<vector<float>> &mIn, vector<vector<float
 	}
 }
 
-void matrix_to_normalized_vector(vector<vector<float>> mSpectrum, unsigned int& height, unsigned int& width, vector<float>& v)
+void matrix_to_normalized_vector(vector<vector<double>> mSpectrum, unsigned int& height, unsigned int& width, vector<double>& v)
 {
 	/// get spectrogram dimensions
 	unsigned int timeLength = mSpectrum.size();
@@ -100,7 +136,7 @@ void matrix_to_normalized_vector(vector<vector<float>> mSpectrum, unsigned int& 
 	width = timeLength;
 
 	/// initliaze maximal input matrix value
-	float maxValue = 0;
+	double maxValue = 0;
 
 	///	search for maximal value in input matrix
 	for (int i = 1; i < freqLength; i++) {
@@ -118,7 +154,7 @@ void matrix_to_normalized_vector(vector<vector<float>> mSpectrum, unsigned int& 
 	}
 }
 
-void matrix_to_vector(vector<vector<float>> mIn, unsigned int& height, unsigned int& width, vector<float>& vOut)
+void matrix_to_vector(vector<vector<double>> mIn, unsigned int& height, unsigned int& width, vector<double>& vOut)
 {
 	/// get spectrogram dimensions
 	unsigned int timeLength = mIn.size();
@@ -136,7 +172,7 @@ void matrix_to_vector(vector<vector<float>> mIn, unsigned int& height, unsigned 
 	}
 }
 
-void matrix_enlarge(std::vector<std::vector<float>> mInput, std::vector<std::vector<float>>& mOutput)
+void matrix_enlarge(std::vector<std::vector<double>> mInput, std::vector<std::vector<double>>& mOutput)
 {
 	/// print matrix information, verbose mode has to be on
 	E_INFO("---Enlarge Matrix:\n" <<
@@ -147,7 +183,7 @@ void matrix_enlarge(std::vector<std::vector<float>> mInput, std::vector<std::vec
 	/// initialize maximal value inside the input matrix
 	/// initialize blocksize, which represents the row multiplicator
 	int counter = 0;
-	float maxVal = 0.0;
+	double maxVal = 0.0;
 	int blockSize = (int) floor(mOutput[0].size()/mInput[0].size());
 
 	/// copy blocksize times the rows of the input matrix to the output matrix
@@ -164,7 +200,226 @@ void matrix_enlarge(std::vector<std::vector<float>> mInput, std::vector<std::vec
 	//printf("\n=============================================================================\n");
 }
 
-void print_matrix(vector<vector<float>> &mIn)
+vector<vector<double>> matrix_add(vector<vector<double>> A, vector<vector<double>> B)
+{
+	/// initliaze output matrix with zeros, dimensions of the matrix are the same as
+	/// the dimensions of the input matrices
+	vector<vector<double>> out(A.size(), vector<double> (A.at(0).size(), 0));
+
+	/// loop every matrix element and add A_i_j and B_i_j up
+	for (int i = 0; i < A.size(); i++)
+	{
+		for (int j = 0; j < A.at(0).size(); j++)
+		{
+			out.at(i).at(j) = A.at(i).at(j) + B.at(i).at(j);
+		}
+	}
+
+	return out;
+}
+
+vector<vector<double>> matrix_add_with_const(vector<vector<double>> A, vector<vector<double>> B, double x)
+{
+	/// initliaze output matrix with zeros, dimensions of the matrix are the same as
+	/// the dimensions of the input matrices
+	vector<vector<double>> out(A.size(), vector<double> (A.at(0).size(), 0));
+
+	/// loop every matrix element and add A_i_j and x multiplied with B_i_j up
+	for (int i = 0; i < A.size(); i++)
+	{
+		for (int j = 0; j < A.at(0).size(); j++)
+		{
+			out.at(i).at(j) = A.at(i).at(j) + x * B.at(i).at(j);
+		}
+	}
+
+	return out;
+}
+
+vector<vector<double>> matrix_mult(vector<vector<double>> A, vector<vector<double>> B)
+{
+	/// check if matrices dimensions correspond to the matrix multiplication rule
+	/// A with m x n and B with n x p to get C with m x p
+	if (A.at(0).size() != B.size())
+	{
+		cout << "Matrices cant be multiplied." << endl;
+	}
+
+	/// initliaze output matrix with zeros
+	vector<vector<double>> out(A.size(), vector<double> (B.at(0).size(), 0));
+
+	/// loop every element of the output matrix
+	/// every row
+	for (int i = 0; i < A.size(); i++)
+	{
+		/// every column
+		for (int j = 0; j < B.at(0).size(); j++)
+		{
+			/// sum up the row of A element wise multiplied by the column of B
+			for (int k = 0; k < B.size(); k++)
+			{
+				out.at(i).at(j) = A.at(i).at(k) * B.at(k).at(j);
+			}
+		}
+	}
+
+	return out;
+}
+
+vector<vector<double>> matrix_T(vector<vector<double>> A)
+{
+	/// initliaze output matrix with zeros
+	vector<vector<double>> out(A.at(0).size(), vector<double> (A.size(), 0));
+
+	/// loop every element of the output matrix
+	for (int i = 0; i < out.size(); i++)
+	{
+		for (int j = 0; j < out.at(0).size(); j++)
+		{
+			out.at(i).at(j) = A.at(j).at(i);
+		}
+	}
+
+	return out;
+}
+
+double matrix_sum(vector<vector<double>> A)
+{
+	double sum = 0;
+	for (int i = 0; i < A.size(); i++)
+	{
+		for (int j = 0; j < A.at(0).size(); j++)
+		{
+			sum += abs(A.at(i).at(j));
+		}
+	}
+
+	return sum;
+}
+
+vector<double> vec_matrix_mult(vector<double> a, vector<vector<double>> B)
+{
+	/// check if matrices dimensions correspond to the matrix multiplication rule
+	/// A with m x n and B with n x p to get C with m x p
+	if (a.size() != B.size())
+	{
+		cout << "Vector and matrix cant be multiplied." << endl;
+	}
+
+	/// initliaze output vector with zeros
+	vector<double> out(B.at(0).size(), 0);
+
+	/// loop every element of the output vector
+	for (int i = 0; i < out.size(); i++)
+	{
+		/// sum up the elements in a multiplied by the elements in the column of B
+		for (int j = 0; j < a.size(); j++)
+		{
+			out.at(i) += a.at(j) * B.at(j).at(i);
+		}
+	}
+
+	return out;
+}
+
+vector<double> vec_ele_add(vector<double> a, vector<double> b)
+{
+	/// check if vector dimensions are the same
+	if (a.size() != b.size())
+	{
+		cout << "Vectors cant be added element wise." << endl;
+	}
+
+	/// initliaze output vector with zeros
+	vector<double> out(a.size(), 0);
+
+	/// loop every element of the output vector
+	for (int i = 0; i < out.size(); i++)
+	{
+		out.at(i) = a.at(i) + b.at(i);
+	}
+
+	return out;
+}
+
+vector<double> vec_ele_sub(vector<double> a, vector<double> b)
+{
+	/// check if vector dimensions are the same
+	if (a.size() != b.size())
+	{
+		cout << "Vectors cant be added element wise." << endl;
+	}
+
+	/// initliaze output vector with zeros
+	vector<double> out(a.size(), 0);
+
+	/// loop every element of the output vector
+	for (int i = 0; i < out.size(); i++)
+	{
+		out.at(i) = a.at(i) - b.at(i);
+	}
+
+	return out;
+}
+
+vector<double> vec_ele_mult(vector<double> a, vector<double> b)
+{
+	/// check if vector dimensions are the same
+	if (a.size() != b.size())
+	{
+		cout << "Vectors cant be multiplied element wise." << endl;
+	}
+
+	/// initliaze output vector with zeros
+	vector<double> out(a.size(), 0);
+
+	/// loop every element of the output vector
+	for (int i = 0; i < out.size(); i++)
+	{
+		out.at(i) = a.at(i) * b.at(i);
+	}
+
+	return out;
+}
+
+vector<vector<double>> outer(vector<double> a, vector<double> b)
+{
+	/// initialize the output matrix for the outer product of vector a and b
+	/// dimension of the output matrix is m x n, with length m of vector a and length n of
+	/// vector b
+	vector<vector<double>> out(a.size(), vector<double> (b.size(), 0));
+
+	/// loop every element of the output matrix out_i_j and assign the product a_i * b_j
+	for (int i = 0; i < a.size(); i++)
+	{
+		for (int j = 0; j < b.size(); j++) {
+			out.at(i).at(j) = a.at(i) * b.at(j);
+		}
+	}
+
+	return out;
+}
+
+vector<double> vec_concat(vector<double> a, vector<double> b)
+{
+	vector<double> out(a.size() + b.size(), 0);
+	int index = 0;
+	
+	for (int i = 0; i < a.size(); i++)
+	{
+		out.at(i) = a.at(i);
+		index = i;
+	}
+
+	for (int j = 0; j < b.size(); j++)
+	{
+		out.at(index + j) = b.at(j);
+	}
+
+	return out;
+}
+
+void print_matrix(vector<vector<double>> &mIn)
 {
 	/// get spectrogram dimensions
 	unsigned int rowSize = mIn.size();
@@ -172,8 +427,8 @@ void print_matrix(vector<vector<float>> &mIn)
 
 
 	/// maximum value initilization
-	float maxVal = 0.0;
-	float minVal = 0.0;
+	double maxVal = 0.0;
+	double minVal = 0.0;
 	
 	/// search for the maximal value in input matrix
 	for (int i = 0; i < rowSize; i++)
@@ -193,7 +448,7 @@ void print_matrix(vector<vector<float>> &mIn)
 	cout << columnLength << endl;
 }
 
-void print_2matrices_column(string label, vector<vector<float>> &mIn, vector<vector<float>> &mIn2)
+void print_2matrices_column(string label, vector<vector<double>> &mIn, vector<vector<double>> &mIn2)
 {
 	/// get spectrogram dimensions
 	unsigned int rowSize = mIn.size();
@@ -201,10 +456,10 @@ void print_2matrices_column(string label, vector<vector<float>> &mIn, vector<vec
 
 
 	/// maximum value initilization
-	float maxVal = 0.0;
-	float minVal = 0.0;
-	float maxVal2 = 0.0;
-	float minVal2 = 0.0;
+	double maxVal = 0.0;
+	double minVal = 0.0;
+	double maxVal2 = 0.0;
+	double minVal2 = 0.0;
 
 	///
 	cout << label << endl;
@@ -242,7 +497,7 @@ void print_2matrices_column(string label, vector<vector<float>> &mIn, vector<vec
 	cout << "====================================================================" << endl << endl;
 }
 
-void print_matrix(string label, vector<vector<float>> &mIn)
+void print_matrix(string label, vector<vector<double>> &mIn)
 {
 	/// get spectrogram dimensions
 	unsigned int rowSize = mIn.size();
@@ -250,8 +505,8 @@ void print_matrix(string label, vector<vector<float>> &mIn)
 
 
 	/// maximum value initilization
-	float maxVal = 0.0;
-	float minVal = 0.0;
+	double maxVal = 0.0;
+	double minVal = 0.0;
 
 	///
 	cout << label << endl;
@@ -287,16 +542,6 @@ void print_vector(string label, vector<double> &vIn)
 	cout << endl;
 }
 
-void print_vector(string label, vector<float> &vIn)
-{
-	cout << label << " ";
-	for (unsigned i = 0; i < vIn.size(); ++i) {
-		cout << fixed << vIn[i] << " ";
-	}
-
-	cout << endl;
-}
-
 void get_textGrid_targetVals_vc(item_c& tgItem, int frame, vector<double>& targetVals)
 {
 	/// Train the net what the outputs should have been
@@ -322,12 +567,12 @@ void get_textGrid_targetVals_vc(item_c& tgItem, int frame, vector<double>& targe
 	}
 }
 
-void get_textGrid_frame(item_c& tgItem, int mIndex, int& frame, float& frameEnd, int nSamples)
+void get_textGrid_frame(item_c& tgItem, int mIndex, int& frame, double& frameEnd, int nSamples)
 {
-	float time = 0;
-	float multiplicator = 0;
+	double time = 0;
+	double multiplicator = 0;
 	
-	multiplicator = ((float) (mIndex+1) / (float) nSamples);
+	multiplicator = ((double) (mIndex+1) / (double) nSamples);
 	time = tgItem.xmax * multiplicator;
 	
 	if (time >= frameEnd)
