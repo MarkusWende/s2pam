@@ -199,9 +199,10 @@ void process()
 		cout << "Epoch: (" << epoch << "|" << maxEpoch << ")\tLoss: " << L;
 
 		nn.bptt(X,Y);
-		nn.check_weight_sum();
+		if ( !nn.check_weight_sum() )
+			done = true;
 		
-		nn.render_weights(epoch);
+		//nn.render_weights(epoch);
 
 		if (epoch == maxEpoch || L >= 10.0) {
 			//nn.print_result(Y);

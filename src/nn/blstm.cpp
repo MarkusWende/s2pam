@@ -310,13 +310,13 @@ double Blstm::calculate_loss(vector<vector<double>> Y)
 		{
 			/// sum up the loss value by calculating the product Y(t)_i * log( _o(t)_i )
 			/// with i = 0 .. output layer size
-			//L += Y.at(t).at(iOut) * log(_prediction.at(t).at(iOut));
-			L += abs(Y.at(t).at(iOut) - _prediction.at(t).at(iOut));
+			L += Y.at(t).at(iOut) * log(_prediction.at(t).at(iOut));
+			//L += abs(Y.at(t).at(iOut) - _prediction.at(t).at(iOut));
 		}
 	}
 
 	/// divide the loss by the length of the output train
-	L = L / _T;
+	L = -1 * L / _T;
 	//cout << "\tL: " << L;
 	return L;
 }
@@ -370,7 +370,7 @@ void Blstm::bptt(vector<vector<double>> X, vector<vector<double>> Y)
 
 		/// do_head(t) = dy(t) * tanh( c(t) ) * dsig( o_head(t) )
 		do_head = vec_ele_mult(tanhyp(_c.at(t)), dy);
-		do_head = vec_ele_mult(dsigmoid(_o_head.at(t)), do_head);
+		do_head = vec_ele_mult(dsigmoid(_o.at(t)), do_head);
 
 		/// dc(t) = dy(t) * o(t) * dtanh( c(t) ) + dc(t+1) * f(t+1)
 		vector<double> dc = vec_ele_mult(_o.at(t), dy);
@@ -383,15 +383,15 @@ void Blstm::bptt(vector<vector<double>> X, vector<vector<double>> Y)
 		/// df_head(t) = dc(t) * c(t-1) * dsig( f_head(t) )
 		if (t > 0)
 			df_head = vec_ele_mult(_c.at(t-1), dc);
-		df_head = vec_ele_mult(dsigmoid(_f_head.at(t)), df_head);	
+		df_head = vec_ele_mult(dsigmoid(_f.at(t)), df_head);	
 		
 		/// di_head(t) = dc(t) * z(t) * dsig( i_head(t) )
 		di_head = vec_ele_mult(_z.at(t), dc);
-		di_head = vec_ele_mult(dsigmoid(_i_head.at(t)), di_head);
+		di_head = vec_ele_mult(dsigmoid(_i.at(t)), di_head);
 
 		/// dz_head(t) = dc(t) * i(t) * dtanh( _z_head(t) )
 		dz_head = vec_ele_mult(_i.at(t), dc);
-		dz_head = vec_ele_mult(dtanhyp(_z_head.at(t)), dz_head);
+		dz_head = vec_ele_mult(dtanhyp(_z.at(t)), dz_head);
 
 		/// calc gradients
 		
@@ -447,11 +447,7 @@ void Blstm::random_weights()
 	{
 		for (int n = 0; n < _Wf.at(m).size() ; n++)
 		{
-			double rVal = rand() / double(RAND_MAX);
-			rVal = rVal - 0.5;
-			rVal = rVal / sqrt(_Wf.at(m).size());
-
-			_Wf.at(m).at(n) = rVal;
+			_Wf.at(m).at(n) = distribution(generator);
 		}
 	}
 	
@@ -460,11 +456,7 @@ void Blstm::random_weights()
 	{
 		for (int n = 0; n < _Wi.at(m).size() ; n++)
 		{
-			double rVal = rand() / double(RAND_MAX);
-			rVal = rVal - 0.5;
-			rVal = rVal / sqrt(_Wi.at(m).size());
-
-			_Wi.at(m).at(n) = rVal;
+			_Wi.at(m).at(n) = distribution(generator);
 		}
 	}
 	
@@ -473,11 +465,7 @@ void Blstm::random_weights()
 	{
 		for (int n = 0; n < _Wz.at(m).size() ; n++)
 		{
-			double rVal = rand() / double(RAND_MAX);
-			rVal = rVal - 0.5;
-			rVal = rVal / sqrt(_Wz.at(m).size());
-
-			_Wz.at(m).at(n) = rVal;
+			_Wz.at(m).at(n) = distribution(generator);
 		}
 	}
 	
@@ -486,11 +474,7 @@ void Blstm::random_weights()
 	{
 		for (int n = 0; n < _Wo.at(m).size() ; n++)
 		{
-			double rVal = rand() / double(RAND_MAX);
-			rVal = rVal - 0.5;
-			rVal = rVal / sqrt(_Wo.at(m).size());
-
-			_Wo.at(m).at(n) = rVal;
+			_Wo.at(m).at(n) = distribution(generator);
 		}
 	}
 	
@@ -499,11 +483,7 @@ void Blstm::random_weights()
 	{
 		for (int n = 0; n < _Wy.at(m).size() ; n++)
 		{
-			double rVal = rand() / double(RAND_MAX);
-			rVal = rVal - 0.5;
-			rVal = rVal / sqrt(_Wy.at(m).size());
-
-			_Wy.at(m).at(n) = rVal;
+			_Wy.at(m).at(n) = distribution(generator);
 		}
 	}
 	
@@ -512,11 +492,7 @@ void Blstm::random_weights()
 	{
 		for (int n = 0; n < _Rf.at(m).size() ; n++)
 		{
-			double rVal = rand() / double(RAND_MAX);
-			rVal = rVal - 0.5;
-			rVal = rVal / sqrt(_Rf.at(m).size());
-
-			_Rf.at(m).at(n) = rVal;
+			_Rf.at(m).at(n) = distribution(generator);
 		}
 	}
 	
@@ -525,11 +501,7 @@ void Blstm::random_weights()
 	{
 		for (int n = 0; n < _Ri.at(m).size() ; n++)
 		{
-			double rVal = rand() / double(RAND_MAX);
-			rVal = rVal - 0.5;
-			rVal = rVal / sqrt(_Ri.at(m).size());
-
-			_Ri.at(m).at(n) = rVal;
+			_Ri.at(m).at(n) = distribution(generator);
 		}
 	}
 
@@ -547,11 +519,7 @@ void Blstm::random_weights()
 	{
 		for (int n = 0; n < _Ro.at(m).size() ; n++)
 		{
-			double rVal = rand() / double(RAND_MAX);
-			rVal = rVal - 0.5;
-			rVal = rVal / sqrt(_Ro.at(m).size());
-
-			_Ro.at(m).at(n) = rVal;
+			_Ro.at(m).at(n) = distribution(generator);
 		}
 	}
 }
@@ -588,9 +556,34 @@ void Blstm::render_weights(int index)
 
 bool Blstm::check_weight_sum()
 {
-	cout << "\tSUM Rz: " << matrix_sum(_Rz) << endl;
+	bool status = true;
 
-	return true;
+	float sumRz = matrix_sum(_Rz);
+	float sumRo = matrix_sum(_Ro);
+	float sumRi = matrix_sum(_Ri);
+	float sumRf = matrix_sum(_Rf);
+	float sumWz = matrix_sum(_Wz);
+	float sumWi = matrix_sum(_Wi);
+	float sumWo = matrix_sum(_Wo);
+	float sumWf = matrix_sum(_Wf);
+	float sumWy = matrix_sum(_Wy);
+
+	cout << "\tSUM Rz: " << sumRz << "\tRo: " << sumRo
+		<< "\tRi: " << sumRi << "\tRf: " << sumRf
+		<< "\tWo: " << sumWo << "\tWz: " << sumWz
+		<< "\tWi: " << sumWi << "\tWf: " << sumWf
+		<< "\tWy: " << sumWy << endl;
+
+	float limit = 500.0;
+	
+	if ( (sumRz > limit) || (sumRo > limit) || (sumRi > limit) || (sumRf > limit) 
+			|| (sumWz > limit) || (sumWi > limit) || (sumWo > limit) || (sumWf > limit)
+			|| (sumWy > limit) )
+	{
+		status = false;
+	}
+
+	return status;
 }
 
 void Blstm::save()
