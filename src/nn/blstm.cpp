@@ -71,6 +71,18 @@ Blstm::Blstm(vector<unsigned> topo, int T, double lR)
 	
 	_Rz.clear();
 	_Rz.resize(_hLSize, vector<double> (_hLSize, 0));
+
+	_bi.clear();
+	_bi.resize(_hLSize, 0);
+	
+	_bf.clear();
+	_bf.resize(_hLSize, 0);
+	
+	_bo.clear();
+	_bo.resize(_hLSize, 0);
+	
+	_bz.clear();
+	_bz.resize(_hLSize, 0);
 }
 
 double Blstm::tanhyp(double x)
@@ -285,16 +297,24 @@ void Blstm::forward_prop(vector<vector<double>> X)
 
 		vector<double> c_old(_hLSize, 0);
 		if (t > 0)
+		{
 			c_old = _c.at(t-1);
+		}
 		
 		c = vec_ele_mult(z, i);
 		c = vec_ele_add( c, vec_ele_mult(f, c_old) );
 		_c.at(t) = c;
 
 		_y.at(t) = vec_ele_mult( o, tanhyp(c) );
+		y_tMinus1 = _y.at(t);
 
 		_prediction.at(t) = softmax( vec_matrix_mult(_y.at(t), _Wy) );
+		
+		//_prediction.at(t) = vec_matrix_mult(_y.at(t), _Wy);
+		
+		//print_vector("_predic: ", _prediction.at(t));
 	}
+
 }
 
 double Blstm::calculate_loss(vector<vector<double>> Y)
@@ -310,13 +330,16 @@ double Blstm::calculate_loss(vector<vector<double>> Y)
 		{
 			/// sum up the loss value by calculating the product Y(t)_i * log( _o(t)_i )
 			/// with i = 0 .. output layer size
-			L += Y.at(t).at(iOut) * log(_prediction.at(t).at(iOut));
-			//L += abs(Y.at(t).at(iOut) - _prediction.at(t).at(iOut));
+			//cout << _prediction.at(t).at(iOut) << endl;
+			L += -1 * Y.at(t).at(iOut) * log(_prediction.at(t).at(iOut));
+			//float div = (Y.at(t).at(iOut) - _prediction.at(t).at(iOut));
+			//div = div * div;
+			//L += div / 2;
 		}
 	}
 
 	/// divide the loss by the length of the output train
-	L = -1 * L / _T;
+	L = L / _T;
 	//cout << "\tL: " << L;
 	return L;
 }
@@ -370,7 +393,7 @@ void Blstm::bptt(vector<vector<double>> X, vector<vector<double>> Y)
 
 		/// do_head(t) = dy(t) * tanh( c(t) ) * dsig( o_head(t) )
 		do_head = vec_ele_mult(tanhyp(_c.at(t)), dy);
-		do_head = vec_ele_mult(dsigmoid(_o.at(t)), do_head);
+		do_head = vec_ele_mult(dsigmoid(_o_head.at(t)), do_head);
 
 		/// dc(t) = dy(t) * o(t) * dtanh( c(t) ) + dc(t+1) * f(t+1)
 		vector<double> dc = vec_ele_mult(_o.at(t), dy);
@@ -383,15 +406,15 @@ void Blstm::bptt(vector<vector<double>> X, vector<vector<double>> Y)
 		/// df_head(t) = dc(t) * c(t-1) * dsig( f_head(t) )
 		if (t > 0)
 			df_head = vec_ele_mult(_c.at(t-1), dc);
-		df_head = vec_ele_mult(dsigmoid(_f.at(t)), df_head);	
+		df_head = vec_ele_mult(dsigmoid(_f_head.at(t)), df_head);	
 		
 		/// di_head(t) = dc(t) * z(t) * dsig( i_head(t) )
 		di_head = vec_ele_mult(_z.at(t), dc);
-		di_head = vec_ele_mult(dsigmoid(_i.at(t)), di_head);
+		di_head = vec_ele_mult(dsigmoid(_i_head.at(t)), di_head);
 
 		/// dz_head(t) = dc(t) * i(t) * dtanh( _z_head(t) )
 		dz_head = vec_ele_mult(_i.at(t), dc);
-		dz_head = vec_ele_mult(dtanhyp(_z.at(t)), dz_head);
+		dz_head = vec_ele_mult(dtanhyp(_z_head.at(t)), dz_head);
 
 		/// calc gradients
 		
@@ -409,6 +432,11 @@ void Blstm::bptt(vector<vector<double>> X, vector<vector<double>> Y)
 		vector<double> dy_Ri = vec_matrix_mult(di_head, matrix_T(_Ri));
 		vector<double> dy_Ro = vec_matrix_mult(do_head, matrix_T(_Ro));
 		vector<double> dy_Rz = vec_matrix_mult(dz_head, matrix_T(_Rz));
+		
+		//vector<double> dy_Rf = vec_matrix_mult(df_head, _Rf);
+		//vector<double> dy_Ri = vec_matrix_mult(di_head, _Ri);
+		//vector<double> dy_Ro = vec_matrix_mult(do_head, _Ro);
+		//vector<double> dy_Rz = vec_matrix_mult(dz_head, _Rz);
 
 		vector<double> dy_R = vec_ele_add(dy_Ro, dy_Rz);
 		dy_R = vec_ele_add(dy_R, dy_Ri);
@@ -539,7 +567,7 @@ void Blstm::print_result(vector<vector<double>> Y)
 	//helper::print_matrix("_Wi", _Wi);
 	//helper::print_matrix("_Wc", _Wc);
 	//helper::print_matrix("_Wo", _Wo);
-	print_matrix("_Rz", _Rz);
+	//print_matrix("_Rz", _Rz);
 }
 
 void Blstm::render_weights(int index)
@@ -627,6 +655,143 @@ void Blstm::save()
 		}
 		outputFile << endl;
 	}
+
+	/// _Wi
+	outputFile << "Wi" << endl;
+	/// get matrix dimensions
+	height = _Wi.size();
+	width = _Wi.at(0).size();
+
+	///	write matrix values to file
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width; j++) {
+			if (j < (width - 1))
+				outputFile << _Wi.at(i).at(j) << ' ';
+			else
+				outputFile << _Wi.at(i).at(j);
+		}
+		outputFile << endl;
+	}
+
+	/// _Wf
+	outputFile << "Wf" << endl;
+	/// get matrix dimensions
+	height = _Wf.size();
+	width = _Wf.at(0).size();
+
+	///	write matrix values to file
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width; j++) {
+			if (j < (width - 1))
+				outputFile << _Wf.at(i).at(j) << ' ';
+			else
+				outputFile << _Wf.at(i).at(j);
+		}
+		outputFile << endl;
+	}
+
+	/// _Wo
+	outputFile << "Wo" << endl;
+	/// get matrix dimensions
+	height = _Wo.size();
+	width = _Wo.at(0).size();
+
+	///	write matrix values to file
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width; j++) {
+			if (j < (width - 1))
+				outputFile << _Wo.at(i).at(j) << ' ';
+			else
+				outputFile << _Wo.at(i).at(j);
+		}
+		outputFile << endl;
+	}
+
+	/// _Wz
+	outputFile << "Wz" << endl;
+	/// get matrix dimensions
+	height = _Wz.size();
+	width = _Wz.at(0).size();
+
+	///	write matrix values to file
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width; j++) {
+			if (j < (width - 1))
+				outputFile << _Wz.at(i).at(j) << ' ';
+			else
+				outputFile << _Wz.at(i).at(j);
+		}
+		outputFile << endl;
+	}
+
+	/// Recursive weights
+	/// _Ri
+	outputFile << "Ri" << endl;
+	/// get matrix dimensions
+	height = _Ri.size();
+	width = _Ri.at(0).size();
+
+	///	write matrix values to file
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width; j++) {
+			if (j < (width - 1))
+				outputFile << _Ri.at(i).at(j) << ' ';
+			else
+				outputFile << _Ri.at(i).at(j);
+		}
+		outputFile << endl;
+	}
+
+	/// _Rf
+	outputFile << "Rf" << endl;
+	/// get matrix dimensions
+	height = _Rf.size();
+	width = _Rf.at(0).size();
+
+	///	write matrix values to file
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width; j++) {
+			if (j < (width - 1))
+				outputFile << _Rf.at(i).at(j) << ' ';
+			else
+				outputFile << _Rf.at(i).at(j);
+		}
+		outputFile << endl;
+	}
+
+	/// _Ro
+	outputFile << "Ro" << endl;
+	/// get matrix dimensions
+	height = _Ro.size();
+	width = _Ro.at(0).size();
+
+	///	write matrix values to file
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width; j++) {
+			if (j < (width - 1))
+				outputFile << _Ro.at(i).at(j) << ' ';
+			else
+				outputFile << _Ro.at(i).at(j);
+		}
+		outputFile << endl;
+	}
+
+	/// _Rz
+	outputFile << "Rz" << endl;
+	/// get matrix dimensions
+	height = _Rz.size();
+	width = _Rz.at(0).size();
+
+	///	write matrix values to file
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width; j++) {
+			if (j < (width - 1))
+				outputFile << _Rz.at(i).at(j) << ' ';
+			else
+				outputFile << _Rz.at(i).at(j);
+		}
+		outputFile << endl;
+	}	
 
 	///	close file
 	outputFile.close();

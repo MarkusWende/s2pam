@@ -452,7 +452,8 @@ void print_2matrices_column(string label, vector<vector<double>> &mIn, vector<ve
 {
 	/// get spectrogram dimensions
 	unsigned int rowSize = mIn.size();
-	unsigned int columnLength = mIn[0].size();
+	unsigned int columnLength = mIn.at(0).size();
+	unsigned int columnLength2 = mIn2.at(0).size();
 
 
 	/// maximum value initilization
@@ -478,7 +479,7 @@ void print_2matrices_column(string label, vector<vector<double>> &mIn, vector<ve
 		}
 		
 		cout << "\t||\t";
-		for (int j = 0; j < columnLength; j++)
+		for (int j = 0; j < columnLength2; j++)
 		{
 			std::cout << std::fixed;
 			cout << std::setprecision(3) << mIn2.at(i).at(j) << "\t";
@@ -493,7 +494,7 @@ void print_2matrices_column(string label, vector<vector<double>> &mIn, vector<ve
 	cout << "MaxVal: " << maxVal << "\tMinVal: " << minVal << "\t||\t";
 	cout << "MaxVal: " << maxVal2 << "\tMinVal: " << minVal2 << endl;
 	cout << "Num Rows: " << rowSize << endl;
-	cout << "Num Columns: " << columnLength << endl;
+	cout << "Num Columns mIn1: " << columnLength << "Num Columns min2: " << columnLength2 << endl;
 	cout << "====================================================================" << endl << endl;
 }
 

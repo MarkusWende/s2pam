@@ -44,6 +44,15 @@ class Blstm
 		
 		std::vector<std::vector<double>> _Wy;
 
+		std::vector<double> _bi;
+		std::vector<double> _bf;
+		std::vector<double> _bo;
+		std::vector<double> _bz;
+		
+		std::vector<double> _pi;
+		std::vector<double> _pf;
+		std::vector<double> _po;
+
 		///	hidden output states
 		std::vector<std::vector<double>> _y;
 		

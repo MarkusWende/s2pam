@@ -4,13 +4,14 @@
 #include <essentia/essentiamath.h>
 #include <essentia/pool.h>
 #include <iomanip>
-
 #include <iterator>
+#include <numeric>							/// std::accumulate
 
 #include "textgrid.h"
 #include "helper.h"
 #include "render.h"
 #include "blstm.h"
+#include "dataset.h"
 
 using namespace std;
 using namespace essentia;
@@ -21,219 +22,99 @@ using namespace std::this_thread;								// sleep_for, sleep_until
 using namespace std::chrono_literals;							// ns, us, ms, s, h, etc.
 namespace fs = std::experimental::filesystem;
 
-
-class TrainingData
-{
-	public:
-		TrainingData(const string filename);
-		bool isEof() { return m_trainingDataFile.eof(); };
-		void getTopology(vector<unsigned> &topology);
-		void returnToBeginOfFile();
-		unsigned getFileLength(void);
-
-		// Returns the number of input values read from the file:
-		unsigned getNextInputs(vector<double> &inputVals);
-		unsigned getTargetOutputs(vector<double> &targetOutputVals);
-
-	private:
-		ifstream m_trainingDataFile;
-};
-
-void TrainingData::getTopology(vector<unsigned> &topology)
-{
-	string line;
-	string label;
-
-	getline(m_trainingDataFile, line);
-	stringstream ss(line);
-	ss >> label;
-	if (this->isEof() || label.compare("topology:") == 0) {
-		abort();
-	}
-
-	while (!ss.eof()) {
-		unsigned n;
-		ss >> n;
-		topology.push_back(n);
-	}
-
-	return;
-}
-
-unsigned TrainingData::getFileLength(void)
-{
-	string line;
-	string label;
-
-	getline(m_trainingDataFile, line);
-	stringstream ss(line);
-	ss >> label;
-	if (this->isEof() || label.compare("length:") == 0) {
-		abort();
-	}
-
-	unsigned n;
-	while (!ss.eof()) {
-		ss >> n;
-	}
-
-	return n;
-}
-
-TrainingData::TrainingData(const string filename)
-{
-	m_trainingDataFile.open(filename.c_str());
-}
-
-void TrainingData::returnToBeginOfFile()
-{
-	m_trainingDataFile.clear();
-	m_trainingDataFile.seekg(0, std::ios::beg);
-	
-	string line;
-	getline(m_trainingDataFile, line);
-	getline(m_trainingDataFile, line);
-}
-
-unsigned TrainingData::getNextInputs(vector<double> &inputVals)
-{
-	inputVals.clear();
-
-	string line;
-	getline(m_trainingDataFile, line);
-	stringstream ss(line);
-
-	string label;
-	ss >> label;
-	if (label.compare("in:") == 0) {
-		double oneValue;
-		while (ss >> oneValue) {
-			inputVals.push_back(oneValue);
-		}
-	}
-
-	return inputVals.size();
-}
-
-unsigned TrainingData::getTargetOutputs(vector<double> &targetOutputVals)
-{
-	targetOutputVals.clear();
-
-	string line;
-	getline(m_trainingDataFile, line);
-	stringstream ss(line);
-
-	string label;
-	ss >> label;
-	if (label.compare("out:") == 0) {
-		double oneValue;
-		while (ss >> oneValue) {
-			targetOutputVals.push_back(oneValue);
-		}
-	}
-
-	return targetOutputVals.size();
-}
-
 void process()
 {
 	//TrainingData trainData("data/AND/testBIG.txt");
 	//TrainingData trainData("data/test/test01.txt");
 	//TrainingData trainData("data/AND/T241L20000.txt");
-	TrainingData trainData("data/AND/vctest.txt");
+	//TrainingData trainData("data/AND/vctest.txt");
+	string trainFilename = "./data/set/training.set";
+	string devTestFilename = "./data/set/devTest.set";
 	//TrainingData trainData("data/NAND/T241L20000.txt");
 	// e.g., { 3, 2, 1 }
-	vector<unsigned> topology;
-	int T = 200;
-	int maxEpoch = 10000;
-	double learningRate = 0.0001;
+	vector<unsigned> topology = {13, 60, 3};
+	int T = 500;
+	int maxEpoch = 1;
+	int steps = 1;
+	double learningRate = 0.00001;
 
-	trainData.getTopology(topology);
 	vector<vector<double>> X;
 	vector<vector<double>> Y;
 
 	Blstm nn(topology, T, learningRate);
-
-	//nn.add_recursion();
 	nn.random_weights();
-	//nn.add_bias();
-
-	//nn.print_structure();
-	//return;	
-
-	unsigned fileLength = trainData.getFileLength();
 	
-	vector<double> inputVals, targetVals, error;
-	vector<double> resultsToFile, targetsToFile;
 	double results;
 	int trainingSize = 0;
 	int testSize = 0;
 	int epoch = 0;
 
+	vector<double> errorEpoch;
+	vector<double> errorIter;
+
 	bool done = false;	
 	
-	for (int t = 0; t < T; t++)
-	{
-		// Get new input data feed it forward:
-		if (trainData.getNextInputs(inputVals) != topology[0]) {
-			cout << "Topo[0]: " << topology[0] << "\tSize input: " << inputVals.size() << endl;
-			break;
-		}
+	DataSet train(trainFilename);
+	train.init_set(T, topology, X, Y);
+	//int iterations = train.size() - T;
+	int iterations = 30;
 
-		X.push_back( inputVals );
+	//cout << "Size: " << iterations << endl;
+	//return;
 
-		//helper::print_matrix("X:", X);
-		
-		trainData.getTargetOutputs(targetVals);
-		Y.push_back( targetVals );
-	}
+	//helper::print_2matrices_column("X and Y", X, Y);
+
+	//return;
 
 	do {
 		epoch++;
 		//helper::print_matrix("X", X);
 		//helper::print_matrix("Y", Y);
 
-		nn.forward_prop(X);
-		double L = nn.calculate_loss(Y);
+		for (int iter = 0; iter < iterations; iter++)
+		{
+			nn.forward_prop(X);
+			nn.bptt(X,Y);
 
-		cout << "Epoch: (" << epoch << "|" << maxEpoch << ")\tLoss: " << L;
+			double L = nn.calculate_loss(Y);
+			errorIter.push_back(L);
+			cout << "Epoch: (" << epoch << "|" << maxEpoch << ")\tIter: (" << iter
+				<< "|" << iterations << ")\tLoss: " << L << endl;
 
-		nn.bptt(X,Y);
-		if ( !nn.check_weight_sum() )
-			done = true;
+			train.shift_set(steps, X, Y);
+		}
+
+		double errorAvg = accumulate( errorIter.begin(), errorIter.end(), 0.0) / errorIter.size();
+		errorEpoch.push_back(errorAvg);
+		errorIter.clear();
+
+		train.return_to_begin_of_file();
+
+		//if ( !nn.check_weight_sum() )
+		//	done = true;
 		
-		//nn.render_weights(epoch);
+		nn.render_weights(epoch);
 
-		if (epoch == maxEpoch || L >= 10.0) {
+		if (epoch == maxEpoch)
+		{
 			//nn.print_result(Y);
 			done = true;
 		}
 
 	} while (!done);
+
+	helper::print_vector("Epoch error: ", errorEpoch);
 	
 	/// Testing
-	X.clear();
-	Y.clear();
-	for (int t = 0; t < T; t++)
-	{
-		// Get new input data feed it forward:
-		if (trainData.getNextInputs(inputVals) != topology[0]) {
-			cout << "Topo[0]: " << topology[0] << "\tSize input: " << inputVals.size() << endl;
-			break;
-		}
-
-		X.push_back( inputVals );
-
-		//helper::print_matrix("X:", X);
-		
-		trainData.getTargetOutputs(targetVals);
-		Y.push_back( targetVals );
-	}
+	DataSet devTest(devTestFilename);
+	devTest.init_set(T, topology, X, Y);
 
 	nn.forward_prop(X);
 	nn.print_result(Y);
 
-	//nn.save();
+	double L = nn.calculate_loss(Y);
+	cout << "Loss: " << L << endl;;
+	nn.save();
 }
 
 int main(int argc, char* argv[])
