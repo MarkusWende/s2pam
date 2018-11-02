@@ -11,6 +11,7 @@ CFLAGS = -std=c++17 -pipe -O2 -g -fPIC \
 		 -I./src/include/
 		 #-I/usr/include/qt4 \
 		 #-I/usr/include/qt4/QtCore
+
 LFLAGS = -lessentia -lfftw3 -lyaml -lavcodec -lavformat -lavutil -lsamplerate -lpng \
 		 -ltag -lfftw3f -lavresample -lstdc++fs -lpthread#-lQtCore
 
@@ -21,23 +22,34 @@ OBJ = $(addprefix $(OBJDIR)/,$(notdir $(SRC:.cpp=.o)))
 
 EXEC_FEATURE = s2pam_featureExtraction
 EXEC_TRAIN = s2pam_trainNN
+EXEC_PREPARE = s2pam_prepareSets
 
-all: $(OBJDIR) featureExtraction trainNN
+all: featureExtraction prepareSets trainNN
 
-featureExtraction: $(EXEC_FEATURE)
+featureExtraction: $(OBJDIR) $(EXEC_FEATURE)
 
-trainNN: $(EXEC_TRAIN)
+prepareSets: $(OBJDIR) $(EXEC_PREPARE)
+
+trainNN: $(OBJDIR) $(EXEC_TRAIN)
 
 $(EXEC_FEATURE): build/featureExtraction.o build/render.o build/helper.o build/wave_read.o
 	$(CC) build/featureExtraction.o build/render.o build/helper.o build/wave_read.o $(LFLAGS) -o $@
 
-$(EXEC_TRAIN): build/trainNN.o build/textgrid.o build/helper.o build/render.o build/blstm.o
-	$(CC) build/trainNN.o build/textgrid.o build/helper.o build/render.o build/blstm.o $(LFLAGS) -o $@
+$(EXEC_PREPARE): build/prepareSets.o build/render.o build/helper.o build/textgrid.o
+	$(CC) build/prepareSets.o build/render.o build/helper.o build/textgrid.o $(LFLAGS) -o $@
+
+$(EXEC_TRAIN): build/trainNN.o build/textgrid.o build/helper.o build/render.o build/blstm.o \
+	build/dataset.o
+	$(CC) build/trainNN.o build/textgrid.o build/helper.o build/render.o build/blstm.o \
+	build/dataset.o $(LFLAGS) -o $@
 
 $(OBJDIR):
 	mkdir $(OBJDIR)
 
 build/featureExtraction.o: src/main/featureExtraction.cpp
+	$(CC) $< -c $(CFLAGS) -o $@
+
+build/prepareSets.o: src/main/prepareSets.cpp
 	$(CC) $< -c $(CFLAGS) -o $@
 
 build/trainNN.o: src/main/trainNN.cpp
@@ -58,8 +70,12 @@ build/textgrid.o: src/utils/textgrid.cpp
 build/blstm.o: src/nn/blstm.cpp
 	$(CC) $< -c $(CFLAGS) -o $@
 
+build/dataset.o: src/utils/dataset.cpp
+	$(CC) $< -c $(CFLAGS) -o $@
+
 clean:
 	rm $(OBJ)
 	rmdir $(OBJDIR)
 	rm $(EXEC_FEATURE)
+	rm $(EXEC_PREPARE)
 	rm $(EXEC_TRAIN)
