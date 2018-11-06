@@ -92,48 +92,53 @@ void DataSet::shift_set(int steps, vector<vector<double>> &X, vector<vector<doub
 	Y.clear();
 	Y.resize(YCopy.size(), vector<double> (YCopy.at(0).size(), 0));
 
-	for (int col = 0; col < X.size() - 1; col++)
+	for (int col = 0; col < X.size() - steps; col++)
 	{
 		for (int rowX = 0; rowX < X.at(0).size(); rowX++)
 		{
-			X.at(col).at(rowX) = XCopy.at(col+1).at(rowX);
+			X.at(col).at(rowX) = XCopy.at(col+steps).at(rowX);
 		}
 		
 		for (int rowY = 0; rowY < Y.at(0).size(); rowY++)
 		{
-			Y.at(col).at(rowY) = YCopy.at(col+1).at(rowY);	
+			Y.at(col).at(rowY) = YCopy.at(col+steps).at(rowY);	
 		}
 	}
 
-	bool done = false;
-	while(!done)
+	int start = X.size() - steps;
+
+	for (int i = 0; i < steps; i++)
 	{
-		string line;
-		getline(_file, line);
-		stringstream ss(line);
-
-		string label;
-		ss >> label;
-
-		if (label.compare("in:") == 0)
+		bool done = false;
+		while(!done)
 		{
-			double oneValue;
-			int element = 0;
-			while (ss >> oneValue)
+			string line;
+			getline(_file, line);
+			stringstream ss(line);
+
+			string label;
+			ss >> label;
+
+			if (label.compare("in:") == 0)
 			{
-				X.back().at(element) = oneValue;
-				element++;
-			}
-		} else if (label.compare("out:") == 0)
-		{
-			double oneValue;
-			int element = 0;
-			while (ss >> oneValue)
+				double oneValue;
+				int element = 0;
+				while (ss >> oneValue)
+				{
+					X.at(start+i).at(element) = oneValue;
+					element++;
+				}
+			} else if (label.compare("out:") == 0)
 			{
-				Y.back().at(element) = oneValue;
-				element++;
+				double oneValue;
+				int element = 0;
+				while (ss >> oneValue)
+				{
+					Y.at(start+i).at(element) = oneValue;
+					element++;
+				}
+				done = true;;
 			}
-			done = true;;
-		}
-	}	
+		}	
+	}
 }

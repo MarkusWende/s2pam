@@ -89,6 +89,22 @@ void matrix_to_normalized_matrix(vector<vector<double>> &mIn, vector<vector<doub
 	}
 }
 
+void zero_mean(vector<vector<double>> &mIn, vector<vector<double>> &mOut)
+{
+	/// get spectrogram dimensions
+	unsigned int rowSize = mIn.size();
+	unsigned int columnLength = mIn[0].size();
+
+	/// normalize every matrix value by dividing the value by the maximal value
+	for (int i = 0; i < rowSize; i++)
+	{
+		for (int j = 0; j < columnLength; j++)
+		{
+			mOut.at(i).at(j) = 2 * (mIn.at(i).at(j) - 0.5);
+		}
+	}
+}
+
 void matrix_to_normalized_matrix(vector<vector<float>> &mIn, vector<vector<float>> &mOut)
 {
 	/// get spectrogram dimensions
@@ -342,6 +358,26 @@ vector<double> vec_ele_add(vector<double> a, vector<double> b)
 	return out;
 }
 
+vector<double> vec_ele_add_with_const(vector<double> a, vector<double> b, double C)
+{
+	/// check if vector dimensions are the same
+	if (a.size() != b.size())
+	{
+		cout << "Vectors cant be added element wise." << endl;
+	}
+
+	/// initliaze output vector with zeros
+	vector<double> out(a.size(), 0);
+
+	/// loop every element of the output vector
+	for (int i = 0; i < out.size(); i++)
+	{
+		out.at(i) = a.at(i) + C * b.at(i);
+	}
+
+	return out;
+}
+
 vector<double> vec_ele_sub(vector<double> a, vector<double> b)
 {
 	/// check if vector dimensions are the same
@@ -494,7 +530,7 @@ void print_2matrices_column(string label, vector<vector<double>> &mIn, vector<ve
 	cout << "MaxVal: " << maxVal << "\tMinVal: " << minVal << "\t||\t";
 	cout << "MaxVal: " << maxVal2 << "\tMinVal: " << minVal2 << endl;
 	cout << "Num Rows: " << rowSize << endl;
-	cout << "Num Columns mIn1: " << columnLength << "Num Columns min2: " << columnLength2 << endl;
+	cout << "Num Columns mIn1: " << columnLength << "\tNum Columns min2: " << columnLength2 << endl;
 	cout << "====================================================================" << endl << endl;
 }
 

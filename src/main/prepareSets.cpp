@@ -10,6 +10,53 @@ using namespace std;
 using namespace essentia;
 namespace fs = std::experimental::filesystem;
 
+double get_energy(vector<double> v)
+{
+	double energy = 0;
+
+	for (int i = 0; i < v.size(); i++)
+	{
+		energy += v.at(i);
+	}
+
+	energy = energy / v.size();
+
+	return energy;
+}
+
+vector<vector<double>> get_delta(vector<vector<double>> frame, int N)
+{
+	vector<vector<double>> delta( frame.size(), vector<double>(frame.at(0).size(), 0) );
+	double denominator = 0;
+
+	for (int n = 0; n < N; n++)
+	{
+		denominator = denominator + n * n;
+	}
+
+	for (int t = 0; t < delta.size(); t++)
+	{
+		for (int i = 0; i < delta.at(0).size(); i++)
+		{
+			double sum = 0;
+
+			for (int n = 1; n <= N; n++)
+			{
+				if ( (t - n) < 0)
+					sum += n * ( frame.at(t+n).at(i) );
+				else if ( (t + n) >= (delta.size() - 1) )
+					sum += n * ( -1 * frame.at(t-n).at(i) );
+				else
+					sum += n * ( frame.at(t+n).at(i) - frame.at(t-n).at(i) );
+			}
+
+			delta.at(t).at(i) = sum / denominator;
+		}
+	}
+
+	return delta;
+}
+
 int main(int argc, char* argv[])
 {
 	string mfccDir = "./data/FEATURES";
@@ -206,10 +253,50 @@ int main(int argc, char* argv[])
 			int frame = 0;
 			double frameEnd = tgItem.interval[0].xmax;
 			bool done = false;
+			int N = 2;
+
+			vector<vector<double>> mDeltas(mMfccCoeffs.size(), vector<double>(mMfccCoeffs.at(0).size(), 0));
+			vector<vector<double>> mDeltaDeltas(mMfccCoeffs.size(), vector<double>(mMfccCoeffs.at(0).size(), 0));
+
+			vector<double> mfccCoeffs;
+			vector<double> deltas;
+			vector<double> deltaDeltas;
+
+			mDeltas = get_delta(mMfccCoeffs, N);
+			mDeltaDeltas = get_delta(mDeltas, N);
+
+			vector<vector<double>> mDeltasNorm(mMfccCoeffs.size(), vector<double>(mMfccCoeffs.at(0).size(), 0));
+			vector<vector<double>> mDeltaDeltasNorm(mMfccCoeffs.size(), vector<double>(mMfccCoeffs.at(0).size(), 0));
+			helper::matrix_to_normalized_matrix(mDeltas, mDeltasNorm);
+			helper::matrix_to_normalized_matrix(mDeltaDeltas, mDeltaDeltasNorm);
+			
+			vector<vector<double>> mMfccZero(mMfccCoeffs.size(), vector<double>(mMfccCoeffs.at(0).size(), 0));
+			vector<vector<double>> mDeltasZero(mMfccCoeffs.size(), vector<double>(mMfccCoeffs.at(0).size(), 0));
+			vector<vector<double>> mDeltaDeltasZero(mMfccCoeffs.size(), vector<double>(mMfccCoeffs.at(0).size(), 0));
+			helper::zero_mean(mMfccCoeffs, mMfccZero);
+			helper::zero_mean(mDeltasNorm, mDeltasZero);
+			helper::zero_mean(mDeltaDeltasNorm, mDeltaDeltasZero);
 
 			do {
+				mfccCoeffs.clear();
+				mfccCoeffs.insert(mfccCoeffs.end(), mMfccZero[i].begin(), mMfccZero[i].end());
+				double mfccEnergy = get_energy(mfccCoeffs);
+
+				deltas.clear();
+				deltas.insert(deltas.end(), mDeltasZero[i].begin(), mDeltasZero[i].end());
+				double deltaEnergy = get_energy(deltas);
+				
+				deltaDeltas.clear();
+				deltaDeltas.insert(deltaDeltas.end(), mDeltaDeltasZero[i].begin(), mDeltaDeltasZero[i].end());
+				double deltaDeltaEnergy = get_energy(deltaDeltas);
+
 				inputVals.clear();
-				inputVals.insert(inputVals.end(), mMfccCoeffs[i].begin(), mMfccCoeffs[i].end());
+				inputVals.insert(inputVals.end(), mMfccZero[i].begin(), mMfccZero[i].end());
+				inputVals.push_back(mfccEnergy);
+				inputVals.insert(inputVals.end(), mDeltasZero[i].begin(), mDeltasZero[i].end());
+				inputVals.push_back(deltaEnergy);
+				inputVals.insert(inputVals.end(), mDeltaDeltasZero[i].begin(), mDeltaDeltasZero[i].end());
+				inputVals.push_back(deltaDeltaEnergy);
 				//helper::print_vector("in:", inputVals);
 
 				helper::get_textGrid_targetVals_vc(tgItem, frame, targetVals);
@@ -246,7 +333,7 @@ int main(int argc, char* argv[])
 					done = true;
 
 				helper::get_textGrid_frame(tgItem, i, frame, frameEnd, mMfccCoeffs.size());
-
+				
 				i++;
 			} while (!done);
 		}

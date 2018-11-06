@@ -57,6 +57,11 @@ namespace helper {
 			std::vector<std::vector<double>> &mOut
 			);
 	
+	void zero_mean(
+			std::vector<std::vector<double>> &mIn,
+			std::vector<std::vector<double>> &mOut
+			);
+	
 	/**
 	 * normalize the matrix elements to a range betwen [0,1] by adding the absolute value of the minimum
 	 * value in the matrix to every element and dividing every matrix entry by the maximum value + absolute of
@@ -184,6 +189,7 @@ namespace helper {
 			);
 	
 	/**
+	 * a + b
 	 * add to vectors element wise together
 	 * @param a input vector a, |R^m
 	 * @param b input vector b, |R^m
@@ -192,6 +198,21 @@ namespace helper {
 	std::vector<double> vec_ele_add(
 			std::vector<double> a,
 			std::vector<double> b
+			);
+
+	/**
+	 * a + C * b
+	 * add to vectors element wise together with constant multiplied with each element
+	 * of the 2nd vector
+	 * @param a input vector a, |R^m
+	 * @param b input vector b, |R^m
+	 * @param C constant that is multiplied with vector b
+	 * @return vector<double> output vector, |R^m
+	 */
+	std::vector<double> vec_ele_add_with_const(
+			std::vector<double> a,
+			std::vector<double> b,
+			double C
 			);
 
 	/**
