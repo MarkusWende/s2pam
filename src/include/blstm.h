@@ -36,39 +36,65 @@ class Blstm
 		std::vector<std::vector<double>> _Wf;
 		std::vector<std::vector<double>> _Wo;
 		std::vector<std::vector<double>> _Wz;
+		std::vector<std::vector<double>> _b_Wi;
+		std::vector<std::vector<double>> _b_Wf;
+		std::vector<std::vector<double>> _b_Wo;
+		std::vector<std::vector<double>> _b_Wz;
 
 		std::vector<std::vector<double>> _Ri;
 		std::vector<std::vector<double>> _Rf;
 		std::vector<std::vector<double>> _Ro;
 		std::vector<std::vector<double>> _Rz;
+		std::vector<std::vector<double>> _b_Ri;
+		std::vector<std::vector<double>> _b_Rf;
+		std::vector<std::vector<double>> _b_Ro;
+		std::vector<std::vector<double>> _b_Rz;
 		
 		std::vector<std::vector<double>> _Wy;
+		std::vector<std::vector<double>> _b_Wy;
 
 		std::vector<double> _bi;
 		std::vector<double> _bf;
 		std::vector<double> _bo;
 		std::vector<double> _bz;
+		std::vector<double> _b_bi;
+		std::vector<double> _b_bf;
+		std::vector<double> _b_bo;
+		std::vector<double> _b_bz;
 		
 		std::vector<double> _pi;
 		std::vector<double> _pf;
 		std::vector<double> _po;
+		std::vector<double> _b_pi;
+		std::vector<double> _b_pf;
+		std::vector<double> _b_po;
 
 		///	hidden output states
 		std::vector<std::vector<double>> _y;
+		std::vector<std::vector<double>> _b_y;
 		
 		/// internal hidden connections
 		std::vector<std::vector<double>> _f;
 		std::vector<std::vector<double>> _i;
 		std::vector<std::vector<double>> _o;
 		std::vector<std::vector<double>> _z;
+		std::vector<std::vector<double>> _b_f;
+		std::vector<std::vector<double>> _b_i;
+		std::vector<std::vector<double>> _b_o;
+		std::vector<std::vector<double>> _b_z;
 		
 		std::vector<std::vector<double>> _f_head;
 		std::vector<std::vector<double>> _i_head;
 		std::vector<std::vector<double>> _o_head;
 		std::vector<std::vector<double>> _z_head;
+		std::vector<std::vector<double>> _b_f_head;
+		std::vector<std::vector<double>> _b_i_head;
+		std::vector<std::vector<double>> _b_o_head;
+		std::vector<std::vector<double>> _b_z_head;
 		
 		/// hidden cell states
 		std::vector<std::vector<double>> _c;
+		std::vector<std::vector<double>> _b_c;
 
 		/// output states
 		std::vector<std::vector<double>> _prediction;
@@ -191,9 +217,15 @@ class Blstm
 		 * @param X contains the network input matrix (input train)
 		 * @return void
 		 */
-		void forward_prop(
+		void feed_forward(
 				std::vector<std::vector<double>> X
 				);
+
+		void feed_backward(
+				std::vector<std::vector<double>> X
+				);
+
+		void calculate_predictions();
 
 		/**
 		 * backpropagation through time function to train the neural network
@@ -202,6 +234,11 @@ class Blstm
 		 * @return void
 		 */
 		void bptt(
+				std::vector<std::vector<double>> X,
+				std::vector<std::vector<double>> Y
+				);
+
+		void fptt(
 				std::vector<std::vector<double>> X,
 				std::vector<std::vector<double>> Y
 				);

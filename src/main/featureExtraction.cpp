@@ -34,9 +34,9 @@ int processTrainingAudioFile(string audioFilename) {
 	cout << "--Computing: " << audioFilename << endl;
 
 	/////// PARAMS //////////////
-	int sampleRate = 16000;
-	int frameSize = 1024;
-	int hopSize = 64;
+	int sampleRate = 32000;
+	int frameSize = 800;
+	int hopSize = 32;
 
 	AlgorithmFactory& factory = standard::AlgorithmFactory::instance();
 	
@@ -61,27 +61,27 @@ int processTrainingAudioFile(string audioFilename) {
 
 	Algorithm* w     = factory.create("Windowing",
 			//"normalized", true,						// default: true
-			"size", 64,									// default: 1024
+			"size", frameSize,								// default: 1024
 			"zeroPadding", frameSize+hopSize,			// default: 0
-			"type", "hann",								// default: "hann"
+			"type", "hamming",							// default: "hann"
 			"zeroPhase", true							// default: true
 			);
 
 	Algorithm* spec  = factory.create("Spectrum",
-			"size", 2048								// default: 2048
+			"size", frameSize								// default: 2048
 			);
 
 	Algorithm* mfcc  = factory.create("MFCC",
 			//"dctType", 2,								// default: 2
 			//"highFrequencyBound", 11000,				// default: 11000
 			//"inputSize", 1025,						// default: 1025
-			//"liftering", 10000,							// default: 0
+			//"liftering", 10000,						// default: 0
 			//"logType", "dbamp",						// default: "dbamp"
 			//"lowFrequencyBound", 0,					// default: 0
 			"normalize", "unit_max",					// default: "unit_max"
 			"numberBands", 40,							// default: 40
-			"numberCoefficients", 14,					// default: 13
-			//"sampleRate", 44100,						// default: 44100
+			"numberCoefficients", 12,					// default: 13
+			"sampleRate", sampleRate,					// default: 44100
 			//"type", "magnitude",						// default: "magnitude"
 			//"warpingFormula", "slaneyMel",			// default: "slaneyMel"
 			"weighting", "warping"						// default: "warping"
@@ -148,7 +148,7 @@ int processTrainingAudioFile(string audioFilename) {
 		vector<Real> mfccCoeffsRow(0,mfccCoeffs.size());
 		mMfccCoeffs.push_back(mfccCoeffsRow);
 		/// copy mfcc to matrix row, dont copy the first element
-		for (std::vector<Real>::iterator it = mfccCoeffs.begin()+1; it != mfccCoeffs.end(); ++it) {
+		for (std::vector<Real>::iterator it = mfccCoeffs.begin(); it != mfccCoeffs.end(); ++it) {
 			// add element to row
 			mMfccCoeffs[counter].push_back(*it);
 		}

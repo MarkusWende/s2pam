@@ -32,11 +32,11 @@ void process()
 	string devTestFilename = "./data/set/devTest.set";
 	//TrainingData trainData("data/NAND/T241L20000.txt");
 	// e.g., { 3, 2, 1 }
-	vector<unsigned> topology = {13, 60, 3};
-	int T = 500;
-	int maxEpoch = 1;
-	int steps = 1;
-	double learningRate = 0.00001;
+	vector<unsigned> topology = {39, 60, 3};
+	int T = 200;
+	int maxEpoch = 50;
+	int steps = 180;
+	double learningRate = 0.0001;
 
 	vector<vector<double>> X;
 	vector<vector<double>> Y;
@@ -57,7 +57,7 @@ void process()
 	DataSet train(trainFilename);
 	train.init_set(T, topology, X, Y);
 	//int iterations = train.size() - T;
-	int iterations = 30;
+	int iterations = 1000;
 
 	//cout << "Size: " << iterations << endl;
 	//return;
@@ -68,20 +68,25 @@ void process()
 
 	do {
 		epoch++;
-		//helper::print_matrix("X", X);
-		//helper::print_matrix("Y", Y);
 
 		for (int iter = 0; iter < iterations; iter++)
 		{
-			nn.forward_prop(X);
+			nn.feed_forward(X);
+			nn.feed_backward(X);
+			nn.calculate_predictions();
+
 			nn.bptt(X,Y);
+			nn.fptt(X,Y);
 
 			double L = nn.calculate_loss(Y);
 			errorIter.push_back(L);
 			cout << "Epoch: (" << epoch << "|" << maxEpoch << ")\tIter: (" << iter
 				<< "|" << iterations << ")\tLoss: " << L << endl;
 
+			//helper::print_matrix("Y", Y);
 			train.shift_set(steps, X, Y);
+			//helper::print_matrix("Y", Y);
+			//exit(0);
 		}
 
 		double errorAvg = accumulate( errorIter.begin(), errorIter.end(), 0.0) / errorIter.size();
@@ -103,13 +108,15 @@ void process()
 
 	} while (!done);
 
-	helper::print_vector("Epoch error: ", errorEpoch);
+	render::vector_to_file(errorEpoch, "epoch.error");
 	
 	/// Testing
 	DataSet devTest(devTestFilename);
 	devTest.init_set(T, topology, X, Y);
 
-	nn.forward_prop(X);
+	nn.feed_forward(X);
+	nn.feed_backward(X);
+	nn.calculate_predictions();
 	nn.print_result(Y);
 
 	double L = nn.calculate_loss(Y);
