@@ -19,6 +19,684 @@
 using namespace std;
 using namespace helper;
 
+Blstm::Blstm(string filename)
+{
+	///	construct ifstream object and initialze filename
+	ifstream inputFile;
+	inputFile.open(filename, std::ifstream::in);
+	
+	bool head = true;
+	while (head)
+	{
+		///	safe input line from file as a string and initialize line counter
+		string line;
+		string label;
+
+		getline(inputFile, line);
+		
+		istringstream ss(line);
+		ss >> label;
+		
+		if (label.compare("topology") == 0)
+		{
+			int val;
+			ss >> val;
+			_iLSize = val;
+			ss >> val;
+			_hLSize = val;
+			ss >> val;
+			_oLSize = val;
+		} else if (label.compare("T") == 0)
+		{
+			int val;
+			ss >> val;
+			_T = val;
+		} else if (label.compare("lR") == 0)
+		{
+			double val;
+			ss >> val;
+			_learningRate = val;
+			head = false;
+		} else
+		{
+			cout << "No Header! Exit(0)" << endl;
+			exit(0);
+		}
+	}
+
+	/**
+	 * create the weight matrices with the given dimensions and
+	 * initialize the matrices with zeros
+	 */
+	_Wi.clear();
+	_Wi.resize(_iLSize, vector<double> (_hLSize, 0));
+	_Wf.clear();
+	_Wf.resize(_iLSize, vector<double> (_hLSize, 0));
+	_Wo.clear();
+	_Wo.resize(_iLSize, vector<double> (_hLSize, 0));
+	_Wz.clear();
+	_Wz.resize(_iLSize, vector<double> (_hLSize, 0));
+	_Wy.clear();
+	_Wy.resize(_hLSize, vector<double> (_oLSize, 0));
+	
+	_Ri.clear();
+	_Ri.resize(_hLSize, vector<double> (_hLSize, 0));
+	_Rf.clear();
+	_Rf.resize(_hLSize, vector<double> (_hLSize, 0));
+	_Ro.clear();
+	_Ro.resize(_hLSize, vector<double> (_hLSize, 0));
+	_Rz.clear();
+	_Rz.resize(_hLSize, vector<double> (_hLSize, 0));
+
+	_bi.clear();
+	_bi.resize(_hLSize, 0);
+	_bf.clear();
+	_bf.resize(_hLSize, 0);
+	_bo.clear();
+	_bo.resize(_hLSize, 0);
+	_bz.clear();
+	_bz.resize(_hLSize, 0);
+
+	_pi.clear();
+	_pi.resize(_hLSize, 0);
+	_pf;
+	_pf.resize(_hLSize, 0);
+	_po;
+	_po.resize(_hLSize, 0);
+
+	/**
+	 * create the weight matrices with the given dimensions and
+	 * initialize the matrices with zeros
+	 */
+	_b_Wi.clear();
+	_b_Wi.resize(_iLSize, vector<double> (_hLSize, 0));
+	_b_Wf.clear();
+	_b_Wf.resize(_iLSize, vector<double> (_hLSize, 0));
+	_b_Wo.clear();
+	_b_Wo.resize(_iLSize, vector<double> (_hLSize, 0));
+	_b_Wz.clear();
+	_b_Wz.resize(_iLSize, vector<double> (_hLSize, 0));
+	_b_Wy.clear();
+	_b_Wy.resize(_hLSize, vector<double> (_oLSize, 0));
+	
+	_b_Ri.clear();
+	_b_Ri.resize(_hLSize, vector<double> (_hLSize, 0));
+	_b_Rf.clear();
+	_b_Rf.resize(_hLSize, vector<double> (_hLSize, 0));
+	_b_Ro.clear();
+	_b_Ro.resize(_hLSize, vector<double> (_hLSize, 0));
+	_b_Rz.clear();
+	_b_Rz.resize(_hLSize, vector<double> (_hLSize, 0));
+
+	_b_bi.clear();
+	_b_bi.resize(_hLSize, 0);
+	_b_bf.clear();
+	_b_bf.resize(_hLSize, 0);
+	_b_bo.clear();
+	_b_bo.resize(_hLSize, 0);
+	_b_bz.clear();
+	_b_bz.resize(_hLSize, 0);
+
+	_b_pi.clear();
+	_b_pi.resize(_hLSize, 0);
+	_b_pf;
+	_b_pf.resize(_hLSize, 0);
+	_b_po;
+	_b_po.resize(_hLSize, 0);
+	
+	int counter = 0;
+	bool data = true;
+
+	string line;
+	string label;
+	istringstream ss(line);
+
+	///	loop over the lines in a file
+	while (data)
+	{
+		string line;
+		string label;
+		
+		getline(inputFile, line);
+		
+		istringstream ss(line);
+		ss >> label;
+
+		bool done = false;
+		int row = 0;
+		double val = 0;
+
+		///	initialize new matrix row
+		//mMfccCoeffs.push_back(vector<double> (0,0));
+
+		if (label.compare("Wy") == 0)
+		{
+			while (row < _Wy.size())
+			{
+				string dataLine;
+				int element = 0;
+				getline(inputFile, dataLine);
+
+				istringstream dataSS(dataLine);
+				
+				dataSS.str( dataLine );
+				while (dataSS >> val)
+				{
+					_Wy.at(row).at(element) = val;
+					element++;
+				}
+				row++;
+			}
+		} else if (label.compare("bWy") == 0)
+		{
+			while (row < _b_Wy.size())
+			{
+				string dataLine;
+				int element = 0;
+				getline(inputFile, dataLine);
+
+				istringstream dataSS(dataLine);
+				
+				dataSS.str( dataLine );
+				while (dataSS >> val)
+				{
+					_b_Wy.at(row).at(element) = val;
+					element++;
+				}
+				row++;
+			}
+		} else if (label.compare("Wi") == 0)
+		{
+			while (row < _Wi.size())
+			{
+				string dataLine;
+				int element = 0;
+				getline(inputFile, dataLine);
+
+				istringstream dataSS(dataLine);
+				
+				dataSS.str( dataLine );
+				while (dataSS >> val)
+				{
+					_Wi.at(row).at(element) = val;
+					element++;
+				}
+				row++;
+			}
+		} else if (label.compare("bWi") == 0)
+		{
+			while (row < _b_Wi.size())
+			{
+				string dataLine;
+				int element = 0;
+				getline(inputFile, dataLine);
+
+				istringstream dataSS(dataLine);
+				
+				dataSS.str( dataLine );
+				while (dataSS >> val)
+				{
+					_b_Wi.at(row).at(element) = val;
+					element++;
+				}
+				row++;
+			}
+		} else if (label.compare("Wf") == 0)
+		{
+			while (row < _Wf.size())
+			{
+				string dataLine;
+				int element = 0;
+				getline(inputFile, dataLine);
+
+				istringstream dataSS(dataLine);
+				
+				dataSS.str( dataLine );
+				while (dataSS >> val)
+				{
+					_Wf.at(row).at(element) = val;
+					element++;
+				}
+				row++;
+			}
+		} else if (label.compare("bWf") == 0)
+		{
+			while (row < _b_Wf.size())
+			{
+				string dataLine;
+				int element = 0;
+				getline(inputFile, dataLine);
+
+				istringstream dataSS(dataLine);
+				
+				dataSS.str( dataLine );
+				while (dataSS >> val)
+				{
+					_b_Wf.at(row).at(element) = val;
+					element++;
+				}
+				row++;
+			}
+		} else if (label.compare("Wo") == 0)
+		{
+			while (row < _Wo.size())
+			{
+				string dataLine;
+				int element = 0;
+				getline(inputFile, dataLine);
+
+				istringstream dataSS(dataLine);
+				
+				dataSS.str( dataLine );
+				while (dataSS >> val)
+				{
+					_Wo.at(row).at(element) = val;
+					element++;
+				}
+				row++;
+			}
+		} else if (label.compare("bWo") == 0)
+		{
+			while (row < _b_Wo.size())
+			{
+				string dataLine;
+				int element = 0;
+				getline(inputFile, dataLine);
+
+				istringstream dataSS(dataLine);
+				
+				dataSS.str( dataLine );
+				while (dataSS >> val)
+				{
+					_b_Wo.at(row).at(element) = val;
+					element++;
+				}
+				row++;
+			}
+		} else if (label.compare("Wz") == 0)
+		{
+			while (row < _Wz.size())
+			{
+				string dataLine;
+				int element = 0;
+				getline(inputFile, dataLine);
+
+				istringstream dataSS(dataLine);
+				
+				dataSS.str( dataLine );
+				while (dataSS >> val)
+				{
+					_Wz.at(row).at(element) = val;
+					element++;
+				}
+				row++;
+			}
+		} else if (label.compare("bWz") == 0)
+		{
+			while (row < _b_Wz.size())
+			{
+				string dataLine;
+				int element = 0;
+				getline(inputFile, dataLine);
+
+				istringstream dataSS(dataLine);
+				
+				dataSS.str( dataLine );
+				while (dataSS >> val)
+				{
+					_b_Wz.at(row).at(element) = val;
+					element++;
+				}
+				row++;
+			}
+		} else if (label.compare("Ri") == 0)
+		{
+			while (row < _Ri.size())
+			{
+				string dataLine;
+				int element = 0;
+				getline(inputFile, dataLine);
+
+				istringstream dataSS(dataLine);
+				
+				dataSS.str( dataLine );
+				while (dataSS >> val)
+				{
+					_Ri.at(row).at(element) = val;
+					element++;
+				}
+				row++;
+			}
+		} else if (label.compare("bRi") == 0)
+		{
+			while (row < _b_Ri.size())
+			{
+				string dataLine;
+				int element = 0;
+				getline(inputFile, dataLine);
+
+				istringstream dataSS(dataLine);
+				
+				dataSS.str( dataLine );
+				while (dataSS >> val)
+				{
+					_b_Ri.at(row).at(element) = val;
+					element++;
+				}
+				row++;
+			}
+		} else if (label.compare("Rf") == 0)
+		{
+			while (row < _Rf.size())
+			{
+				string dataLine;
+				int element = 0;
+				getline(inputFile, dataLine);
+
+				istringstream dataSS(dataLine);
+				
+				dataSS.str( dataLine );
+				while (dataSS >> val)
+				{
+					_Rf.at(row).at(element) = val;
+					element++;
+				}
+				row++;
+			}
+		} else if (label.compare("bRf") == 0)
+		{
+			while (row < _b_Rf.size())
+			{
+				string dataLine;
+				int element = 0;
+				getline(inputFile, dataLine);
+
+				istringstream dataSS(dataLine);
+				
+				dataSS.str( dataLine );
+				while (dataSS >> val)
+				{
+					_b_Rf.at(row).at(element) = val;
+					element++;
+				}
+				row++;
+			}
+		} else if (label.compare("Ro") == 0)
+		{
+			while (row < _Ro.size())
+			{
+				string dataLine;
+				int element = 0;
+				getline(inputFile, dataLine);
+
+				istringstream dataSS(dataLine);
+				
+				dataSS.str( dataLine );
+				while (dataSS >> val)
+				{
+					_Ro.at(row).at(element) = val;
+					element++;
+				}
+				row++;
+			}
+		} else if (label.compare("bRo") == 0)
+		{
+			while (row < _b_Ro.size())
+			{
+				string dataLine;
+				int element = 0;
+				getline(inputFile, dataLine);
+
+				istringstream dataSS(dataLine);
+				
+				dataSS.str( dataLine );
+				while (dataSS >> val)
+				{
+					_b_Ro.at(row).at(element) = val;
+					element++;
+				}
+				row++;
+			}
+		} else if (label.compare("Rz") == 0)
+		{
+			while (row < _Rz.size())
+			{
+				string dataLine;
+				int element = 0;
+				getline(inputFile, dataLine);
+
+				istringstream dataSS(dataLine);
+				
+				dataSS.str( dataLine );
+				while (dataSS >> val)
+				{
+					_Rz.at(row).at(element) = val;
+					element++;
+				}
+				row++;
+			}
+		} else if (label.compare("bRz") == 0)
+		{
+			while (row < _b_Rz.size())
+			{
+				string dataLine;
+				int element = 0;
+				getline(inputFile, dataLine);
+
+				istringstream dataSS(dataLine);
+				
+				dataSS.str( dataLine );
+				while (dataSS >> val)
+				{
+					_b_Rz.at(row).at(element) = val;
+					element++;
+				}
+				row++;
+			}
+		} else if (label.compare("bi") == 0)
+		{
+			string dataLine;
+			int element = 0;
+			getline(inputFile, dataLine);
+
+			istringstream dataSS(dataLine);
+			
+			dataSS.str( dataLine );
+			while (dataSS >> val)
+			{
+				_bi.at(element) = val;
+				element++;
+			}
+		} else if (label.compare("bbi") == 0)
+		{
+			string dataLine;
+			int element = 0;
+			getline(inputFile, dataLine);
+
+			istringstream dataSS(dataLine);
+			
+			dataSS.str( dataLine );
+			while (dataSS >> val)
+			{
+				_b_bi.at(element) = val;
+				element++;
+			}
+		} else if (label.compare("bf") == 0)
+		{
+			string dataLine;
+			int element = 0;
+			getline(inputFile, dataLine);
+
+			istringstream dataSS(dataLine);
+			
+			dataSS.str( dataLine );
+			while (dataSS >> val)
+			{
+				_bf.at(element) = val;
+				element++;
+			}
+		} else if (label.compare("bbf") == 0)
+		{
+			string dataLine;
+			int element = 0;
+			getline(inputFile, dataLine);
+
+			istringstream dataSS(dataLine);
+			
+			dataSS.str( dataLine );
+			while (dataSS >> val)
+			{
+				_b_bf.at(element) = val;
+				element++;
+			}
+		} else if (label.compare("bo") == 0)
+		{
+			string dataLine;
+			int element = 0;
+			getline(inputFile, dataLine);
+
+			istringstream dataSS(dataLine);
+			
+			dataSS.str( dataLine );
+			while (dataSS >> val)
+			{
+				_bo.at(element) = val;
+				element++;
+			}
+		} else if (label.compare("bbo") == 0)
+		{
+			string dataLine;
+			int element = 0;
+			getline(inputFile, dataLine);
+
+			istringstream dataSS(dataLine);
+			
+			dataSS.str( dataLine );
+			while (dataSS >> val)
+			{
+				_b_bo.at(element) = val;
+				element++;
+			}
+		} else if (label.compare("bz") == 0)
+		{
+			string dataLine;
+			int element = 0;
+			getline(inputFile, dataLine);
+
+			istringstream dataSS(dataLine);
+			
+			dataSS.str( dataLine );
+			while (dataSS >> val)
+			{
+				_bz.at(element) = val;
+				element++;
+			}
+		} else if (label.compare("bbz") == 0)
+		{
+			string dataLine;
+			int element = 0;
+			getline(inputFile, dataLine);
+
+			istringstream dataSS(dataLine);
+			
+			dataSS.str( dataLine );
+			while (dataSS >> val)
+			{
+				_b_bz.at(element) = val;
+				element++;
+			}
+		} else if (label.compare("pi") == 0)
+		{
+			string dataLine;
+			int element = 0;
+			getline(inputFile, dataLine);
+
+			istringstream dataSS(dataLine);
+			
+			dataSS.str( dataLine );
+			while (dataSS >> val)
+			{
+				_pi.at(element) = val;
+				element++;
+			}
+		} else if (label.compare("bpi") == 0)
+		{
+			string dataLine;
+			int element = 0;
+			getline(inputFile, dataLine);
+
+			istringstream dataSS(dataLine);
+			
+			dataSS.str( dataLine );
+			while (dataSS >> val)
+			{
+				_b_pi.at(element) = val;
+				element++;
+			}
+		} else if (label.compare("pf") == 0)
+		{
+			string dataLine;
+			int element = 0;
+			getline(inputFile, dataLine);
+
+			istringstream dataSS(dataLine);
+			
+			dataSS.str( dataLine );
+			while (dataSS >> val)
+			{
+				_pf.at(element) = val;
+				element++;
+			}
+		} else if (label.compare("bpf") == 0)
+		{
+			string dataLine;
+			int element = 0;
+			getline(inputFile, dataLine);
+
+			istringstream dataSS(dataLine);
+			
+			dataSS.str( dataLine );
+			while (dataSS >> val)
+			{
+				_b_pf.at(element) = val;
+				element++;
+			}
+		} else if (label.compare("po") == 0)
+		{
+			string dataLine;
+			int element = 0;
+			getline(inputFile, dataLine);
+
+			istringstream dataSS(dataLine);
+			
+			dataSS.str( dataLine );
+			while (dataSS >> val)
+			{
+				_po.at(element) = val;
+				element++;
+			}
+		} else if (label.compare("bpo") == 0)
+		{
+			string dataLine;
+			int element = 0;
+			getline(inputFile, dataLine);
+
+			istringstream dataSS(dataLine);
+			
+			dataSS.str( dataLine );
+			while (dataSS >> val)
+			{
+				_b_po.at(element) = val;
+				element++;
+			}
+		} else
+			data = false;
+	}
+
+	///	close file
+	inputFile.close();
+}
+
 Blstm::Blstm(vector<unsigned> topo, int T, double lR)
 {
 	/**
@@ -776,7 +1454,7 @@ void Blstm::random_weights()
 	std::default_random_engine generator (seed);
 
 	/// normal distribution, mean = 0.0, deviation = 0.1
-	std::normal_distribution<double> distribution (0.0,0.1);
+	std::normal_distribution<double> distribution (0.0,0.3);
 	
 	/// loop every element in matrix _Wf and assign a random value
 	for (int m = 0; m < _Wf.size() ; m++)
@@ -946,28 +1624,28 @@ void Blstm::render_weights(int index)
 	/// _Rz
 	vector<double> rz;
 	vector<vector<double>> ampRz(_Rz.size(), vector<double>(_Rz.at(0).size(), 0));
-	ampRz = matrix_add_with_const(ampRz, _Rz, 1);
+	ampRz = matrix_add_with_const(ampRz, _Rz, 3);
 	matrix_to_vector(ampRz, heightR, widthR, rz);
 	render::vector_to_PNG("_Rz", std::to_string(index), "exp", heightR, widthR, rz);
 
 	/// _Ri
 	vector<double> ri;
 	vector<vector<double>> ampRi(_Ri.size(), vector<double>(_Ri.at(0).size(), 0));
-	ampRi = matrix_add_with_const(ampRi, _Ri, 1);
+	ampRi = matrix_add_with_const(ampRi, _Ri, 3);
 	matrix_to_vector(ampRi, heightR, widthR, ri);
 	render::vector_to_PNG("_Ri", std::to_string(index), "exp", heightR, widthR, ri);
 
 	/// _Rf
 	vector<double> rf;
 	vector<vector<double>> ampRf(_Rf.size(), vector<double>(_Rf.at(0).size(), 0));
-	ampRf = matrix_add_with_const(ampRf, _Rf, 1);
+	ampRf = matrix_add_with_const(ampRf, _Rf, 3);
 	matrix_to_vector(ampRf, heightR, widthR, rf);
 	render::vector_to_PNG("_Rf", std::to_string(index), "exp", heightR, widthR, rf);
 
 	/// _Ro
 	vector<double> ro;
 	vector<vector<double>> ampRo(_Ro.size(), vector<double>(_Ro.at(0).size(), 0));
-	ampRo = matrix_add_with_const(ampRo, _Ro, 1);
+	ampRo = matrix_add_with_const(ampRo, _Ro, 3);
 	matrix_to_vector(ampRo, heightR, widthR, ro);
 	render::vector_to_PNG("_Ro", std::to_string(index), "exp", heightR, widthR, ro);
 
@@ -1003,6 +1681,16 @@ bool Blstm::check_weight_sum()
 	}
 
 	return status;
+}
+
+vector<unsigned> Blstm::get_topo()
+{
+	vector<unsigned> topology;
+	topology.push_back((unsigned)_iLSize);
+	topology.push_back((unsigned)_hLSize);
+	topology.push_back((unsigned)_oLSize);
+
+	return topology;
 }
 
 void Blstm::save()
@@ -1508,9 +2196,4 @@ void Blstm::save()
 
 	///	close file
 	outputFile.close();
-}
-
-void Blstm::load()
-{
-
 }

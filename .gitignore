@@ -21,3 +21,4 @@ latex/
 s2pam_trainNN
 s2pam_featureExtraction
 s2pam_prepareSets
+s2pam_testNN

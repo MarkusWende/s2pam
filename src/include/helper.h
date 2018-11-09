@@ -22,7 +22,7 @@
 #include <iostream>							// std::cout, std::fixed
 #include <vector>
 #include <fstream>
-#include <essentia/algorithmfactory.h>
+//#include <essentia/algorithmfactory.h>
 #include <iomanip>							// std::setprecision
 
 #include "textgrid.h"
@@ -247,6 +247,10 @@ namespace helper {
 	std::vector<std::vector<double>> outer(
 			std::vector<double> a,
 			std::vector<double> b
+			);
+
+	std::vector<double> get_oneHot(
+			std::vector<double> x
 			);
 
 	/**

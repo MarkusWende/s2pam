@@ -27,6 +27,7 @@
 
 #include "helper.h"
 #include "render.h"
+#include "statistic.h"
 
 class Blstm
 {
@@ -112,6 +113,15 @@ class Blstm
 		int _oLSize;
 
 	public:
+
+		/**
+		 * Constructor for existing nn filename
+		 * create a new blstm neural network with the weights in the file
+		 * @param filename the file containing the trained neural network
+		 */
+		Blstm(
+				std::string filename
+				);
 
 		/**
 		 * Constructor
@@ -260,6 +270,8 @@ class Blstm
 				std::vector<std::vector<double>> Y
 				);
 
+		std::vector<std::vector<double>> get_predictions() { return _prediction; };
+
 		/**
 		 * print the output of the neural net by the given target matrix Y
 		 * in two columns to the console
@@ -281,17 +293,15 @@ class Blstm
 
 		bool check_weight_sum();
 
+		std::vector<unsigned> get_topo();
+
+		int get_T() { return _T; };
+
 		/**
 		 * save neural network to binary file
 		 * @return void
 		 */
 		void save();
-
-		/**
-		 * load neural network from binary file
-		 * @return void
-		 */
-		void load();
 
 };			// end of class BLSTM
 #endif		// BLSTM_H

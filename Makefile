@@ -22,15 +22,18 @@ OBJ = $(addprefix $(OBJDIR)/,$(notdir $(SRC:.cpp=.o)))
 
 EXEC_FEATURE = s2pam_featureExtraction
 EXEC_TRAIN = s2pam_trainNN
+EXEC_TEST = s2pam_testNN
 EXEC_PREPARE = s2pam_prepareSets
 
-all: featureExtraction prepareSets trainNN
+all: featureExtraction prepareSets trainNN testNN
 
 featureExtraction: $(OBJDIR) $(EXEC_FEATURE)
 
 prepareSets: $(OBJDIR) $(EXEC_PREPARE)
 
 trainNN: $(OBJDIR) $(EXEC_TRAIN)
+
+testNN: $(OBJDIR) $(EXEC_TEST)
 
 $(EXEC_FEATURE): build/featureExtraction.o build/render.o build/helper.o build/wave_read.o
 	$(CC) build/featureExtraction.o build/render.o build/helper.o build/wave_read.o $(LFLAGS) -o $@
@@ -39,9 +42,14 @@ $(EXEC_PREPARE): build/prepareSets.o build/render.o build/helper.o build/textgri
 	$(CC) build/prepareSets.o build/render.o build/helper.o build/textgrid.o $(LFLAGS) -o $@
 
 $(EXEC_TRAIN): build/trainNN.o build/textgrid.o build/helper.o build/render.o build/blstm.o \
-	build/dataset.o
+	build/dataset.o build/statistic.o
 	$(CC) build/trainNN.o build/textgrid.o build/helper.o build/render.o build/blstm.o \
-	build/dataset.o $(LFLAGS) -o $@
+	build/dataset.o build/statistic.o $(LFLAGS) -o $@
+
+$(EXEC_TEST): build/testNN.o build/render.o build/helper.o build/blstm.o build/dataset.o \
+	build/statistic.o
+	$(CC) build/testNN.o build/render.o build/helper.o build/blstm.o build/dataset.o \
+	build/statistic.o $(LFLAGS) -o $@
 
 $(OBJDIR):
 	mkdir $(OBJDIR)
@@ -53,6 +61,9 @@ build/prepareSets.o: src/main/prepareSets.cpp
 	$(CC) $< -c $(CFLAGS) -o $@
 
 build/trainNN.o: src/main/trainNN.cpp
+	$(CC) $< -c $(CFLAGS) -o $@
+
+build/testNN.o: src/main/testNN.cpp
 	$(CC) $< -c $(CFLAGS) -o $@
 
 build/render.o: src/utils/render.cpp
@@ -73,9 +84,13 @@ build/blstm.o: src/nn/blstm.cpp
 build/dataset.o: src/utils/dataset.cpp
 	$(CC) $< -c $(CFLAGS) -o $@
 
+build/statistic.o: src/utils/statistic.cpp
+	$(CC) $< -c $(CFLAGS) -o $@
+
 clean:
 	rm $(OBJ)
 	rmdir $(OBJDIR)
 	rm $(EXEC_FEATURE)
 	rm $(EXEC_PREPARE)
 	rm $(EXEC_TRAIN)
+	rm $(EXEC_TEST)
