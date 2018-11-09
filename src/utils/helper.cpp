@@ -14,7 +14,7 @@
 #include "helper.h"
 
 using namespace std;
-using namespace essentia;
+//using namespace essentia;
 
 namespace helper {
 void matrix_to_normalized_matrix(string path, vector<vector<double>> mSpectrum, vector<vector<double>>& m)
@@ -190,11 +190,6 @@ void matrix_to_vector(vector<vector<double>> mIn, unsigned int& height, unsigned
 
 void matrix_enlarge(std::vector<std::vector<double>> mInput, std::vector<std::vector<double>>& mOutput)
 {
-	/// print matrix information, verbose mode has to be on
-	E_INFO("---Enlarge Matrix:\n" <<
-			"\t\tInput <- Hoehe: " << mInput[0].size() << ", Breite: " << mInput.size() <<
-			"\n\t\tOutput: -> Hoehe: " << mOutput[0].size() << ", Breite: " << mOutput.size());
-
 	/// initialize an extern counter to adress the different rows of the input matrix
 	/// initialize maximal value inside the input matrix
 	/// initialize blocksize, which represents the row multiplicator
@@ -432,6 +427,26 @@ vector<vector<double>> outer(vector<double> a, vector<double> b)
 			out.at(i).at(j) = a.at(i) * b.at(j);
 		}
 	}
+
+	return out;
+}
+
+vector<double> get_oneHot(vector<double> x)
+{
+	vector<double> out(x.size(), 0.0);
+	int index = 0;
+	double maxVal = 0.0;
+
+	for (int i = 0; i < x.size(); i++)
+	{
+		if (x.at(i) >= maxVal)
+		{
+			maxVal = x.at(i);
+			index = i;
+		}
+	}
+
+	out.at(index) = 1.0;
 
 	return out;
 }
