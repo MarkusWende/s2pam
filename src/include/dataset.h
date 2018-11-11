@@ -35,12 +35,16 @@ class DataSet
 			int T,
 			std::vector<unsigned> topo,
 			std::vector<std::vector<double>> &X,
-			std::vector<std::vector<double>> &Y
+			std::vector<std::vector<double>> &Y,
+			std::vector<std::vector<double>> &bX,
+			std::vector<std::vector<double>> &bY
 			);
 		void shift_set(
 			int steps,
 			std::vector<std::vector<double>> &X,
-			std::vector<std::vector<double>> &Y
+			std::vector<std::vector<double>> &Y,
+			std::vector<std::vector<double>> &bX,
+			std::vector<std::vector<double>> &bY
 			);
 	
 	private:

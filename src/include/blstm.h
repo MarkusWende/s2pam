@@ -99,6 +99,7 @@ class Blstm
 
 		/// output states
 		std::vector<std::vector<double>> _prediction;
+		std::vector<double> _predictionSingle;
 
 		///	number of time steps = x/y train lenght
 		int _T;
@@ -236,6 +237,7 @@ class Blstm
 				);
 
 		void calculate_predictions();
+		void calculate_single_predictions();
 
 		/**
 		 * backpropagation through time function to train the neural network
@@ -245,12 +247,14 @@ class Blstm
 		 */
 		void bptt(
 				std::vector<std::vector<double>> X,
-				std::vector<std::vector<double>> Y
+				std::vector<std::vector<double>> Y,
+				std::vector<double> target
 				);
 
 		void fptt(
 				std::vector<std::vector<double>> X,
-				std::vector<std::vector<double>> Y
+				std::vector<std::vector<double>> Y,
+				std::vector<double> target
 				);
 
 		/**
@@ -270,7 +274,12 @@ class Blstm
 				std::vector<std::vector<double>> Y
 				);
 
+		double calculate_single_loss(
+				std::vector<double> target
+				);
+
 		std::vector<std::vector<double>> get_predictions() { return _prediction; };
+		std::vector<double> get_single_prediction() { return _predictionSingle; };
 
 		/**
 		 * print the output of the neural net by the given target matrix Y

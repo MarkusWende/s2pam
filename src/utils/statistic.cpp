@@ -59,15 +59,8 @@ void Statistics::true_positive()
 {
 	for (int c = 0; c < _TP.size(); c++)
 	{
-		double TP = 0.0;
-
-		for (int i = 0; i < _A.size(); i++)
-		{
-			if ( (_A.at(i).at(c) == 1.0) && (_P.at(i).at(c) == 1.0) )
-				TP += 1.0;
-		}
-
-		_TP.at(c) = TP;
+		if ( (_A.at(c) == 1.0) && (_P.at(c) == 1.0) )
+			_TP.at(c) += 1.0;
 	}
 }
 
@@ -75,15 +68,8 @@ void Statistics::true_negative()
 {
 	for (int c = 0; c < _TN.size(); c++)
 	{
-		double TN = 0.0;
-
-		for (int i = 0; i < _A.size(); i++)
-		{
-			if ( (_A.at(i).at(c) == 0.0) && (_P.at(i).at(c) == 0.0) )
-				TN += 1.0;
-		}
-
-		_TN.at(c) = TN;
+		if ( (_A.at(c) == 0.0) && (_P.at(c) == 0.0) )
+			_TN.at(c) += 1.0;
 	}
 }
 
@@ -91,15 +77,8 @@ void Statistics::false_positive()
 {
 	for (int c = 0; c < _FP.size(); c++)
 	{
-		double FP = 0.0;
-
-		for (int i = 0; i < _A.size(); i++)
-		{
-			if ( (_A.at(i).at(c) == 0.0) && (_P.at(i).at(c) == 1.0) )
-				FP += 1.0;
-		}
-
-		_FP.at(c) = FP;
+		if ( (_A.at(c) == 0.0) && (_P.at(c) == 1.0) )
+			_FP.at(c) += 1.0;
 	}
 }
 
@@ -107,15 +86,8 @@ void Statistics::false_negative()
 {
 	for (int c = 0; c < _FN.size(); c++)
 	{
-		double FN = 0.0;
-
-		for (int i = 0; i < _A.size(); i++)
-		{
-			if ( (_A.at(i).at(c) == 1.0) && (_P.at(i).at(c) == 0.0) )
-				FN += 1.0;
-		}
-
-		_FN.at(c) = FN;
+		if ( (_A.at(c) == 1.0) && (_P.at(c) == 0.0) )
+			_FN.at(c) += 1.0;
 	}
 }
 
@@ -200,35 +172,26 @@ void Statistics::fScore()
 
 void Statistics::confusion_matrix()
 {
-	for (int i = 0; i < _A.at(0).size(); i++)
+	for (int i = 0; i < _A.size(); i++)
 	{
-		for (int j = 0; j < _A.at(0).size(); j++)
+		for (int j = 0; j < _A.size(); j++)
 		{
-			double counter = 0.0;
-			for (int t = 0; t < _A.size(); t++)
+			if ( (_A.at(i) == 1.0) && (_P.at(j) == 1.0) )
 			{
-				if ( (_A.at(t).at(i) == 1.0) && (_P.at(t).at(j) == 1.0) )
-				{
-					counter = counter + 1.0;
-				}
+				_confusionMatrix.at(i).at(j) += 1;
 			}
-			_confusionMatrix.at(i).at(j) = counter;
 		}
 	}
 }
 
-void Statistics::process(vector<vector<double>> A, vector<vector<double>> P)
+void Statistics::process(vector<double> A, vector<double> P)
 {
 	_A = A;
-
-	for (int t = 0; t < P.size(); t++)
-	{
-		_P.push_back( get_oneHot(P.at(t)) );
-	}
+	_P = get_oneHot( P );
 
 	//helper::print_2matrices_column("A and P: ", _A, _P);
 
-	confusion_matrix();
+	//confusion_matrix();
 
 	true_positive();
 	true_negative();
@@ -245,12 +208,9 @@ void Statistics::process(vector<vector<double>> A, vector<vector<double>> P)
 
 void Statistics::concat_AP()
 {
-	for (int i = 0; i < _A.size(); i++)
-	{
-		vector<double> ap = _A.at(i);
-		ap.insert( ap.end(), _P.at(i).begin(), _P.at(i).end() );
-		_AP.push_back( ap );
-	}
+	vector<double> ap = _A;
+	ap.insert( ap.end(), _P.begin(), _P.end() );
+	_AP.push_back( ap );
 }
 
 void Statistics::print_all()
