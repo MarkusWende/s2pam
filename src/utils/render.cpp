@@ -96,6 +96,33 @@ void vector_to_file(std::vector<double> v, string filename)
 	outputFile.close();
 }
 
+void matrix_to_file(std::vector<std::vector<double>> m, string filename)
+{
+
+	///	append the parent folder the file is stored in
+	filename.insert(0,"./data/tmp/");
+
+	///	construct ofstream object and initialze filename
+	ofstream outputFile;
+	outputFile.open(filename);
+
+	///	write vector values to file
+	for (int i = 0; i < m.size(); i++)
+	{
+		for (int j = 0; j < m.at(0).size(); j++)
+		{
+			if (j > 0)
+				outputFile << "," << m.at(i).at(j);
+			else
+				outputFile << m.at(i).at(j);
+		}
+		outputFile << endl;
+	}
+
+	///	close file
+	outputFile.close();
+}
+
 inline void set_RGB(png_byte *ptr, string type, double val)
 {
 	/// set rgb range to 255 = 8 bit

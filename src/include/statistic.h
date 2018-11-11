@@ -38,6 +38,7 @@ class Statistics
 
 		std::vector<std::vector<double>> _A;
 		std::vector<std::vector<double>> _P;
+		std::vector<std::vector<double>> _AP;
 
 	public:
 		
@@ -62,6 +63,12 @@ class Statistics
 		
 		void confusion_matrix();
 
+		double get_fScore_sum() { return _fScoreSum; };
+		std::vector<double> get_fScore() { return _fScore; };
+		std::vector<double> get_acc() { return _acc; };
+		std::vector<std::vector<double>> get_AP() { return _AP; };
+
 		void print_all();
+		void concat_AP();
 };
 #endif		// SATISTIC_H
