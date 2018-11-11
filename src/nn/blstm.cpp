@@ -1120,6 +1120,21 @@ void Blstm::calculate_predictions()
 	}
 }
 
+void Blstm::calculate_single_predictions()
+{
+	_predictionSingle.clear();
+	_predictionSingle.resize(_oLSize, 0.0);
+
+	vector<double> inputF(_oLSize, 0.0);
+	inputF = vec_matrix_mult(_y.at(_T-1), _Wy);
+	vector<double> inputB(_oLSize, 0.0);
+	inputB = vec_matrix_mult(_b_y.at(0), _b_Wy);
+	vector<double> input(_oLSize, 0.0);
+	input = vec_ele_add(inputF, inputB);
+
+	_predictionSingle = softmax( input );
+}
+
 double Blstm::calculate_loss(vector<vector<double>> Y)
 {
 	/// initialize the loss value with zero
@@ -1150,7 +1165,33 @@ double Blstm::calculate_loss(vector<vector<double>> Y)
 	return L;
 }
 
-void Blstm::bptt(vector<vector<double>> X, vector<vector<double>> Y)
+double Blstm::calculate_single_loss(vector<double> target)
+{
+	/// initialize the loss value with zero
+	double L = 0;
+
+	/// loop every output in Y
+	for (int iOut = 0; iOut < target.size(); iOut++)
+	{
+		/// sum up the loss value by calculating the product Y(t)_i * log( _o(t)_i )
+		/// with i = 0 .. output layer size
+		//cout << _prediction.at(t).at(iOut) << endl;
+		if (_predictionSingle.at(iOut) < 0.001)
+			L += -5 * target.at(iOut);
+		else
+			L += -1 * target.at(iOut) * log(_predictionSingle.at(iOut));
+		//float div = (Y.at(t).at(iOut) - _prediction.at(t).at(iOut));
+		//div = div * div;
+		//L += div / 2;
+	}
+
+	/// divide the loss by the length of the output train
+	L = L / _predictionSingle.size();
+	//cout << "\tL: " << L;
+	return L;
+}
+
+void Blstm::bptt(vector<vector<double>> X, vector<vector<double>> Y, vector<double> target)
 {
 	vector<vector<double>> dWy(_hLSize, vector<double> (_oLSize, 0));
 	
@@ -1185,6 +1226,13 @@ void Blstm::bptt(vector<vector<double>> X, vector<vector<double>> Y)
 
 	vector<double> x_t(_iLSize, 0);
 	vector<double> y_t(_iLSize, 0);
+		
+	vector<double> deltaT(_oLSize, 0);
+	deltaT = vec_ele_sub(target, _predictionSingle);
+	
+	/// dy(t) = delta(t) + dy(t+1)
+	dy_next = vec_matrix_mult(deltaT, matrix_T(_Wy));
+	dWy = matrix_add(dWy, outer(_y.at(_T-1), deltaT) );
 
 	/// loop every output backwards from _T-1 to t = 0
 	for (int t = _T-1; t >= 0; t--)
@@ -1204,20 +1252,22 @@ void Blstm::bptt(vector<vector<double>> X, vector<vector<double>> Y)
 
 		/// Error dE/dy(t)
 		/// dE/dy(t) = prediction(t) - y(t)
-		vector<double> deltaT(_oLSize, 0);
-		deltaT = vec_ele_sub(Y.at(t), _prediction.at(t));
+		//vector<double> deltaT(_oLSize, 0);
+		//deltaT = vec_ele_sub(Y.at(t), _prediction.at(t));
 		
 		/// dy(t) = delta(t) + dy(t+1)
-		vector<double> dy(_hLSize, 0);
-		dy = vec_matrix_mult(deltaT, matrix_T(_Wy));
-		dy = vec_ele_add(dy, dy_next);
+		//vector<double> dy(_hLSize, 0);
+		//dy = vec_matrix_mult(deltaT, matrix_T(_Wy));
+		//dy = vec_ele_add(dy, dy_next);
 
 		/// do_head(t) = dy(t) * tanh( c(t) ) * dsig( o_head(t) )
-		do_head = vec_ele_mult(tanhyp(_c.at(t)), dy);
+		//do_head = vec_ele_mult(tanhyp(_c.at(t)), dy);
+		do_head = vec_ele_mult(tanhyp(_c.at(t)), dy_next);
 		do_head = vec_ele_mult(dsigmoid(_o_head.at(t)), do_head);
 
 		/// dc(t) = dy(t) * o(t) * dtanh( c(t) ) + dc(t+1) * f(t+1)
-		vector<double> dc = vec_ele_mult( _o.at(t), dy );
+		//vector<double> dc = vec_ele_mult( _o.at(t), dy );
+		vector<double> dc = vec_ele_mult( _o.at(t), dy_next );
 		dc = vec_ele_mult( dc, dtanhyp(_c.at(t)) );
 		dc = vec_ele_add( dc, vec_ele_mult(_po, do_head) );
 		dc = vec_ele_add( dc, dpi_next );
@@ -1246,7 +1296,7 @@ void Blstm::bptt(vector<vector<double>> X, vector<vector<double>> Y)
 
 		/// calc gradients	
 		/// dWy, gradient of _Wy
-		dWy = matrix_add(dWy, outer(y_t, deltaT) );
+		//dWy = matrix_add(dWy, outer(y_t, deltaT) );
 		
 		/// dWf, dWi, dWo and dWz
 		dWf = matrix_add(dWf, outer(x_t, df_head));
@@ -1273,7 +1323,8 @@ void Blstm::bptt(vector<vector<double>> X, vector<vector<double>> Y)
 		dy_next = dy_R;
 	}
 	
-	double L = calculate_loss(Y);
+	//double L = calculate_loss(Y);
+	double L = calculate_single_loss(target);
 
 	L = L * _learningRate;
 	
@@ -1298,7 +1349,7 @@ void Blstm::bptt(vector<vector<double>> X, vector<vector<double>> Y)
 	_bz = vec_ele_add_with_const(_bz, dbz, L);
 }
 
-void Blstm::fptt(vector<vector<double>> X, vector<vector<double>> Y)
+void Blstm::fptt(vector<vector<double>> X, vector<vector<double>> Y, vector<double> target)
 {
 	vector<vector<double>> dWy(_hLSize, vector<double> (_oLSize, 0));
 	
@@ -1333,6 +1384,15 @@ void Blstm::fptt(vector<vector<double>> X, vector<vector<double>> Y)
 
 	vector<double> x_t(_iLSize, 0);
 	vector<double> y_t(_iLSize, 0);
+		
+	/// Error dE/dy(t)
+	/// dE/dy(t) = prediction(t) - y(t)
+	vector<double> deltaT(_oLSize, 0);
+	deltaT = vec_ele_sub(target, _predictionSingle);
+	
+	/// dy(t) = delta(t) + dy(t+1)
+	dy_next = vec_matrix_mult(deltaT, matrix_T(_b_Wy));
+	dWy = matrix_add(dWy, outer(_b_y.at(0), deltaT) );
 
 	/// loop every output forward from 0 to _t -1
 	for (int t = 0; t < _T; t++)
@@ -1352,20 +1412,22 @@ void Blstm::fptt(vector<vector<double>> X, vector<vector<double>> Y)
 
 		/// Error dE/dy(t)
 		/// dE/dy(t) = prediction(t) - y(t)
-		vector<double> deltaT(_oLSize, 0);
-		deltaT = vec_ele_sub(Y.at(t), _prediction.at(t));
+		//vector<double> deltaT(_oLSize, 0);
+		//deltaT = vec_ele_sub(Y.at(t), _prediction.at(t));
 		
 		/// dy(t) = delta(t) + dy(t+1)
-		vector<double> dy(_hLSize, 0);
-		dy = vec_matrix_mult(deltaT, matrix_T(_b_Wy));
-		dy = vec_ele_add(dy, dy_next);
+		//vector<double> dy(_hLSize, 0);
+		//dy = vec_matrix_mult(deltaT, matrix_T(_b_Wy));
+		//dy = vec_ele_add(dy, dy_next);
 
 		/// do_head(t) = dy(t) * tanh( c(t) ) * dsig( o_head(t) )
-		do_head = vec_ele_mult(tanhyp(_b_c.at(t)), dy);
+		//do_head = vec_ele_mult(tanhyp(_b_c.at(t)), dy);
+		do_head = vec_ele_mult(tanhyp(_b_c.at(t)), dy_next);
 		do_head = vec_ele_mult(dsigmoid(_b_o_head.at(t)), do_head);
 
 		/// dc(t) = dy(t) * o(t) * dtanh( c(t) ) + dc(t+1) * f(t+1)
-		vector<double> dc = vec_ele_mult( _b_o.at(t), dy );
+		//vector<double> dc = vec_ele_mult( _b_o.at(t), dy );
+		vector<double> dc = vec_ele_mult( _b_o.at(t), dy_next );
 		dc = vec_ele_mult( dc, dtanhyp(_b_c.at(t)) );
 		dc = vec_ele_add( dc, vec_ele_mult(_b_po, do_head) );
 		dc = vec_ele_add( dc, dpi_next );
@@ -1394,7 +1456,7 @@ void Blstm::fptt(vector<vector<double>> X, vector<vector<double>> Y)
 
 		/// calc gradients	
 		/// dWy, gradient of _Wy
-		dWy = matrix_add(dWy, outer(y_t, deltaT) );
+		//dWy = matrix_add(dWy, outer(y_t, deltaT) );
 		
 		/// dWf, dWi, dWo and dWz
 		dWf = matrix_add(dWf, outer(x_t, df_head));
@@ -1421,7 +1483,8 @@ void Blstm::fptt(vector<vector<double>> X, vector<vector<double>> Y)
 		dy_next = dy_R;
 	}
 	
-	double L = calculate_loss(Y);
+	//double L = calculate_loss(Y);
+	double L = calculate_single_loss(target);
 
 	L = L * _learningRate;
 	

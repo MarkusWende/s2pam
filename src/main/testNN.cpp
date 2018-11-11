@@ -12,6 +12,8 @@ int main(int argc, char* argv[])
 {
 	//string devTestFilename = "./data/set/coreTest.set";
 	string devTestFilename = "./data/set/devTest.set";
+	//string devTestFilename = "./data/set/blub.set";
+	//string devTestFilename = "./data/set/training.set";
 	string nnFilename = "./data/nn/data.bin";
 
 	Blstm nn(nnFilename);
@@ -20,6 +22,8 @@ int main(int argc, char* argv[])
 	vector<unsigned> topology = nn.get_topo();
 	vector<vector<double>> X;
 	vector<vector<double>> Y;
+	vector<vector<double>> bX;
+	vector<vector<double>> bY;
 	vector<vector<double>> AP;
 	
 	vector<vector<double>> accIter;
@@ -27,9 +31,15 @@ int main(int argc, char* argv[])
 
 	int iterations = 1000;
 	int steps = 1;
-	
+
 	DataSet devTest(devTestFilename);
-	devTest.init_set(T, topology, X, Y);
+	devTest.init_set(T, topology, X, Y, bX, bY);
+	//devTest.init_set(10, {3, 10, 3}, X, Y, bX, bY);
+	
+	//helper::print_2matrices_column("Y und bY", Y, bY);
+	//devTest.shift_set(steps, X, Y, bX, bY);
+	//helper::print_2matrices_column("Y und bY", Y, bY);
+	//exit(0);
 	
 	vector<vector<double>> confMat(Y.at(0).size(), vector<double>(Y.at(0).size(), 0.0));
 
@@ -38,24 +48,35 @@ int main(int argc, char* argv[])
 	for (int iter = 0; iter < iterations; iter++)
 	{
 		nn.feed_forward(X);
-		nn.feed_backward(X);
-		nn.calculate_predictions();
+		nn.feed_backward(bX);
+		nn.calculate_single_predictions();
 
-		vector<vector<double>> P = nn.get_predictions();
-		stats.process(Y, P);
+		//vector<vector<double>> P = nn.get_predictions();
+		vector<double> p = nn.get_single_prediction();
+		//stats.process(Y, P);
+		vector<double> target = Y.at(T-1);
+		//helper::print_vector("Target: ", target);
+		//helper::print_vector("bY.at(0): ", bY.at(0));
+		stats.process(target, p);
 		stats.concat_AP();
 		vector<double> acc = stats.get_acc();
 		vector<double> fScore = stats.get_fScore();
 		accIter.push_back(acc);
 		fScoreIter.push_back(fScore);
-		/*std::cout << std::fixed;
+		std::cout << std::fixed;
 		std::cout << std::setprecision(5);
 		cout << "Iter: (" << iter << "|" << iterations << ")" << "\tfScore: " << fScore.at(0)
 			<< "\t" << fScore.at(1) << "\t" << fScore.at(2) << "\t||\tacc: " << acc.at(0)
-			<< "\t" << acc.at(1) << "\t" << acc.at(2) << endl;*/
+			<< "\t" << acc.at(1) << "\t" << acc.at(2) << endl;
 		//stats.print_all();
 
-		devTest.shift_set(steps, X, Y);
+/*		vector<double> pOH;
+		pOH = helper::get_oneHot(p);
+		cout << "Target: sil: " << target.at(0) << "\tc: " << target.at(1) << "\tv: "
+			<< target.at(2) << "\t\tPrediction: sil: " << pOH.at(0) << "\tc: " << pOH.at(1)
+			<< "\tv: " << pOH.at(2) << endl;
+*/
+		devTest.shift_set(steps, X, Y, bX, bY);
 	}
 
 	AP = stats.get_AP();

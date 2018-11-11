@@ -33,13 +33,15 @@ void process()
 	//TrainingData trainData("data/NAND/T241L20000.txt");
 	// e.g., { 3, 2, 1 }
 	vector<unsigned> topology = {39, 60, 3};
-	int T = 25;
-	int maxEpoch = 5;
+	int T = 100;
+	int maxEpoch = 20;
 	int steps = 1;
-	double learningRate = 0.00001;
+	double learningRate = 0.001;
 
 	vector<vector<double>> X;
 	vector<vector<double>> Y;
+	vector<vector<double>> bX;
+	vector<vector<double>> bY;
 
 	Blstm nn(topology, T, learningRate);
 	nn.random_weights();
@@ -59,9 +61,9 @@ void process()
 	bool done = false;	
 	
 	DataSet train(trainFilename);
-	train.init_set(T, topology, X, Y);
+	train.init_set(T, topology, X, Y, bX, bY);
 	//int iterations = train.size() - T;
-	int iterations = 100000;
+	int iterations = 1000;
 
 	//cout << "Size: " << iterations << endl;
 	//return;
@@ -76,19 +78,25 @@ void process()
 		for (int iter = 0; iter < iterations; iter++)
 		{
 			nn.feed_forward(X);
-			nn.feed_backward(X);
-			nn.calculate_predictions();
+			nn.feed_backward(bX);
+			nn.calculate_single_predictions();
 
-			nn.bptt(X,Y);
-			nn.fptt(X,Y);
+			vector<double> target(Y.at(0).size(), 0.0);
+			for (int c = 0; c < target.size(); c++)
+			{
+				target.at(c) = Y.at(T-1).at(c);
+			}
 
-			double L = nn.calculate_loss(Y);
+			nn.bptt(X,Y,target);
+			nn.fptt(bX,bY,target);
+
+			double L = nn.calculate_single_loss(target);
 			if (!isnan(L))
 				lossIter.push_back(L);
 			cout << "Epoch: (" << epoch << "|" << maxEpoch << ")\tIter: (" << iter
 				<< "|" << iterations << ")\tLoss: " << L << endl;
 
-			train.shift_set(steps, X, Y);
+			train.shift_set(steps, X, Y, bX, bY);
 		}
 
 		double lossAvg = accumulate( lossIter.begin(), lossIter.end(), 0.0) / lossIter.size();

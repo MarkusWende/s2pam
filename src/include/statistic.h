@@ -36,8 +36,8 @@ class Statistics
 		std::vector<double> _FN;
 		std::vector<double> _total;
 
-		std::vector<std::vector<double>> _A;
-		std::vector<std::vector<double>> _P;
+		std::vector<double> _A;
+		std::vector<double> _P;
 		std::vector<std::vector<double>> _AP;
 
 	public:
@@ -47,8 +47,8 @@ class Statistics
 				);
 
 		void process(
-				std::vector<std::vector<double>> A,
-				std::vector<std::vector<double>> P
+				std::vector<double> A,
+				std::vector<double> P
 				);
 
 		void true_positive();
