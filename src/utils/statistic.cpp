@@ -158,6 +158,8 @@ void Statistics::accuracy()
 	{
 		double acc = 0.0;
 		double hit = 0.0;
+		
+		//cout << "TP: " << _TP.at(c) << "\tTN: " << _TN.at(c) << "\tFP: " << _FP.at(c) << "\tFN: " << _FN.at(c) << endl;
 
 		_total.at(c) = (_TP.at(c) + _TN.at(c) + _FP.at(c) + _FN.at(c) );
 		hit = ( _TP.at(c) + _TN.at(c) );
@@ -196,15 +198,6 @@ void Statistics::fScore()
 	_fScoreSum = fScoreSum;
 }
 
-void Statistics::fScore_sum()
-{
-
-	for (int c = 0; c < _fScore.size(); c++)
-	{
-	}
-
-}
-
 void Statistics::confusion_matrix()
 {
 	for (int i = 0; i < _A.at(0).size(); i++)
@@ -233,6 +226,8 @@ void Statistics::process(vector<vector<double>> A, vector<vector<double>> P)
 		_P.push_back( get_oneHot(P.at(t)) );
 	}
 
+	//helper::print_2matrices_column("A and P: ", _A, _P);
+
 	confusion_matrix();
 
 	true_positive();
@@ -246,6 +241,16 @@ void Statistics::process(vector<vector<double>> A, vector<vector<double>> P)
 	recall();
 	fScore();
 	accuracy();
+}
+
+void Statistics::concat_AP()
+{
+	for (int i = 0; i < _A.size(); i++)
+	{
+		vector<double> ap = _A.at(i);
+		ap.insert( ap.end(), _P.at(i).begin(), _P.at(i).end() );
+		_AP.push_back( ap );
+	}
 }
 
 void Statistics::print_all()

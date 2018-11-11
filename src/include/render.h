@@ -96,5 +96,10 @@ namespace render {
 			std::vector<double> v,
 			std::string filename
 			);
+	
+	void matrix_to_file(
+			std::vector<std::vector<double>> m,
+			std::string filename
+			);
 }
 #endif		// RENDER_H
