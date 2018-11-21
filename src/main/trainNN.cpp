@@ -63,7 +63,7 @@ void process()
 	DataSet train(trainFilename);
 	train.init_set(T, topology, X, Y, bX, bY);
 	//int iterations = train.size() - T;
-	int iterations = 1000;
+	int iterations = 10000;
 
 	//cout << "Size: " << iterations << endl;
 	//return;

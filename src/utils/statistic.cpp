@@ -16,7 +16,7 @@
 using namespace std;
 using namespace helper;
 
-Statistics::Statistics(int numClass)
+Statistics::Statistics(int numClass, string type, double p)
 {
 	_confusionMatrix.clear();
 	_confusionMatrix.resize(numClass, vector<double>(numClass, 0.0));
@@ -51,8 +51,18 @@ Statistics::Statistics(int numClass)
 	_total.clear();
 	_total.resize(numClass, 0.0);
 
-	_fScoreSum = 0.0;
 	_accSum = 0.0;
+	_population = p;
+
+	_labels.clear();
+	_labels.resize(numClass, "null");
+
+	if ( !type.compare("vc") )
+	{
+		_labels.at(0) = "sil";
+		_labels.at(1) = "c";
+		_labels.at(2) = "v";
+	}
 }
 
 void Statistics::true_positive()
@@ -140,14 +150,13 @@ void Statistics::accuracy()
 
 		acc = hit / _total.at(c);
 		_acc.at(c) = acc * 100;
+		_accSum += _TP.at(c);
 	}
-
-	_accSum = accSum / totalSum * 100;
+	_accSum /= _population;
 }
 
 void Statistics::fScore()
 {
-	double fScoreSum = 0.0;
 	double precisionSum = 0.0;
 	double recallSum = 0.0;
 	
@@ -157,17 +166,9 @@ void Statistics::fScore()
 		
 		if ( (_precision.at(c) != 0) && (_recall.at(c) != 0) )
 			fScore = 2 * _precision.at(c) * _recall.at(c) / (_precision.at(c) + _recall.at(c));
-		
-		precisionSum += _precision.at(c);
-		recallSum += _recall.at(c);
 
 		_fScore.at(c) = fScore;
 	}
-	
-	if ( (precisionSum != 0) && (recallSum != 0) )
-		fScoreSum = 2 * precisionSum * recallSum / (precisionSum + recallSum);
-	
-	_fScoreSum = fScoreSum;
 }
 
 void Statistics::confusion_matrix()
@@ -184,14 +185,52 @@ void Statistics::confusion_matrix()
 	}
 }
 
+string Statistics::get_string_representation(vector<double> binIn)
+{
+	string strLabel;
+
+	vector<double> vc_sil = {1,0,0};
+	vector<double> vc_c = {0,1,0};
+	vector<double> vc_v = {0,0,1};
+
+	if ( std::equal(binIn.begin(), binIn.end(), vc_sil.begin()) )
+		strLabel = "sil";
+	else if ( std::equal(binIn.begin(), binIn.end(), vc_c.begin()) )
+		strLabel = "c";
+	else if ( std::equal(binIn.begin(), binIn.end(), vc_v.begin()) )
+		strLabel = "v";
+
+	return strLabel;
+}
+
+void Statistics::concat_AP_binary()
+{
+	vector<double> ap = _A;
+	ap.insert( ap.end(), _P.begin(), _P.end() );
+	_AP.push_back( ap );
+}
+
+void Statistics::concat_AP()
+{
+	vector<string> ap;
+	ap.push_back( _AString );
+	ap.push_back( _PString );
+	_APString.push_back( ap );
+}
+
 void Statistics::process(vector<double> A, vector<double> P)
 {
 	_A = A;
 	_P = get_oneHot( P );
+	_AString = get_string_representation(_A);
+	_PString = get_string_representation(_P);
+
+	concat_AP_binary();
+	concat_AP();
 
 	//helper::print_2matrices_column("A and P: ", _A, _P);
 
-	//confusion_matrix();
+	confusion_matrix();
 
 	true_positive();
 	true_negative();
@@ -200,31 +239,25 @@ void Statistics::process(vector<double> A, vector<double> P)
 
 	//_total += accumulate( _TP.begin(), _TP.end(), 0.0);
 
-	precision();
-	recall();
-	fScore();
-	accuracy();
-}
-
-void Statistics::concat_AP()
-{
-	vector<double> ap = _A;
-	ap.insert( ap.end(), _P.begin(), _P.end() );
-	_AP.push_back( ap );
 }
 
 void Statistics::print_all()
 {
 	helper::print_matrix("ConMat: ", _confusionMatrix);
 	
+	precision();
+	recall();
+	fScore();
+	accuracy();
+	
 	for (int c = 0; c < _TP.size(); c++)
 	{
 		cout << "-------------------------------------" << endl;
-		cout << "Class: " << c << endl;
+		cout << "Class No: " << c << "\tLabel: " << _labels.at(c) << endl;
 		cout << "TP: " << _TP.at(c) << "\tTN: " << _TN.at(c) << "\tFP: " << _FP.at(c) << "\tFN: " << _FN.at(c) << endl;
 		cout << "fScore: " << _fScore.at(c) << "\tAcc: " << _acc.at(c) << "\tPrecision: " << _precision.at(c) << endl << endl;
 	}
 
 	cout << "====================================" << endl;
-	cout << "FScore Sum: " << _fScoreSum << "\tAcc Sum: " << _accSum << endl;
+	cout << "Acc Sum: " << _accSum << endl;
 }

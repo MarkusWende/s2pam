@@ -27,23 +27,29 @@ class Statistics
 		std::vector<double> _recall;
 		std::vector<double> _acc;
 		std::vector<double> _classError;
-		double _fScoreSum;
 		double _accSum;
+		double _population;
 
 		std::vector<double> _TP;
 		std::vector<double> _TN;
 		std::vector<double> _FP;
 		std::vector<double> _FN;
 		std::vector<double> _total;
+		std::vector<std::string> _labels;
 
 		std::vector<double> _A;
 		std::vector<double> _P;
+		std::string _AString;
+		std::string _PString;
 		std::vector<std::vector<double>> _AP;
+		std::vector<std::vector<std::string>> _APString;
 
 	public:
 		
 		Statistics(
-				int numClass
+				int numClass,
+				std::string type,
+				double p
 				);
 
 		void process(
@@ -63,12 +69,16 @@ class Statistics
 		
 		void confusion_matrix();
 
-		double get_fScore_sum() { return _fScoreSum; };
 		std::vector<double> get_fScore() { return _fScore; };
 		std::vector<double> get_acc() { return _acc; };
 		std::vector<std::vector<double>> get_AP() { return _AP; };
+		std::vector<std::vector<std::string>> get_APString() { return _APString; };
 
 		void print_all();
+		void concat_AP_binary();
 		void concat_AP();
+		std::string get_string_representation(
+				std::vector<double> binIn
+				);
 };
 #endif		// SATISTIC_H

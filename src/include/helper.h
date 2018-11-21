@@ -319,5 +319,11 @@ namespace helper {
 			int& frame,
 			double& frameEnd,
 			int nSamples);
+	
+	void convert_float_to_double(
+			std::vector<std::vector<float>> &in,
+			std::vector<std::vector<double>> &out
+			);
+
 }
 #endif		// HELPER_H

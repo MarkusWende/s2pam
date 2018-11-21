@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
 	string devTestFilename = "./data/set/devTest.set";
 	//string devTestFilename = "./data/set/blub.set";
 	//string devTestFilename = "./data/set/training.set";
-	string nnFilename = "./data/nn/data.bin";
+	string nnFilename = "./data/nn/data_vc8.bin";
 
 	Blstm nn(nnFilename);
 
@@ -25,12 +25,14 @@ int main(int argc, char* argv[])
 	vector<vector<double>> bX;
 	vector<vector<double>> bY;
 	vector<vector<double>> AP;
+	vector<vector<string>> APString;
 	
 	vector<vector<double>> accIter;
 	vector<vector<double>> fScoreIter;
 
-	int iterations = 1000;
+	int iterations = 400000;
 	int steps = 1;
+	string type = "vc";
 
 	DataSet devTest(devTestFilename);
 	devTest.init_set(T, topology, X, Y, bX, bY);
@@ -43,7 +45,7 @@ int main(int argc, char* argv[])
 	
 	vector<vector<double>> confMat(Y.at(0).size(), vector<double>(Y.at(0).size(), 0.0));
 
-	Statistics stats(Y.at(0).size());
+	Statistics stats(Y.at(0).size(), type, iterations);
 	
 	for (int iter = 0; iter < iterations; iter++)
 	{
@@ -58,17 +60,15 @@ int main(int argc, char* argv[])
 		//helper::print_vector("Target: ", target);
 		//helper::print_vector("bY.at(0): ", bY.at(0));
 		stats.process(target, p);
-		stats.concat_AP();
-		vector<double> acc = stats.get_acc();
-		vector<double> fScore = stats.get_fScore();
-		accIter.push_back(acc);
-		fScoreIter.push_back(fScore);
-		std::cout << std::fixed;
-		std::cout << std::setprecision(5);
-		cout << "Iter: (" << iter << "|" << iterations << ")" << "\tfScore: " << fScore.at(0)
+		//vector<double> acc = stats.get_acc();
+		//vector<double> fScore = stats.get_fScore();
+		//accIter.push_back(acc);
+		//fScoreIter.push_back(fScore);
+		//std::cout << std::fixed;
+		//std::cout << std::setprecision(5);
+		cout << "Iter: (" << iter << "|" << iterations << ")" << endl; /*"\tfScore: " << fScore.at(0)
 			<< "\t" << fScore.at(1) << "\t" << fScore.at(2) << "\t||\tacc: " << acc.at(0)
-			<< "\t" << acc.at(1) << "\t" << acc.at(2) << endl;
-		//stats.print_all();
+			<< "\t" << acc.at(1) << "\t" << acc.at(2) << endl;*/
 
 /*		vector<double> pOH;
 		pOH = helper::get_oneHot(p);
@@ -80,12 +80,14 @@ int main(int argc, char* argv[])
 	}
 
 	AP = stats.get_AP();
+	APString = stats.get_APString();
 	render::matrix_to_file(AP, "test.AP");
+	render::matrix_to_file(APString, "test.APString");
 
 	//double classErrorAvg = accumulate( classErrorIter.begin(), classErrorIter.end(), 0.0) / classErrorIter.size();
 	//classErrorEpoch.push_back(classErrorAvg);
 	//classErrorIter.clear();
-	vector<double> fScoreAvg(fScoreIter.at(0).size(), 0.0);
+	/*vector<double> fScoreAvg(fScoreIter.at(0).size(), 0.0);
 	vector<double> accAvg(accIter.at(0).size(), 0.0);
 	for (int c = 0; c < fScoreIter.at(0).size(); c++)
 	{
@@ -100,15 +102,16 @@ int main(int argc, char* argv[])
 
 	fScoreIter.clear();
 	accIter.clear();
-	
+	*/
 	//render::vector_to_file(classErrorEpoch, "test.classError");
 	//render::vector_to_file(fScoreEpoch, "test.fScore");
 
 	//cout << "Avg. Class Error: " << classErrorAvg << endl;
 	//cout << "Avg. F Score: " << fScoreAvg << endl;
-	helper::print_vector("fScore: ", fScoreAvg);
-	helper::print_vector("acc: ", accAvg);
+	//helper::print_vector("fScore: ", fScoreAvg);
+	//helper::print_vector("acc: ", accAvg);
 
+	stats.print_all();
 
 	return 0;
 }

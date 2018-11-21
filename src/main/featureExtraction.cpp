@@ -163,38 +163,84 @@ int processTrainingAudioFile(string audioFilename) {
 		counter++;
 	}
 
-	vector<float> vSpectrumNormalized;
+	vector<double> vSpectrumNormalized;
 
-	vector<vector<float>> mMfccCoeffsEnlarged(mSpectrum.size(),vector<float>(420,0));
-	vector<float> vMfccCoeffsNormalized;
+	vector<vector<double>> mMfccCoeffsEnlarged(mSpectrum.size(),vector<double>(420,0));
+	vector<double> vMfccCoeffsNormalized;
 
-	vector<vector<float>> mMfccBandsEnlarged(mSpectrum.size(),vector<float>(420,0));
-	vector<float> vMfccBandsNormalized;
+	vector<vector<double>> mMfccBandsEnlarged(mSpectrum.size(),vector<double>(420,0));
+	vector<double> vMfccBandsNormalized;
+	
+	vector<vector<double>> mTest(mSpectrum.size(),vector<double>(420,0));
+	vector<double> vTest;
 
+	for (int i = 0; i < mTest.size(); i++)
+	{
+		for (int j = 0; j < mTest.at(0).size(); j++)
+		{
+			mTest.at(i).at(j) = i / (double)mTest.size();
+		}
+	}
+
+	int steps = 10;
+	int audioImageLength = (int)floor(wave.numberOfSamples() / steps);
+
+	vector<double> audioStream(audioImageLength, 0.0);
+
+	for (int i=0; i<audioImageLength-1; i++)
+	{
+		double sample;
+		sample = static_cast<double>(wave.samples[i*steps]) / qSteps;
+
+		if ( (sample >= 0.1) || (sample <= -0.1) )
+			sample = 0.0;
+
+		if ( (sample < 0.1) || (sample > -0.1) )
+			sample *= 4.9;
+
+		audioStream.at(i) = sample;
+	}
+	vector<vector<double>> mAudio;
+	vector<double> vAudio;
+	render::audio_to_matrix(mAudio, audioStream);
+	
 	unsigned int imageHeight;
 	unsigned int imageWidth;
 
-	vector<vector<float>> mSpectrumNorm(mSpectrum.size(), vector<float> (mSpectrum[0].size(), 0));
-	vector<vector<float>> mMfccCoeffsNorm(mMfccCoeffs.size(), vector<float> (mMfccCoeffs[0].size(), 0));
-	vector<vector<float>> mMfccBandsNorm(mMfccBands.size(), vector<float> (mMfccBands[0].size(), 0));
+	helper::matrix_to_vector(mAudio, imageHeight, imageWidth, vAudio);
+	render::vector_to_PNG(audioFilename, "_wave", "lin", imageHeight, imageWidth, vAudio);
+
+	vector<vector<double>> mSpectrumNorm(mSpectrum.size(), vector<double> (mSpectrum[0].size(), 0));
+	vector<vector<double>> mMfccCoeffsNorm(mMfccCoeffs.size(), vector<double> (mMfccCoeffs[0].size(), 0));
+	vector<vector<double>> mMfccBandsNorm(mMfccBands.size(), vector<double> (mMfccBands[0].size(), 0));
+	vector<vector<double>> mSpectrumD(mSpectrum.size(), vector<double> (mSpectrum[0].size(), 0));
+	vector<vector<double>> mMfccCoeffsD(mMfccCoeffs.size(), vector<double> (mMfccCoeffs[0].size(), 0));
+	vector<vector<double>> mMfccBandsD(mMfccBands.size(), vector<double> (mMfccBands[0].size(), 0));
+
+	helper::convert_float_to_double(mSpectrum, mSpectrumD);
+	helper::convert_float_to_double(mMfccBands, mMfccBandsD);
+	helper::convert_float_to_double(mMfccCoeffs, mMfccCoeffsD);
 
 	// generate png's from matrixes
-	//helper::matrix_to_normalized_matrix(mSpectrum, mSpectrumNorm);
+	helper::matrix_to_normalized_matrix(mSpectrumD, mSpectrumNorm);
 	//helper::print_matrix(mSpectrumNorm);
-	//helper::matrix_to_vector(mSpectrumNorm, imageHeight, imageWidth, vSpectrumNormalized);
-	//render::vector_to_PNG(audioFilename, "_spec", "log", imageHeight, imageWidth, vSpectrumNormalized);
+	helper::matrix_to_vector(mSpectrumNorm, imageHeight, imageWidth, vSpectrumNormalized);
+	render::vector_to_PNG(audioFilename, "_spec", "log", imageHeight, imageWidth, vSpectrumNormalized);
 
-	//helper::matrix_to_normalized_matrix(mMfccBands, mMfccBandsNorm);
+	helper::matrix_to_normalized_matrix(mMfccBandsD, mMfccBandsNorm);
 	//helper::print_matrix(mMfccBandsNorm);
-	//helper::matrix_enlarge(mMfccBandsNorm, mMfccBandsEnlarged);
-	//helper::matrix_to_vector(mMfccBandsEnlarged, imageHeight, imageWidth, vMfccBandsNormalized);
-	//render::vector_to_PNG(audioFilename, "_bands", "log", imageHeight, imageWidth, vMfccBandsNormalized);
+	helper::matrix_enlarge(mMfccBandsNorm, mMfccBandsEnlarged);
+	helper::matrix_to_vector(mMfccBandsEnlarged, imageHeight, imageWidth, vMfccBandsNormalized);
+	render::vector_to_PNG(audioFilename, "_bands", "log", imageHeight, imageWidth, vMfccBandsNormalized);
 
-	helper::matrix_to_normalized_matrix(mMfccCoeffs, mMfccCoeffsNorm);
+	helper::matrix_to_normalized_matrix(mMfccCoeffsD, mMfccCoeffsNorm);
 	//helper::print_matrix(mMfccCoeffs);
-	//helper::matrix_enlarge(mMfccCoeffsNorm, mMfccCoeffsEnlarged);
-	//helper::matrix_to_vector(mMfccCoeffsEnlarged, imageHeight, imageWidth, vMfccCoeffsNormalized);
-	//render::vector_to_PNG(audioFilename, "_mfcc", "exp", imageHeight, imageWidth, vMfccCoeffsNormalized);
+	helper::matrix_enlarge(mMfccCoeffsNorm, mMfccCoeffsEnlarged);
+	helper::matrix_to_vector(mMfccCoeffsEnlarged, imageHeight, imageWidth, vMfccCoeffsNormalized);
+	render::vector_to_PNG(audioFilename, "_mfcc", "custom", imageHeight, imageWidth, vMfccCoeffsNormalized);
+	
+	helper::matrix_to_vector(mTest, imageHeight, imageWidth, vTest);
+	render::vector_to_PNG(audioFilename, "_test", "custom", imageHeight, imageWidth, vTest);
 
 	// generate mfcc file from matrix
 	render::matrix_to_MFCC_file(mMfccCoeffsNorm, audioFilename);
@@ -270,8 +316,8 @@ int main(int argc, char* argv[]) {
 		int tmpCount = 0;
 		int remainCount = 0;
 
-		if((trainingFileList.size()-totalCount) >=100)
-			remainCount = 100;
+		if((trainingFileList.size()-totalCount) >=10)
+			remainCount = 10;
 		else
 			remainCount = trainingFileList.size()-totalCount;
 
@@ -297,7 +343,7 @@ int main(int argc, char* argv[]) {
 
 		sleep_for(500ms);	
 	
-		//return 0;
+		return 0;
 	}
 
 
