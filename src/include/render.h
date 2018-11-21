@@ -49,7 +49,7 @@ namespace render {
 	 * @return void
 	 */
 	void matrix_to_MFCC_file(
-			std::vector<std::vector<float>> m,
+			std::vector<std::vector<double>> m,
 			std::string audioFilename
 			);
 	
@@ -100,6 +100,16 @@ namespace render {
 	void matrix_to_file(
 			std::vector<std::vector<double>> m,
 			std::string filename
+			);
+	
+	void matrix_to_file(
+			std::vector<std::vector<std::string>> m,
+			std::string filename
+			);
+	
+	void audio_to_matrix(
+			std::vector<std::vector<double>> &m,
+			std::vector<double> &audioStream
 			);
 }
 #endif		// RENDER_H

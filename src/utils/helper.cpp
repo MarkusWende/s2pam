@@ -635,5 +635,15 @@ void get_textGrid_frame(item_c& tgItem, int mIndex, int& frame, double& frameEnd
 		
 }
 
+void convert_float_to_double(vector<vector<float>> &in, vector<vector<double>> &out)
+{
+	for (int i = 0; i < in.size(); i++)
+	{
+		for (int j = 0; j < in.at(0).size(); j++)
+		{
+			out.at(i).at(j) = (double)in.at(i).at(j);
+		}
+	}
 }
 
+}

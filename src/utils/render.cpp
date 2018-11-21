@@ -42,7 +42,7 @@ void matrix_to_PGM(std::vector<std::vector<double>> m)
 	outputFile.close();
 }
 
-void matrix_to_MFCC_file(std::vector<std::vector<float>> m, string audioFilename)
+void matrix_to_MFCC_file(std::vector<std::vector<double>> m, string audioFilename)
 {
 	/// get filename from input path, removing all slashes and parent foldernames
 	size_t found = audioFilename.find_last_of("/\\");
@@ -123,6 +123,33 @@ void matrix_to_file(std::vector<std::vector<double>> m, string filename)
 	outputFile.close();
 }
 
+void matrix_to_file(std::vector<std::vector<std::string>> m, string filename)
+{
+
+	///	append the parent folder the file is stored in
+	filename.insert(0,"./data/tmp/");
+
+	///	construct ofstream object and initialze filename
+	ofstream outputFile;
+	outputFile.open(filename);
+
+	///	write vector values to file
+	for (int i = 0; i < m.size(); i++)
+	{
+		for (int j = 0; j < m.at(0).size(); j++)
+		{
+			if (j > 0)
+				outputFile << "," << m.at(i).at(j);
+			else
+				outputFile << m.at(i).at(j);
+		}
+		outputFile << endl;
+	}
+
+	///	close file
+	outputFile.close();
+}
+
 inline void set_RGB(png_byte *ptr, string type, double val)
 {
 	/// set rgb range to 255 = 8 bit
@@ -140,14 +167,14 @@ inline void set_RGB(png_byte *ptr, string type, double val)
 	if (argLin.compare(type) == 0) v = (int)(val * range);
 	if (argCustom.compare(type) == 0)
 	{
-		if (val <= 0.6)
-			v = (int)((exp(val) / exp(1)) * range);
+		if (val >= 0.7)
+			v = (int)((exp((val - 0.65)*10) / exp(3)) * range);
 		else
-			v = (int)((3 * val - 2) * range);
+			v = (int)((exp((val - 0.5)*6) / exp(0.1)) * range);
 	}
 	//if (argLog.compare(type) == 0) v = (int)(tanh(20*val * range));
 	if (argLog.compare(type) == 0) v = (int)((log((val + 0.05)*20)) * range);
-	if (argExp.compare(type) == 0) v = (int)((exp((val - 0.5)*2) / exp(1)) * range);
+	if (argExp.compare(type) == 0) v = (int)((exp((val - 0.2)*4) / exp(3)) * range);
 	if (argPow.compare(type) == 0) v = (int)((log(val*20) - 0.5) * range);
 	if (v < 0) v = 0;
 	if (v > range) v = range;
@@ -156,7 +183,11 @@ inline void set_RGB(png_byte *ptr, string type, double val)
 
 	///	in dependency of the calculated color value the input value is represented by one color of
 	///	6 different color areas
-	if (v<=60) {
+	if (v == 0 && (argLin.compare(type) == 0))
+	{
+		ptr[0] = 255; ptr[1] = 255; ptr[2] = 255;
+	}
+	else if (v<=60) {
 		ptr[0] = 0; ptr[1] = 0; ptr[2] = v;
 	}
 	else if (v>60 && v<=80) {
@@ -355,4 +386,33 @@ void write_color_test_pngs()
 		render::vector_to_PNG("colorTest", "_custom", "custom", imageHeight, imageWidth, vColorTest);
 		render::vector_to_PNG("colorTest", "_pow", "pow", imageHeight, imageWidth, vColorTest);	
 }
+
+void audio_to_matrix(vector<vector<double>> &m, vector<double> &audioStream)
+{
+	double height = 1025.0;
+	int middle = (int)floor(height / 2);
+	int width = audioStream.size();
+
+	m.resize(width, vector<double>(height, 0.0));
+
+	for (int t = 0; t < width; t++)
+	{
+		int amp = (int)(floor(audioStream.at(t) * height) + middle);
+
+		if (amp <= middle)
+		{
+			for (int i = amp; i <= middle; i++)
+			{
+				m.at(t).at(i) = 0.1;
+			}
+		} else
+		{
+			for (int i = middle; i <= amp; i++)
+			{
+				m.at(t).at(i) = 0.1;
+			}
+		}
+	}
+}
+
 }
