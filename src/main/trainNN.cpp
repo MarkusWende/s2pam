@@ -29,10 +29,10 @@ void process()
 	//TrainingData trainData("data/test/test01.txt");
 	//TrainingData trainData("data/AND/T241L20000.txt");
 	//TrainingData trainData("data/AND/vctest.txt");
-	string trainFilename = "./data/set/training.set";
+	string trainFilename = "./data/set/training_phn.set";
 	//TrainingData trainData("data/NAND/T241L20000.txt");
 	// e.g., { 3, 2, 1 }
-	vector<unsigned> topology = {39, 60, 3};
+	vector<unsigned> topology = {39, 100, 39};
 	int T = 100;
 	int maxEpoch = 20;
 	int steps = 1;
@@ -86,6 +86,9 @@ void process()
 			{
 				target.at(c) = Y.at(T-1).at(c);
 			}
+
+			//helper::print_2matrices_column("X, Y:", X, Y);
+			//exit(0);
 
 			nn.bptt(X,Y,target);
 			nn.fptt(bX,bY,target);

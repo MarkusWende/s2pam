@@ -1149,10 +1149,12 @@ double Blstm::calculate_loss(vector<vector<double>> Y)
 			/// sum up the loss value by calculating the product Y(t)_i * log( _o(t)_i )
 			/// with i = 0 .. output layer size
 			//cout << _prediction.at(t).at(iOut) << endl;
-			if (_prediction.at(t).at(iOut) < 0.001)
+			/*if (_prediction.at(t).at(iOut) < 0.001)
 				L += -5 * Y.at(t).at(iOut);
 			else
 				L += -1 * Y.at(t).at(iOut) * log(_prediction.at(t).at(iOut));
+			*/
+			L += -1 * Y.at(t).at(iOut) * log(_prediction.at(t).at(iOut));
 			//float div = (Y.at(t).at(iOut) - _prediction.at(t).at(iOut));
 			//div = div * div;
 			//L += div / 2;
@@ -1176,10 +1178,12 @@ double Blstm::calculate_single_loss(vector<double> target)
 		/// sum up the loss value by calculating the product Y(t)_i * log( _o(t)_i )
 		/// with i = 0 .. output layer size
 		//cout << _prediction.at(t).at(iOut) << endl;
-		if (_predictionSingle.at(iOut) < 0.001)
+		/*if (_predictionSingle.at(iOut) < 0.001)
 			L += -5 * target.at(iOut);
 		else
 			L += -1 * target.at(iOut) * log(_predictionSingle.at(iOut));
+		*/
+		L += -1 * target.at(iOut) * log(_predictionSingle.at(iOut));
 		//float div = (Y.at(t).at(iOut) - _prediction.at(t).at(iOut));
 		//div = div * div;
 		//L += div / 2;

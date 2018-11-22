@@ -11,10 +11,10 @@ using namespace std;
 int main(int argc, char* argv[])
 {
 	//string devTestFilename = "./data/set/coreTest.set";
-	string devTestFilename = "./data/set/devTest.set";
+	string devTestFilename = "./data/set/devTest_phn.set";
 	//string devTestFilename = "./data/set/blub.set";
 	//string devTestFilename = "./data/set/training.set";
-	string nnFilename = "./data/nn/data_vc8.bin";
+	string nnFilename = "./data/nn/data_phn1.bin";
 
 	Blstm nn(nnFilename);
 
@@ -30,9 +30,9 @@ int main(int argc, char* argv[])
 	vector<vector<double>> accIter;
 	vector<vector<double>> fScoreIter;
 
-	int iterations = 400000;
+	int iterations = 10000;
 	int steps = 1;
-	string type = "vc";
+	string type = "phn";
 
 	DataSet devTest(devTestFilename);
 	devTest.init_set(T, topology, X, Y, bX, bY);
@@ -78,9 +78,10 @@ int main(int argc, char* argv[])
 */
 		devTest.shift_set(steps, X, Y, bX, bY);
 	}
-
+	confMat = stats.get_confMat();
 	AP = stats.get_AP();
 	APString = stats.get_APString();
+	render::matrix_to_file(confMat, "test.confMat");
 	render::matrix_to_file(AP, "test.AP");
 	render::matrix_to_file(APString, "test.APString");
 

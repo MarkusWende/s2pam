@@ -245,7 +245,8 @@ int main(int argc, char* argv[])
 
 			///get corresponding textGrid item
 			Textgrid tg(textGridFilename.c_str());
-			item_c tgItem = tg.get_item(1);
+			//item_c tgItem = tg.get_item(1);
+			item_c tgItem = tg.get_item(0);
 
 			vector<double> inputVals, targetVals;
 
@@ -299,17 +300,18 @@ int main(int argc, char* argv[])
 				inputVals.push_back(deltaDeltaEnergy);
 				//helper::print_vector("in:", inputVals);
 
-				helper::get_textGrid_targetVals_vc(tgItem, frame, targetVals);
+				//helper::get_textGrid_targetVals_vc(tgItem, frame, targetVals);
+				helper::get_textGrid_targetVals_phn(tgItem, frame, targetVals);
 				//helper::print_vector("out:", targetVals);
 
 				string outputFilename;
 
 				if (setType == 1)
-					outputFilename = "./data/set/training.set";
+					outputFilename = "./data/set/training_phn.set";
 				else if (setType == 2)
-					outputFilename = "./data/set/devTest.set";
+					outputFilename = "./data/set/devTest_phn.set";
 				else if (setType == 3)
-					outputFilename = "./data/set/coreTest.set";
+					outputFilename = "./data/set/coreTest_phn.set";
 
 				///	construct ofstream object and initialze filename
 				ofstream outputFile(outputFilename, std::ios_base::app | std::ios_base::out);
@@ -339,6 +341,7 @@ int main(int argc, char* argv[])
 		}
 
 		j++;
+		cout << "item: (" << j << "|" << mfccFileList.size() << ")" << endl;
 		if(j >= mfccFileList.size())
 			finished = true;
 	}

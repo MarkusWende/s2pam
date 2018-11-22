@@ -71,13 +71,18 @@ class Statistics
 
 		std::vector<double> get_fScore() { return _fScore; };
 		std::vector<double> get_acc() { return _acc; };
+		std::vector<std::vector<double>> get_confMat() { return _confusionMatrix; };
 		std::vector<std::vector<double>> get_AP() { return _AP; };
 		std::vector<std::vector<std::string>> get_APString() { return _APString; };
 
 		void print_all();
 		void concat_AP_binary();
 		void concat_AP();
-		std::string get_string_representation(
+		std::string get_string_representation_vc(
+				std::vector<double> binIn
+				);
+		
+		std::string get_string_representation_phn(
 				std::vector<double> binIn
 				);
 };
