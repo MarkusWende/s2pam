@@ -62,6 +62,47 @@ Statistics::Statistics(int numClass, string type, double p)
 		_labels.at(0) = "sil";
 		_labels.at(1) = "c";
 		_labels.at(2) = "v";
+	} else if ( !type.compare("phn") )
+	{
+		_labels.at(0) = "iy";
+		_labels.at(1) = "ih";
+		_labels.at(2) = "eh";
+		_labels.at(3) = "ae";
+		_labels.at(4) = "ah";
+		_labels.at(5) = "uw";
+		_labels.at(6) = "uh";
+		_labels.at(7) = "aa";
+		_labels.at(8) = "ey";
+		_labels.at(9) = "ay";
+		_labels.at(10) = "oy";
+		_labels.at(11) = "aw";
+		_labels.at(12) = "ow";
+		_labels.at(13) = "er";
+		_labels.at(14) = "l";
+		_labels.at(15) = "r";
+		_labels.at(16) = "w";
+		_labels.at(17) = "y";
+		_labels.at(18) = "m";
+		_labels.at(19) = "n";
+		_labels.at(20) = "ng";
+		_labels.at(21) = "dx";
+		_labels.at(22) = "jh";
+		_labels.at(23) = "ch";
+		_labels.at(24) = "z";
+		_labels.at(25) = "s";
+		_labels.at(26) = "sh";
+		_labels.at(27) = "hh";
+		_labels.at(28) = "v";
+		_labels.at(29) = "f";
+		_labels.at(30) = "dh";
+		_labels.at(31) = "th";
+		_labels.at(32) = "b";
+		_labels.at(33) = "p";
+		_labels.at(34) = "d";
+		_labels.at(35) = "t";
+		_labels.at(36) = "g";
+		_labels.at(37) = "k";
+		_labels.at(38) = "cl";
 	}
 }
 
@@ -185,7 +226,7 @@ void Statistics::confusion_matrix()
 	}
 }
 
-string Statistics::get_string_representation(vector<double> binIn)
+string Statistics::get_string_representation_vc(vector<double> binIn)
 {
 	string strLabel;
 
@@ -199,6 +240,132 @@ string Statistics::get_string_representation(vector<double> binIn)
 		strLabel = "c";
 	else if ( std::equal(binIn.begin(), binIn.end(), vc_v.begin()) )
 		strLabel = "v";
+
+	return strLabel;
+}
+
+string Statistics::get_string_representation_phn(vector<double> binIn)
+{
+	string strLabel;
+
+	vector<double> phn_iy = {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_ih = {0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_eh = {0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_ae = {0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_ah = {0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_uw = {0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_uh = {0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_aa = {0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_ey = {0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_ay = {0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_oy = {0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_aw = {0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_ow = {0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_er = {0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_l =  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_r =  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_w =  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_y =  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_m =  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_n =  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_ng = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_dx = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_jh = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_ch = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_z =  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_s =  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_sh = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_hh = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_v =  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_f =  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0};
+	vector<double> phn_dh = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0};
+	vector<double> phn_th = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0};
+	vector<double> phn_b =  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0};
+	vector<double> phn_p =  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0};
+	vector<double> phn_d =  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0};
+	vector<double> phn_t =  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0};
+	vector<double> phn_g =  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0};
+	vector<double> phn_k =  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0};
+	vector<double> phn_cl = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1};
+
+	if ( std::equal(binIn.begin(), binIn.end(), phn_iy.begin()) )
+		strLabel = "iy";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_ih.begin()) )
+		strLabel = "ih";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_eh.begin()) )
+		strLabel = "eh";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_ae.begin()) )
+		strLabel = "ae";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_ah.begin()) )
+		strLabel = "ah";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_uw.begin()) )
+		strLabel = "uw";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_uh.begin()) )
+		strLabel = "uh";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_aa.begin()) )
+		strLabel = "aa";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_ey.begin()) )
+		strLabel = "ey";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_ay.begin()) )
+		strLabel = "ay";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_oy.begin()) )
+		strLabel = "oy";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_aw.begin()) )
+		strLabel = "aw";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_ow.begin()) )
+		strLabel = "ow";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_er.begin()) )
+		strLabel = "er";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_l.begin()) )
+		strLabel = "l";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_r.begin()) )
+		strLabel = "r";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_w.begin()) )
+		strLabel = "w";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_y.begin()) )
+		strLabel = "y";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_m.begin()) )
+		strLabel = "m";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_n.begin()) )
+		strLabel = "n";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_ng.begin()) )
+		strLabel = "ng";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_dx.begin()) )
+		strLabel = "dx";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_jh.begin()) )
+		strLabel = "jh";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_ch.begin()) )
+		strLabel = "ch";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_z.begin()) )
+		strLabel = "z";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_s.begin()) )
+		strLabel = "s";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_sh.begin()) )
+		strLabel = "sh";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_hh.begin()) )
+		strLabel = "hh";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_v.begin()) )
+		strLabel = "v";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_f.begin()) )
+		strLabel = "f";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_dh.begin()) )
+		strLabel = "dh";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_th.begin()) )
+		strLabel = "th";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_b.begin()) )
+		strLabel = "b";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_p.begin()) )
+		strLabel = "p";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_d.begin()) )
+		strLabel = "d";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_t.begin()) )
+		strLabel = "t";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_g.begin()) )
+		strLabel = "g";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_k.begin()) )
+		strLabel = "k";
+	else if ( std::equal(binIn.begin(), binIn.end(), phn_cl.begin()) )
+		strLabel = "cl";
 
 	return strLabel;
 }
@@ -222,8 +389,8 @@ void Statistics::process(vector<double> A, vector<double> P)
 {
 	_A = A;
 	_P = get_oneHot( P );
-	_AString = get_string_representation(_A);
-	_PString = get_string_representation(_P);
+	_AString = get_string_representation_phn(_A);
+	_PString = get_string_representation_phn(_P);
 
 	concat_AP_binary();
 	concat_AP();
@@ -243,7 +410,7 @@ void Statistics::process(vector<double> A, vector<double> P)
 
 void Statistics::print_all()
 {
-	helper::print_matrix("ConMat: ", _confusionMatrix);
+	//helper::print_matrix("ConMat: ", _confusionMatrix);
 	
 	precision();
 	recall();

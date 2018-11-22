@@ -313,6 +313,11 @@ namespace helper {
 			int frame,
 			std::vector<double>& targetVals);
 			
+	void get_textGrid_targetVals_phn(
+			item_c& tgItem,
+			int frame,
+			std::vector<double>& targetVals);
+			
 	void get_textGrid_frame(
 			item_c& tgItem,
 			int mIndex,
