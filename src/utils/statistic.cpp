@@ -103,7 +103,16 @@ Statistics::Statistics(int numClass, string type, double p)
 		_labels.at(36) = "g";
 		_labels.at(37) = "k";
 		_labels.at(38) = "cl";
+	} else if ( !type.compare("art") )
+	{
+		_labels.at(0) = "vow";
+		_labels.at(1) = "nas";
+		_labels.at(2) = "sfr";
+		_labels.at(3) = "wfr";
+		_labels.at(4) = "stops";
+		_labels.at(5) = "cl";
 	}
+
 }
 
 void Statistics::true_positive()
@@ -370,6 +379,33 @@ string Statistics::get_string_representation_phn(vector<double> binIn)
 	return strLabel;
 }
 
+string Statistics::get_string_representation_art(vector<double> binIn)
+{
+	string strLabel;
+
+	vector<double> art_vow =	{1,0,0,0,0,0};
+	vector<double> art_nas =	{0,1,0,0,0,0};
+	vector<double> art_sfr =	{0,0,1,0,0,0};
+	vector<double> art_wfr =	{0,0,0,1,0,0};
+	vector<double> art_stops =	{0,0,0,0,1,0};
+	vector<double> art_cl =		{0,0,0,0,0,1};
+
+	if ( std::equal(binIn.begin(), binIn.end(), art_vow.begin()) )
+		strLabel = "vow";
+	else if ( std::equal(binIn.begin(), binIn.end(), art_nas.begin()) )
+		strLabel = "nas";
+	else if ( std::equal(binIn.begin(), binIn.end(), art_sfr.begin()) )
+		strLabel = "sfr";
+	else if ( std::equal(binIn.begin(), binIn.end(), art_wfr.begin()) )
+		strLabel = "wfr";
+	else if ( std::equal(binIn.begin(), binIn.end(), art_stops.begin()) )
+		strLabel = "stops";
+	else if ( std::equal(binIn.begin(), binIn.end(), art_cl.begin()) )
+		strLabel = "cl";
+
+	return strLabel;
+}
+
 void Statistics::concat_AP_binary()
 {
 	vector<double> ap = _A;
@@ -389,8 +425,12 @@ void Statistics::process(vector<double> A, vector<double> P)
 {
 	_A = A;
 	_P = get_oneHot( P );
-	_AString = get_string_representation_phn(_A);
-	_PString = get_string_representation_phn(_P);
+	//_AString = get_string_representation_vc(_A);
+	//_PString = get_string_representation_vc(_P);
+	//_AString = get_string_representation_phn(_A);
+	//_PString = get_string_representation_phn(_P);
+	_AString = get_string_representation_art(_A);
+	_PString = get_string_representation_art(_P);
 
 	concat_AP_binary();
 	concat_AP();

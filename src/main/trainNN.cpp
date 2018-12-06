@@ -29,12 +29,15 @@ void process()
 	//TrainingData trainData("data/test/test01.txt");
 	//TrainingData trainData("data/AND/T241L20000.txt");
 	//TrainingData trainData("data/AND/vctest.txt");
-	string trainFilename = "./data/set/training_phn.set";
+	//string trainFilename = "./data/set/training_phn.set";
+	string trainFilename = "./data/set/training_art.set";
+	//string trainFilename = "./data/set/training_vc.set";
 	//TrainingData trainData("data/NAND/T241L20000.txt");
 	// e.g., { 3, 2, 1 }
-	vector<unsigned> topology = {39, 100, 39};
-	int T = 100;
-	int maxEpoch = 20;
+	/// output: 39, 6 or 3
+	vector<unsigned> topology = {39, 60, 6};
+	int T = 20;
+	int maxEpoch = 100;
 	int steps = 1;
 	double learningRate = 0.001;
 
@@ -63,7 +66,7 @@ void process()
 	DataSet train(trainFilename);
 	train.init_set(T, topology, X, Y, bX, bY);
 	//int iterations = train.size() - T;
-	int iterations = 10000;
+	int iterations = 20000;
 
 	//cout << "Size: " << iterations << endl;
 	//return;
