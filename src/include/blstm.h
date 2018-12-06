@@ -70,6 +70,44 @@ class Blstm
 		std::vector<double> _b_pf;
 		std::vector<double> _b_po;
 
+		/// gradients
+		std::vector<std::vector<double>> _gWi;
+		std::vector<std::vector<double>> _gWf;
+		std::vector<std::vector<double>> _gWo;
+		std::vector<std::vector<double>> _gWz;
+		std::vector<std::vector<double>> _b_gWi;
+		std::vector<std::vector<double>> _b_gWf;
+		std::vector<std::vector<double>> _b_gWo;
+		std::vector<std::vector<double>> _b_gWz;
+
+		std::vector<std::vector<double>> _gRi;
+		std::vector<std::vector<double>> _gRf;
+		std::vector<std::vector<double>> _gRo;
+		std::vector<std::vector<double>> _gRz;
+		std::vector<std::vector<double>> _b_gRi;
+		std::vector<std::vector<double>> _b_gRf;
+		std::vector<std::vector<double>> _b_gRo;
+		std::vector<std::vector<double>> _b_gRz;
+		
+		std::vector<std::vector<double>> _gWy;
+		std::vector<std::vector<double>> _b_gWy;
+
+		std::vector<double> _gbi;
+		std::vector<double> _gbf;
+		std::vector<double> _gbo;
+		std::vector<double> _gbz;
+		std::vector<double> _b_gbi;
+		std::vector<double> _b_gbf;
+		std::vector<double> _b_gbo;
+		std::vector<double> _b_gbz;
+		
+		std::vector<double> _gpi;
+		std::vector<double> _gpf;
+		std::vector<double> _gpo;
+		std::vector<double> _b_gpi;
+		std::vector<double> _b_gpf;
+		std::vector<double> _b_gpo;
+
 		///	hidden output states
 		std::vector<std::vector<double>> _y;
 		std::vector<std::vector<double>> _b_y;
@@ -105,6 +143,7 @@ class Blstm
 		int _T;
 		/// learning rate determines how fast the neural network learns
 		double _learningRate;
+		double _momentum;
 		
 		/// hidden layer size
 		int _hLSize;

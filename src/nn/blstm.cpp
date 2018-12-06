@@ -707,6 +707,7 @@ Blstm::Blstm(vector<unsigned> topo, int T, double lR)
 	 */
 	_T = T;
 	_learningRate = lR;
+	_momentum = 0.95;
 
 	/**
 	 * initliaze neural network dimension
@@ -797,6 +798,88 @@ Blstm::Blstm(vector<unsigned> topo, int T, double lR)
 	_b_pf.resize(_hLSize, 0);
 	_b_po;
 	_b_po.resize(_hLSize, 0);
+
+
+	/// gradients
+	/**
+	 * create the weight matrices with the given dimensions and
+	 * initialize the matrices with zeros
+	 */
+	_gWi.clear();
+	_gWi.resize(_iLSize, vector<double> (_hLSize, 0));
+	_gWf.clear();
+	_gWf.resize(_iLSize, vector<double> (_hLSize, 0));
+	_gWo.clear();
+	_gWo.resize(_iLSize, vector<double> (_hLSize, 0));
+	_gWz.clear();
+	_gWz.resize(_iLSize, vector<double> (_hLSize, 0));
+	_gWy.clear();
+	_gWy.resize(_hLSize, vector<double> (_oLSize, 0));
+	
+	_gRi.clear();
+	_gRi.resize(_hLSize, vector<double> (_hLSize, 0));
+	_gRf.clear();
+	_gRf.resize(_hLSize, vector<double> (_hLSize, 0));
+	_gRo.clear();
+	_gRo.resize(_hLSize, vector<double> (_hLSize, 0));
+	_gRz.clear();
+	_gRz.resize(_hLSize, vector<double> (_hLSize, 0));
+
+	_gbi.clear();
+	_gbi.resize(_hLSize, 0);
+	_gbf.clear();
+	_gbf.resize(_hLSize, 0);
+	_gbo.clear();
+	_gbo.resize(_hLSize, 0);
+	_gbz.clear();
+	_gbz.resize(_hLSize, 0);
+
+	_gpi.clear();
+	_gpi.resize(_hLSize, 0);
+	_gpf;
+	_gpf.resize(_hLSize, 0);
+	_gpo;
+	_gpo.resize(_hLSize, 0);
+
+	/**
+	 * create the weight matrices with the given dimensions and
+	 * initialize the matrices with zeros
+	 */
+	_b_gWi.clear();
+	_b_gWi.resize(_iLSize, vector<double> (_hLSize, 0));
+	_b_gWf.clear();
+	_b_gWf.resize(_iLSize, vector<double> (_hLSize, 0));
+	_b_gWo.clear();
+	_b_gWo.resize(_iLSize, vector<double> (_hLSize, 0));
+	_b_gWz.clear();
+	_b_gWz.resize(_iLSize, vector<double> (_hLSize, 0));
+	_b_gWy.clear();
+	_b_gWy.resize(_hLSize, vector<double> (_oLSize, 0));
+	
+	_b_gRi.clear();
+	_b_gRi.resize(_hLSize, vector<double> (_hLSize, 0));
+	_b_gRf.clear();
+	_b_gRf.resize(_hLSize, vector<double> (_hLSize, 0));
+	_b_gRo.clear();
+	_b_gRo.resize(_hLSize, vector<double> (_hLSize, 0));
+	_b_gRz.clear();
+	_b_gRz.resize(_hLSize, vector<double> (_hLSize, 0));
+
+	_b_gbi.clear();
+	_b_gbi.resize(_hLSize, 0);
+	_b_gbf.clear();
+	_b_gbf.resize(_hLSize, 0);
+	_b_gbo.clear();
+	_b_gbo.resize(_hLSize, 0);
+	_b_gbz.clear();
+	_b_gbz.resize(_hLSize, 0);
+
+	_b_gpi.clear();
+	_b_gpi.resize(_hLSize, 0);
+	_b_gpf;
+	_b_gpf.resize(_hLSize, 0);
+	_b_gpo;
+	_b_gpo.resize(_hLSize, 0);
 }
 
 double Blstm::tanhyp(double x)
@@ -812,7 +895,7 @@ double Blstm::dtanhyp(double x)
 {
 	/// Hyperbolic activation function
 	double dfx = 0.0;
-	dfx = 1 - (tanh(x) * tanh(x));
+	dfx = -1 * (-1 + tanh(x)) * (1 + tanh(x));
 
 	return dfx;
 }
@@ -887,7 +970,7 @@ double Blstm::dsigmoid(double x)
 	/// initialze the output
 	double dsig = 0;
 	
-	dsig = exp(-x) / ((1 + exp(-x)) * (1 + exp(-x)));
+	dsig = sigmoid(x) * (1 - sigmoid(x));
 
 	return dsig;
 }
@@ -1183,14 +1266,14 @@ double Blstm::calculate_single_loss(vector<double> target)
 		else
 			L += -1 * target.at(iOut) * log(_predictionSingle.at(iOut));
 		*/
-		L += -1 * target.at(iOut) * log(_predictionSingle.at(iOut));
+		L += target.at(iOut) * log(_predictionSingle.at(iOut));
 		//float div = (Y.at(t).at(iOut) - _prediction.at(t).at(iOut));
 		//div = div * div;
 		//L += div / 2;
 	}
 
 	/// divide the loss by the length of the output train
-	L = L / _predictionSingle.size();
+	L = -1 * L;
 	//cout << "\tL: " << L;
 	return L;
 }
@@ -1351,6 +1434,69 @@ void Blstm::bptt(vector<vector<double>> X, vector<vector<double>> Y, vector<doub
 	_bf = vec_ele_add_with_const(_bf, dbf, L);
 	_bo = vec_ele_add_with_const(_bo, dbo, L);
 	_bz = vec_ele_add_with_const(_bz, dbz, L);
+	
+	/// apply momentum
+	_Wy = matrix_add_with_const(_Wy, _gWy, _momentum);
+	_Wf = matrix_add_with_const(_Wf, _gWf, _momentum);
+	_Wi = matrix_add_with_const(_Wi, _gWi, _momentum);
+	_Wo = matrix_add_with_const(_Wo, _gWo, _momentum);
+	_Wz = matrix_add_with_const(_Wz, _gWz, _momentum);
+
+	_Rf = matrix_add_with_const(_Rf, _gRf, _momentum);
+	_Ri = matrix_add_with_const(_Ri, _gRi, _momentum);
+	_Ro = matrix_add_with_const(_Ro, _gRo, _momentum);
+	_Rz = matrix_add_with_const(_Rz, _gRz, _momentum);
+
+	_pi = vec_ele_add_with_const(_pi, _gpi, _momentum);
+	_pf = vec_ele_add_with_const(_pf, _gpf, _momentum);
+	_po = vec_ele_add_with_const(_po, _gpo, _momentum);
+
+	_bi = vec_ele_add_with_const(_bi, _gbi, _momentum);
+	_bf = vec_ele_add_with_const(_bf, _gbf, _momentum);
+	_bo = vec_ele_add_with_const(_bo, _gbo, _momentum);
+	_bz = vec_ele_add_with_const(_bz, _gbz, _momentum);
+	
+	/// save update
+	_gWy = matrix_mult_with_const(_gWy, _momentum);
+	_gWf = matrix_mult_with_const(_gWf, _momentum);
+	_gWi = matrix_mult_with_const(_gWi, _momentum);
+	_gWo = matrix_mult_with_const(_gWo, _momentum);
+	_gWz = matrix_mult_with_const(_gWz, _momentum);
+
+	_gRf = matrix_mult_with_const(_gRf, _momentum);
+	_gRi = matrix_mult_with_const(_gRi, _momentum);
+	_gRo = matrix_mult_with_const(_gRo, _momentum);
+	_gRz = matrix_mult_with_const(_gRz, _momentum);
+
+	_gpi = vec_mult_with_const(_gpi, _momentum);
+	_gpf = vec_mult_with_const(_gpf, _momentum);
+	_gpo = vec_mult_with_const(_gpo, _momentum);
+
+	_gbi = vec_mult_with_const(_gbi, _momentum);
+	_gbf = vec_mult_with_const(_gbf, _momentum);
+	_gbo = vec_mult_with_const(_gbo, _momentum);
+	_gbz = vec_mult_with_const(_gbz, _momentum);
+	
+	_gWy = matrix_add_with_const(_gWy, dWy, L);
+	_gWf = matrix_add_with_const(_gWf, dWf, L);
+	_gWi = matrix_add_with_const(_gWi, dWi, L);
+	_gWo = matrix_add_with_const(_gWo, dWo, L);
+	_gWz = matrix_add_with_const(_gWz, dWz, L);
+
+	_gRf = matrix_add_with_const(_gRf, dRf, L);
+	_gRi = matrix_add_with_const(_gRi, dRi, L);
+	_gRo = matrix_add_with_const(_gRo, dRo, L);
+	_gRz = matrix_add_with_const(_gRz, dRz, L);
+
+	_gpi = vec_ele_add_with_const(_gpi, dpi, L);
+	_gpf = vec_ele_add_with_const(_gpf, dpf, L);
+	_gpo = vec_ele_add_with_const(_gpo, dpo, L);
+
+	_gbi = vec_ele_add_with_const(_gbi, dbi, L);
+	_gbf = vec_ele_add_with_const(_gbf, dbf, L);
+	_gbo = vec_ele_add_with_const(_gbo, dbo, L);
+	_gbz = vec_ele_add_with_const(_gbz, dbz, L);
+	
 }
 
 void Blstm::fptt(vector<vector<double>> X, vector<vector<double>> Y, vector<double> target)
@@ -1511,6 +1657,68 @@ void Blstm::fptt(vector<vector<double>> X, vector<vector<double>> Y, vector<doub
 	_b_bf = vec_ele_add_with_const(_b_bf, dbf, L);
 	_b_bo = vec_ele_add_with_const(_b_bo, dbo, L);
 	_b_bz = vec_ele_add_with_const(_b_bz, dbz, L);
+	
+	/// apply momentum
+	_b_Wy = matrix_add_with_const(_b_Wy, _b_gWy, _momentum);
+	_b_Wf = matrix_add_with_const(_b_Wf, _b_gWf, _momentum);
+	_b_Wi = matrix_add_with_const(_b_Wi, _b_gWi, _momentum);
+	_b_Wo = matrix_add_with_const(_b_Wo, _b_gWo, _momentum);
+	_b_Wz = matrix_add_with_const(_b_Wz, _b_gWz, _momentum);
+
+	_b_Rf = matrix_add_with_const(_b_Rf, _b_gRf, _momentum);
+	_b_Ri = matrix_add_with_const(_b_Ri, _b_gRi, _momentum);
+	_b_Ro = matrix_add_with_const(_b_Ro, _b_gRo, _momentum);
+	_b_Rz = matrix_add_with_const(_b_Rz, _b_gRz, _momentum);
+
+	_b_pi = vec_ele_add_with_const(_b_pi, _b_gpi, _momentum);
+	_b_pf = vec_ele_add_with_const(_b_pf, _b_gpf, _momentum);
+	_b_po = vec_ele_add_with_const(_b_po, _b_gpo, _momentum);
+
+	_b_bi = vec_ele_add_with_const(_b_bi, _b_gbi, _momentum);
+	_b_bf = vec_ele_add_with_const(_b_bf, _b_gbf, _momentum);
+	_b_bo = vec_ele_add_with_const(_b_bo, _b_gbo, _momentum);
+	_b_bz = vec_ele_add_with_const(_b_bz, _b_gbz, _momentum);
+	
+	/// save update
+	_b_gWy = matrix_mult_with_const(_b_gWy, _momentum);
+	_b_gWf = matrix_mult_with_const(_b_gWf, _momentum);
+	_b_gWi = matrix_mult_with_const(_b_gWi, _momentum);
+	_b_gWo = matrix_mult_with_const(_b_gWo, _momentum);
+	_b_gWz = matrix_mult_with_const(_b_gWz, _momentum);
+
+	_b_gRf = matrix_mult_with_const(_b_gRf, _momentum);
+	_b_gRi = matrix_mult_with_const(_b_gRi, _momentum);
+	_b_gRo = matrix_mult_with_const(_b_gRo, _momentum);
+	_b_gRz = matrix_mult_with_const(_b_gRz, _momentum);
+
+	_b_gpi = vec_mult_with_const(_b_gpi, _momentum);
+	_b_gpf = vec_mult_with_const(_b_gpf, _momentum);
+	_b_gpo = vec_mult_with_const(_b_gpo, _momentum);
+
+	_b_gbi = vec_mult_with_const(_b_gbi, _momentum);
+	_b_gbf = vec_mult_with_const(_b_gbf, _momentum);
+	_b_gbo = vec_mult_with_const(_b_gbo, _momentum);
+	_b_gbz = vec_mult_with_const(_b_gbz, _momentum);
+	
+	_b_gWy = matrix_add_with_const(_b_gWy, dWy, L);
+	_b_gWf = matrix_add_with_const(_b_gWf, dWf, L);
+	_b_gWi = matrix_add_with_const(_b_gWi, dWi, L);
+	_b_gWo = matrix_add_with_const(_b_gWo, dWo, L);
+	_b_gWz = matrix_add_with_const(_b_gWz, dWz, L);
+
+	_b_gRf = matrix_add_with_const(_b_gRf, dRf, L);
+	_b_gRi = matrix_add_with_const(_b_gRi, dRi, L);
+	_b_gRo = matrix_add_with_const(_b_gRo, dRo, L);
+	_b_gRz = matrix_add_with_const(_b_gRz, dRz, L);
+
+	_b_gpi = vec_ele_add_with_const(_b_gpi, dpi, L);
+	_b_gpf = vec_ele_add_with_const(_b_gpf, dpf, L);
+	_b_gpo = vec_ele_add_with_const(_b_gpo, dpo, L);
+
+	_b_gbi = vec_ele_add_with_const(_b_gbi, dbi, L);
+	_b_gbf = vec_ele_add_with_const(_b_gbf, dbf, L);
+	_b_gbo = vec_ele_add_with_const(_b_gbo, dbo, L);
+	_b_gbz = vec_ele_add_with_const(_b_gbz, dbz, L);
 }
 
 void Blstm::random_weights()
@@ -1691,28 +1899,28 @@ void Blstm::render_weights(int index)
 	/// _Rz
 	vector<double> rz;
 	vector<vector<double>> ampRz(_Rz.size(), vector<double>(_Rz.at(0).size(), 0));
-	ampRz = matrix_add_with_const(ampRz, _Rz, 3);
+	ampRz = matrix_add_with_const(ampRz, _Rz, 1);
 	matrix_to_vector(ampRz, heightR, widthR, rz);
 	render::vector_to_PNG("_Rz", std::to_string(index), "exp", heightR, widthR, rz);
 
 	/// _Ri
 	vector<double> ri;
 	vector<vector<double>> ampRi(_Ri.size(), vector<double>(_Ri.at(0).size(), 0));
-	ampRi = matrix_add_with_const(ampRi, _Ri, 3);
+	ampRi = matrix_add_with_const(ampRi, _Ri, 1);
 	matrix_to_vector(ampRi, heightR, widthR, ri);
 	render::vector_to_PNG("_Ri", std::to_string(index), "exp", heightR, widthR, ri);
 
 	/// _Rf
 	vector<double> rf;
 	vector<vector<double>> ampRf(_Rf.size(), vector<double>(_Rf.at(0).size(), 0));
-	ampRf = matrix_add_with_const(ampRf, _Rf, 3);
+	ampRf = matrix_add_with_const(ampRf, _Rf, 1);
 	matrix_to_vector(ampRf, heightR, widthR, rf);
 	render::vector_to_PNG("_Rf", std::to_string(index), "exp", heightR, widthR, rf);
 
 	/// _Ro
 	vector<double> ro;
 	vector<vector<double>> ampRo(_Ro.size(), vector<double>(_Ro.at(0).size(), 0));
-	ampRo = matrix_add_with_const(ampRo, _Ro, 3);
+	ampRo = matrix_add_with_const(ampRo, _Ro, 1);
 	matrix_to_vector(ampRo, heightR, widthR, ro);
 	render::vector_to_PNG("_Ro", std::to_string(index), "exp", heightR, widthR, ro);
 

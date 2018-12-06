@@ -243,7 +243,7 @@ int main(int argc, char* argv[])
 			vector<vector<double>> mMfccCoeffs;
 			render::get_mfcc_from_file(mMfccCoeffs, mfccFilename);
 
-			///get corresponding textGrid item
+			///get corresponding textGrid item, 1 = cv, 0 = phn
 			Textgrid tg(textGridFilename.c_str());
 			//item_c tgItem = tg.get_item(1);
 			item_c tgItem = tg.get_item(0);
@@ -301,17 +301,18 @@ int main(int argc, char* argv[])
 				//helper::print_vector("in:", inputVals);
 
 				//helper::get_textGrid_targetVals_vc(tgItem, frame, targetVals);
-				helper::get_textGrid_targetVals_phn(tgItem, frame, targetVals);
+				//helper::get_textGrid_targetVals_phn(tgItem, frame, targetVals);
+				helper::get_textGrid_targetVals_art(tgItem, frame, targetVals);
 				//helper::print_vector("out:", targetVals);
 
 				string outputFilename;
 
 				if (setType == 1)
-					outputFilename = "./data/set/training_phn.set";
+					outputFilename = "./data/set/training_art.set";
 				else if (setType == 2)
-					outputFilename = "./data/set/devTest_phn.set";
+					outputFilename = "./data/set/devTest_art.set";
 				else if (setType == 3)
-					outputFilename = "./data/set/coreTest_phn.set";
+					outputFilename = "./data/set/coreTest_art.set";
 
 				///	construct ofstream object and initialze filename
 				ofstream outputFile(outputFilename, std::ios_base::app | std::ios_base::out);

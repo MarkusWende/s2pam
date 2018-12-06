@@ -277,6 +277,25 @@ vector<vector<double>> matrix_mult(vector<vector<double>> A, vector<vector<doubl
 	return out;
 }
 
+vector<vector<double>> matrix_mult_with_const(vector<vector<double>> A, double x)
+{
+	/// initliaze output matrix with zeros
+	vector<vector<double>> out(A.size(), vector<double> (A.at(0).size(), 0));
+
+	/// loop every element of the output matrix
+	/// every row
+	for (int i = 0; i < A.size(); i++)
+	{
+		/// every column
+		for (int j = 0; j < A.at(0).size(); j++)
+		{
+			out.at(i).at(j) = A.at(i).at(j) * x;
+		}
+	}
+
+	return out;
+}
+
 vector<vector<double>> matrix_T(vector<vector<double>> A)
 {
 	/// initliaze output matrix with zeros
@@ -368,6 +387,20 @@ vector<double> vec_ele_add_with_const(vector<double> a, vector<double> b, double
 	for (int i = 0; i < out.size(); i++)
 	{
 		out.at(i) = a.at(i) + C * b.at(i);
+	}
+
+	return out;
+}
+
+vector<double> vec_mult_with_const(vector<double> a, double C)
+{
+	/// initliaze output vector with zeros
+	vector<double> out(a.size(), 0);
+
+	/// loop every element of the output vector
+	for (int i = 0; i < out.size(); i++)
+	{
+		out.at(i) = a.at(i) * C;
 	}
 
 	return out;
@@ -2246,6 +2279,118 @@ void get_textGrid_targetVals_phn(item_c& tgItem, int frame, vector<double>& targ
 		targetVals.push_back(0.0);			///	37
 		targetVals.push_back(0.0);			///	38
 		targetVals.push_back(1.0);			///	39
+	}
+}
+
+void get_textGrid_targetVals_art(item_c& tgItem, int frame, vector<double>& targetVals)
+{
+	targetVals.clear();
+
+	if ((tgItem.interval[frame].text.compare("iy") == 0) ||		/// 1: iy	vowels/semivowels
+		(tgItem.interval[frame].text.compare("ih") == 0) ||
+		(tgItem.interval[frame].text.compare("ix") == 0) ||		/// 2: ih
+		(tgItem.interval[frame].text.compare("eh") == 0) ||		/// 3: eh
+		(tgItem.interval[frame].text.compare("ae") == 0) ||		/// 4: ae
+		(tgItem.interval[frame].text.compare("ax") == 0) ||
+		(tgItem.interval[frame].text.compare("ah") == 0) ||
+		(tgItem.interval[frame].text.compare("ax-h") == 0) ||	/// 5: ah
+		(tgItem.interval[frame].text.compare("uw") == 0) ||
+		(tgItem.interval[frame].text.compare("ux") == 0) ||		/// 6: uw
+		(tgItem.interval[frame].text.compare("uh") == 0) ||		/// 7: uh
+		(tgItem.interval[frame].text.compare("ao") == 0) ||
+		(tgItem.interval[frame].text.compare("aa") == 0) ||		/// 8: aa
+		(tgItem.interval[frame].text.compare("ey") == 0) ||		/// 9: ey
+		(tgItem.interval[frame].text.compare("ay") == 0) ||		/// 10: ay
+		(tgItem.interval[frame].text.compare("oy") == 0) ||		/// 11: oy
+		(tgItem.interval[frame].text.compare("aw") == 0) ||		/// 12: aw
+		(tgItem.interval[frame].text.compare("ow") == 0) ||		/// 13: ow
+		(tgItem.interval[frame].text.compare("er") == 0) ||
+		(tgItem.interval[frame].text.compare("axr") == 0) ||	/// 14: er
+		(tgItem.interval[frame].text.compare("l") == 0) ||
+		(tgItem.interval[frame].text.compare("el") == 0) ||		/// 15: l
+		(tgItem.interval[frame].text.compare("r") == 0) ||		/// 16: r
+		(tgItem.interval[frame].text.compare("w") == 0) ||		/// 17: w
+		(tgItem.interval[frame].text.compare("y") == 0)	)		/// 18: y
+	{	
+		targetVals.push_back(1.0);			/// 1
+		targetVals.push_back(0.0);			///	2
+		targetVals.push_back(0.0);			///	3
+		targetVals.push_back(0.0);			///	4
+		targetVals.push_back(0.0);			///	5
+		targetVals.push_back(0.0);			///	6
+	} else if ( (tgItem.interval[frame].text.compare("m") == 0) ||		///			nasals/flaps
+				(tgItem.interval[frame].text.compare("em") == 0) ||		/// 19: m
+				(tgItem.interval[frame].text.compare("n") == 0) ||
+				(tgItem.interval[frame].text.compare("en") == 0) ||
+				(tgItem.interval[frame].text.compare("nx") == 0) ||		/// 20: n
+				(tgItem.interval[frame].text.compare("ng") == 0) ||
+				(tgItem.interval[frame].text.compare("eng") == 0) ||	/// 21: ng
+				(tgItem.interval[frame].text.compare("dx") == 0) )		/// 22: dx
+	{	
+		targetVals.push_back(0.0);			/// 1
+		targetVals.push_back(1.0);			///	2
+		targetVals.push_back(0.0);			///	3
+		targetVals.push_back(0.0);			///	4
+		targetVals.push_back(0.0);			///	5
+		targetVals.push_back(0.0);			///	6
+	} else if (	(tgItem.interval[frame].text.compare("jh") == 0) ||		/// 23: jh	strong fricatives
+				(tgItem.interval[frame].text.compare("ch") == 0) ||		/// 24: ch
+				(tgItem.interval[frame].text.compare("z") == 0) ||		/// 25: z
+				(tgItem.interval[frame].text.compare("s") == 0) ||		/// 26: s
+				(tgItem.interval[frame].text.compare("zh") == 0) ||
+				(tgItem.interval[frame].text.compare("sh") == 0) )		/// 27: sh
+	{	
+		targetVals.push_back(0.0);			/// 1
+		targetVals.push_back(0.0);			///	2
+		targetVals.push_back(1.0);			///	3
+		targetVals.push_back(0.0);			///	4
+		targetVals.push_back(0.0);			///	5
+		targetVals.push_back(0.0);			///	6
+	} else if ( (tgItem.interval[frame].text.compare("hh") == 0) ||		///			weak fricatives
+				(tgItem.interval[frame].text.compare("hv") == 0) ||		/// 28: hh
+				(tgItem.interval[frame].text.compare("v") == 0) ||		/// 29: v
+				(tgItem.interval[frame].text.compare("f") == 0) ||		/// 30: f
+				(tgItem.interval[frame].text.compare("dh") == 0) ||		/// 31: dh
+				(tgItem.interval[frame].text.compare("th") == 0) )		/// 32: th
+	{	
+		targetVals.push_back(0.0);			/// 1
+		targetVals.push_back(0.0);			///	2
+		targetVals.push_back(0.0);			///	3
+		targetVals.push_back(1.0);			///	4
+		targetVals.push_back(0.0);			///	5
+		targetVals.push_back(0.0);			///	6
+	} else if (	(tgItem.interval[frame].text.compare("b") == 0) ||		/// 33: b	stops
+				(tgItem.interval[frame].text.compare("p") == 0) ||		/// 34: p
+				(tgItem.interval[frame].text.compare("d") == 0) ||		/// 35: d
+				(tgItem.interval[frame].text.compare("t") == 0) ||		/// 36: t
+				(tgItem.interval[frame].text.compare("g") == 0) ||		/// 37: g
+				(tgItem.interval[frame].text.compare("k") == 0) )		/// 38: k
+	{	
+		targetVals.push_back(0.0);			/// 1
+		targetVals.push_back(0.0);			///	2
+		targetVals.push_back(0.0);			///	3
+		targetVals.push_back(0.0);			///	4
+		targetVals.push_back(1.0);			///	5
+		targetVals.push_back(0.0);			///	6
+	} else if ( (tgItem.interval[frame].text.compare("sil") == 0) ||	///			closures
+				(tgItem.interval[frame].text.compare("bcl") == 0) ||
+				(tgItem.interval[frame].text.compare("pcl") == 0) ||
+				(tgItem.interval[frame].text.compare("dcl") == 0) ||
+				(tgItem.interval[frame].text.compare("tcl") == 0) ||
+				(tgItem.interval[frame].text.compare("gcl") == 0) ||
+				(tgItem.interval[frame].text.compare("kcl") == 0) ||
+				(tgItem.interval[frame].text.compare("q") == 0) ||
+				(tgItem.interval[frame].text.compare("epi") == 0) ||
+				(tgItem.interval[frame].text.compare("pau") == 0) ||
+				(tgItem.interval[frame].text.compare("h#") == 0) ||
+				(tgItem.interval[frame].text.compare("not") == 0) )		/// 39: cl
+	{	
+		targetVals.push_back(0.0);			/// 1
+		targetVals.push_back(0.0);			///	2
+		targetVals.push_back(0.0);			///	3
+		targetVals.push_back(0.0);			///	4
+		targetVals.push_back(0.0);			///	5
+		targetVals.push_back(1.0);			///	6
 	}
 }
 

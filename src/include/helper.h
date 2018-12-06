@@ -162,6 +162,18 @@ namespace helper {
 			);
 
 	/**
+	 * A = A * x
+	 * multiply a matrices with a constant value
+	 * @param A input matrix A, |R^(n x m)
+	 * @param x constant value x, |R
+	 * @return vector<vector<double>> the multiplied matrix, |R^(n x p)
+	 */
+	std::vector<std::vector<double>> matrix_mult_with_const(
+			std::vector<std::vector<double>> A,
+			double x
+			);
+
+	/**
 	 * A.T
 	 * transpose given matrix
 	 * @param A input matrix A, |R^(n x m)
@@ -212,6 +224,18 @@ namespace helper {
 	std::vector<double> vec_ele_add_with_const(
 			std::vector<double> a,
 			std::vector<double> b,
+			double C
+			);
+
+	/**
+	 * a = a * C
+	 * multiply vector a with constant C
+	 * @param a input vector a, |R^m
+	 * @param C constant the vector a is multiplied with
+	 * @return vector<double> output vector, |R^m
+	 */
+	std::vector<double> vec_mult_with_const(
+			std::vector<double> a,
 			double C
 			);
 
@@ -314,6 +338,11 @@ namespace helper {
 			std::vector<double>& targetVals);
 			
 	void get_textGrid_targetVals_phn(
+			item_c& tgItem,
+			int frame,
+			std::vector<double>& targetVals);
+			
+	void get_textGrid_targetVals_art(
 			item_c& tgItem,
 			int frame,
 			std::vector<double>& targetVals);

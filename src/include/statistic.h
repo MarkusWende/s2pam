@@ -85,5 +85,9 @@ class Statistics
 		std::string get_string_representation_phn(
 				std::vector<double> binIn
 				);
+		
+		std::string get_string_representation_art(
+				std::vector<double> binIn
+				);
 };
 #endif		// SATISTIC_H
