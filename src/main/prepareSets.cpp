@@ -1,6 +1,7 @@
 #include <experimental/filesystem>
 #include <string.h>
 #include <essentia/algorithmfactory.h>
+#include <numeric>
 
 #include "helper.h"
 #include "render.h"
@@ -113,6 +114,8 @@ int main(int argc, char* argv[])
 	int coreTestCount = 0;
 	int devTestCount = 0;
 	int trainCount = 0;
+
+	vector<double> labelWeights(6, 0.0);
 
 	/// Main Loop over all mfcc and textGrid files in the corresponding folders
 	while(!finished)
@@ -308,11 +311,11 @@ int main(int argc, char* argv[])
 				string outputFilename;
 
 				if (setType == 1)
-					outputFilename = "./data/set/training_art.set";
+					outputFilename = "./data/set/weight/training_art.set";
 				else if (setType == 2)
-					outputFilename = "./data/set/devTest_art.set";
+					outputFilename = "./data/set/weight/devTest_art.set";
 				else if (setType == 3)
-					outputFilename = "./data/set/coreTest_art.set";
+					outputFilename = "./data/set/weight/coreTest_art.set";
 
 				///	construct ofstream object and initialze filename
 				ofstream outputFile(outputFilename, std::ios_base::app | std::ios_base::out);
@@ -336,6 +339,9 @@ int main(int argc, char* argv[])
 					done = true;
 
 				helper::get_textGrid_frame(tgItem, i, frame, frameEnd, mMfccCoeffs.size());
+
+				if (!targetVals.empty())
+					labelWeights = helper::vec_ele_add(targetVals, labelWeights);
 				
 				i++;
 			} while (!done);
@@ -355,6 +361,10 @@ int main(int argc, char* argv[])
 		<< "Core Test Set: " << coreTestCount << endl
 		<< "Dev Test Set: " << devTestCount << endl
 		<< "Train Set: " << trainCount << endl;
+	
+	helper::print_vector("Label Weights: ", labelWeights);
+	double sum_of_elems = std::accumulate(labelWeights.begin(), labelWeights.end(), 0.0);
+	cout << "Sum: " << sum_of_elems << endl;
 
 	return 0;
 }

@@ -11,10 +11,10 @@ using namespace std;
 int main(int argc, char* argv[])
 {
 	//string devTestFilename = "./data/set/coreTest.set";
-	string devTestFilename = "./data/set/devTest_art.set";
+	string devTestFilename = "./data/set/devTest_phn.set";
 	//string devTestFilename = "./data/set/blub.set";
 	//string devTestFilename = "./data/set/training.set";
-	string nnFilename = "./data/nn/data_art5.bin";
+	string nnFilename = "./data/nn/data_phn8.bin";
 
 	Blstm nn(nnFilename);
 
@@ -34,8 +34,8 @@ int main(int argc, char* argv[])
 	int iterations = 400000;
 	int steps = 1;
 	//string type = "vc";
-	//string type = "phn";
-	string type = "art";
+	string type = "phn";
+	//string type = "art";
 
 	DataSet devTest(devTestFilename);
 	devTest.init_set(T, topology, X, Y, bX, bY);

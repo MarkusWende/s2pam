@@ -56,6 +56,8 @@ Statistics::Statistics(int numClass, string type, double p)
 
 	_labels.clear();
 	_labels.resize(numClass, "null");
+	
+	_labelType = type;
 
 	if ( !type.compare("vc") )
 	{
@@ -425,12 +427,20 @@ void Statistics::process(vector<double> A, vector<double> P)
 {
 	_A = A;
 	_P = get_oneHot( P );
-	//_AString = get_string_representation_vc(_A);
-	//_PString = get_string_representation_vc(_P);
-	//_AString = get_string_representation_phn(_A);
-	//_PString = get_string_representation_phn(_P);
-	_AString = get_string_representation_art(_A);
-	_PString = get_string_representation_art(_P);
+
+	if ( !_labelType.compare("vc") )
+	{
+		_AString = get_string_representation_vc(_A);
+		_PString = get_string_representation_vc(_P);
+	} else if ( !_labelType.compare("phn") )
+	{
+		_AString = get_string_representation_phn(_A);
+		_PString = get_string_representation_phn(_P);
+	} else if ( !_labelType.compare("art") )
+	{
+		_AString = get_string_representation_art(_A);
+		_PString = get_string_representation_art(_P);
+	}
 
 	concat_AP_binary();
 	concat_AP();

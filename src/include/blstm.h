@@ -317,6 +317,10 @@ class Blstm
 				std::vector<double> target
 				);
 
+		double calculate_single_loss_weighted(
+				std::vector<double> target
+				);
+
 		std::vector<std::vector<double>> get_predictions() { return _prediction; };
 		std::vector<double> get_single_prediction() { return _predictionSingle; };
 

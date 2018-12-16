@@ -1278,6 +1278,34 @@ double Blstm::calculate_single_loss(vector<double> target)
 	return L;
 }
 
+double Blstm::calculate_single_loss_weighted(vector<double> target)
+{
+	/// initialize the loss value with zero
+	double L = 0;
+	vector<double> weights;
+
+	if (_oLSize == 39) {
+		weights = {0.0401, 0.0609, 0.0262, 0.0271, 0.0352, 0.0160, 0.0035, 0.0459, 0.0260,
+			0.0261, 0.0045, 0.0092, 0.0191, 0.0362, 0.0327, 0.0244, 0.0128, 0.0049, 0.0211,
+			0.0360, 0.0062, 0.0045, 0.0052, 0.0059, 0.0292, 0.0599, 0.0145, 0.0097, 0.0106,
+			0.0208, 0.0077, 0.0057, 0.0036, 0.0104, 0.0055, 0.0172, 0.0031, 0.0172, 0.2552};
+	} else if (_oLSize == 6) {
+		weights = {0.4508, 0.0678, 0.1148, 0.0544, 0.0571, 0.2552};
+	} else {
+		weights = {0.1405, 0.4701, 0.3894};
+	}
+
+	/// loop every output in Y
+	for (int iOut = 0; iOut < target.size(); iOut++)
+	{
+		L += target.at(iOut) * log(_predictionSingle.at(iOut)) * (1.0 / (100.0 * weights.at(iOut)));
+	}
+
+	/// divide the loss by the length of the output train
+	L = -1 * L;
+	return L;
+}
+
 void Blstm::bptt(vector<vector<double>> X, vector<vector<double>> Y, vector<double> target)
 {
 	vector<vector<double>> dWy(_hLSize, vector<double> (_oLSize, 0));
@@ -1411,7 +1439,8 @@ void Blstm::bptt(vector<vector<double>> X, vector<vector<double>> Y, vector<doub
 	}
 	
 	//double L = calculate_loss(Y);
-	double L = calculate_single_loss(target);
+	//double L = calculate_single_loss(target);
+	double L = calculate_single_loss_weighted(target);
 
 	L = L * _learningRate;
 	
@@ -1634,7 +1663,8 @@ void Blstm::fptt(vector<vector<double>> X, vector<vector<double>> Y, vector<doub
 	}
 	
 	//double L = calculate_loss(Y);
-	double L = calculate_single_loss(target);
+	//double L = calculate_single_loss(target);
+	double L = calculate_single_loss_weighted(target);
 
 	L = L * _learningRate;
 	
