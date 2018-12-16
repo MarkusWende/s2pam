@@ -1,3 +1,3 @@
-## Acoustic model for speech to phoneme conversion
+## Acoustic model for speech-to-phone conversion
 
 Description will be added in the future...

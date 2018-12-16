@@ -36,6 +36,7 @@ class Statistics
 		std::vector<double> _FN;
 		std::vector<double> _total;
 		std::vector<std::string> _labels;
+		std::string _labelType;
 
 		std::vector<double> _A;
 		std::vector<double> _P;

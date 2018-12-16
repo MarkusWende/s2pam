@@ -35,7 +35,7 @@ void process()
 	//TrainingData trainData("data/NAND/T241L20000.txt");
 	// e.g., { 3, 2, 1 }
 	/// output: 39, 6 or 3
-	vector<unsigned> topology = {39, 60, 6};
+	vector<unsigned> topology = {39, 93, 6};
 	int T = 20;
 	int maxEpoch = 100;
 	int steps = 1;
@@ -66,7 +66,7 @@ void process()
 	DataSet train(trainFilename);
 	train.init_set(T, topology, X, Y, bX, bY);
 	//int iterations = train.size() - T;
-	int iterations = 20000;
+	int iterations = 40000;
 
 	//cout << "Size: " << iterations << endl;
 	//return;
