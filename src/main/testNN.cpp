@@ -10,11 +10,11 @@ using namespace std;
 
 int main(int argc, char* argv[])
 {
-	//string devTestFilename = "./data/set/coreTest.set";
-	string devTestFilename = "./data/set/devTest_vc.set";
+	string devTestFilename = "./data/set/coreTest_vc_04.set";
+	//string devTestFilename = "./data/set/devTest_phn.set";
 	//string devTestFilename = "./data/set/blub.set";
 	//string devTestFilename = "./data/set/training.set";
-	string nnFilename = "./data/nn/data_vc10.bin";
+	string nnFilename = "./data/nn/data_vc11.bin";
 
 	Blstm nn(nnFilename);
 
@@ -30,8 +30,8 @@ int main(int argc, char* argv[])
 	vector<vector<double>> accIter;
 	vector<vector<double>> fScoreIter;
 
-	//int iterations = 10000;
-	int iterations = 400000;
+	int iterations = 188000;			// core test
+	//int iterations = 400000;		// dev test
 	int steps = 1;
 	string type = "vc";
 	//string type = "phn";

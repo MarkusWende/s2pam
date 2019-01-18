@@ -2,6 +2,9 @@
 #include <string.h>
 #include <essentia/algorithmfactory.h>
 #include <numeric>
+#include <stdlib.h>		/// rand
+#include <ctime>
+#include <chrono>		/// random seed
 
 #include "helper.h"
 #include "render.h"
@@ -109,13 +112,23 @@ int main(int argc, char* argv[])
 			finished = true;
 	}
 
+	/// randomize mfccFileList, comment the next lines if u dont want
+	/// every time new sets
+	std::srand(std::time(0));
+	std::random_shuffle( mfccFileList.begin(), mfccFileList.end() );
+
 	finished = false;
 	j = 0;
 	int coreTestCount = 0;
 	int devTestCount = 0;
 	int trainCount = 0;
 
-	vector<double> labelWeights(6, 0.0);
+	/// phn
+	//vector<double> labelWeights(39, 0.0);
+	/// art
+	//vector<double> labelWeights(6, 0.0);
+	/// vc
+	vector<double> labelWeights(3, 0.0);
 
 	/// Main Loop over all mfcc and textGrid files in the corresponding folders
 	while(!finished)
@@ -201,7 +214,7 @@ int main(int argc, char* argv[])
 					)
 			{
 				devTestCount++;
-				setType = 2;
+				setType = 0;
 			}
 
 			/// Core test set
@@ -239,7 +252,7 @@ int main(int argc, char* argv[])
 			if (setType == 0)
 			{
 				trainCount++;
-				setType = 1;
+				setType = 0;
 			}
 
 			///declare and load mfcc matrix
@@ -248,8 +261,10 @@ int main(int argc, char* argv[])
 
 			///get corresponding textGrid item, 1 = cv, 0 = phn
 			Textgrid tg(textGridFilename.c_str());
-			//item_c tgItem = tg.get_item(1);
-			item_c tgItem = tg.get_item(0);
+			/// vc
+			item_c tgItem = tg.get_item(1);
+			/// art and phn
+			//item_c tgItem = tg.get_item(0);
 
 			vector<double> inputVals, targetVals;
 
@@ -303,19 +318,19 @@ int main(int argc, char* argv[])
 				inputVals.push_back(deltaDeltaEnergy);
 				//helper::print_vector("in:", inputVals);
 
-				//helper::get_textGrid_targetVals_vc(tgItem, frame, targetVals);
+				helper::get_textGrid_targetVals_vc(tgItem, frame, targetVals);
 				//helper::get_textGrid_targetVals_phn(tgItem, frame, targetVals);
-				helper::get_textGrid_targetVals_art(tgItem, frame, targetVals);
+				//helper::get_textGrid_targetVals_art(tgItem, frame, targetVals);
 				//helper::print_vector("out:", targetVals);
 
 				string outputFilename;
 
 				if (setType == 1)
-					outputFilename = "./data/set/weight/training_art.set";
+					outputFilename = "./data/set/training_art.set";
 				else if (setType == 2)
-					outputFilename = "./data/set/weight/devTest_art.set";
+					outputFilename = "./data/set/devTest_art.set";
 				else if (setType == 3)
-					outputFilename = "./data/set/weight/coreTest_art.set";
+					outputFilename = "./data/set/coreTest_vc_04.set";
 
 				///	construct ofstream object and initialze filename
 				ofstream outputFile(outputFilename, std::ios_base::app | std::ios_base::out);

@@ -33,6 +33,7 @@ class Blstm
 {
 	private:
 		///	weight matrix _W stores the weights of the hidden layer
+		/// _b_* are the bidirectional weights
 		std::vector<std::vector<double>> _Wi;
 		std::vector<std::vector<double>> _Wf;
 		std::vector<std::vector<double>> _Wo;
@@ -42,6 +43,8 @@ class Blstm
 		std::vector<std::vector<double>> _b_Wo;
 		std::vector<std::vector<double>> _b_Wz;
 
+		///	weight matrix _R stores the recurrent weights of the hidden layer
+		/// _b_* are the bidirectional weights
 		std::vector<std::vector<double>> _Ri;
 		std::vector<std::vector<double>> _Rf;
 		std::vector<std::vector<double>> _Ro;
@@ -51,9 +54,11 @@ class Blstm
 		std::vector<std::vector<double>> _b_Ro;
 		std::vector<std::vector<double>> _b_Rz;
 		
+		/// hidden layer output weights
 		std::vector<std::vector<double>> _Wy;
 		std::vector<std::vector<double>> _b_Wy;
 
+		/// bias and peepohole weights
 		std::vector<double> _bi;
 		std::vector<double> _bf;
 		std::vector<double> _bo;
@@ -139,7 +144,8 @@ class Blstm
 		std::vector<std::vector<double>> _prediction;
 		std::vector<double> _predictionSingle;
 
-		///	number of time steps = x/y train lenght
+		///	number of frames before and after 
+		/// the target label = input and output train lenght
 		int _T;
 		/// learning rate determines how fast the neural network learns
 		double _learningRate;
@@ -271,11 +277,26 @@ class Blstm
 				std::vector<std::vector<double>> X
 				);
 
+		/**
+		 * backward propagation function to feed the bidirectional part of
+		 * the neural net with input values
+		 * @param X contains the network input matrix (input train)
+		 * @return void
+		 */
 		void feed_backward(
 				std::vector<std::vector<double>> X
 				);
 
+		/**
+		 * process predictions in a many-to-many network
+		 * @return void
+		 */
 		void calculate_predictions();
+
+		/**
+		 * process predictions in a many-to-one network
+		 * @return void
+		 */
 		void calculate_single_predictions();
 
 		/**
@@ -290,6 +311,13 @@ class Blstm
 				std::vector<double> target
 				);
 
+		/**
+		 * forwardpropagation through time function to train bidirectional part
+		 * of the neural network
+		 * @param X is the input matrix
+		 * @param Y is the ground truth or target matrix
+		 * @return void
+		 */
 		void fptt(
 				std::vector<std::vector<double>> X,
 				std::vector<std::vector<double>> Y,
@@ -306,23 +334,38 @@ class Blstm
 		 * loss function to calculate the Error/Loss of the network,
 		 * meaning the smaller the value the
 		 * better does the network predicts the right output
+		 * this function is used in a many-to-many network
 		 * @param Y the target matrix
-		 * @retrun double the loss/error value
+		 * @return double
 		 */
 		double calculate_loss(
 				std::vector<std::vector<double>> Y
 				);
 
+		/**
+		 * loss function to calculate the Error/Loss of the network,
+		 * meaning the smaller the value the
+		 * better does the network predicts the right output
+		 * this function is used in a many-to-one network
+		 * @param Y the target vector
+		 * @return double
+		 */
 		double calculate_single_loss(
 				std::vector<double> target
 				);
 
+		/**
+		 * loss function to calculate the Error/Loss of the network
+		 * with weighted labels,
+		 * meaning the smaller the value the
+		 * better does the network predicts the right output
+		 * this function is used in a many-to-one network
+		 * @param Y the target vector
+		 * @return double
+		 */
 		double calculate_single_loss_weighted(
 				std::vector<double> target
 				);
-
-		std::vector<std::vector<double>> get_predictions() { return _prediction; };
-		std::vector<double> get_single_prediction() { return _predictionSingle; };
 
 		/**
 		 * print the output of the neural net by the given target matrix Y
@@ -343,11 +386,36 @@ class Blstm
 				int index
 				);
 
+		/**
+		 * cout the sum of the weights, to check for exploding weights
+		 * @return bool, false if a certain value is reached
+		 */
 		bool check_weight_sum();
 
+		/**
+		 * return topology of the network
+		 * @return vector<unsigned>, the topology in a unsigned vector
+		 */
 		std::vector<unsigned> get_topo();
 
+		/**
+		 * return the frame block size T
+		 * @return int
+		 */
 		int get_T() { return _T; };
+
+		/**
+		 * return the predictions in a many-to-many network
+		 * @return vector<vector<double>>
+		 */
+		std::vector<std::vector<double>> get_predictions() { return _prediction; };
+		
+		/**
+		 * return the predictions in a many-to-one network
+		 * @return vector<double>
+		 */
+		std::vector<double> get_single_prediction() { return _predictionSingle; };
+
 
 		/**
 		 * save neural network to binary file

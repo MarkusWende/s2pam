@@ -37,9 +37,9 @@ void process()
 	/// output: 39, 6 or 3
 	vector<unsigned> topology = {39, 93, 39};
 	int T = 5;
-	int maxEpoch = 2;
+	int maxEpoch = 40;
 	int steps = 1;
-	double learningRate = 0.001;
+	double learningRate = 0.0001;
 
 	vector<vector<double>> X;
 	vector<vector<double>> Y;
@@ -66,7 +66,7 @@ void process()
 	DataSet train(trainFilename);
 	train.init_set(T, topology, X, Y, bX, bY);
 	//int iterations = train.size() - T;
-	int iterations = 4000000;
+	int iterations = 300000;
 
 	//cout << "Size: " << iterations << endl;
 	//return;
