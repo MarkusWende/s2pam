@@ -29,7 +29,7 @@ void process()
 	//TrainingData trainData("data/test/test01.txt");
 	//TrainingData trainData("data/AND/T241L20000.txt");
 	//TrainingData trainData("data/AND/vctest.txt");
-	string trainFilename = "./data/set/training_phn.set";
+	string trainFilename = "./data/set/training_phn_00.set";
 	//string trainFilename = "./data/set/training_art.set";
 	//string trainFilename = "./data/set/training_vc.set";
 	//TrainingData trainData("data/NAND/T241L20000.txt");
